@@ -63,7 +63,24 @@ impl<'a> Tokenizer<'a>{
 						 self.push_to_tok_buffer();
 						 	continue;	
 						 },
-						 t @ '{'| t @ '('| t @ '[' | t @ '}'| t @ ')'| t @ ']'|t @ '"'  => {
+
+						
+						 t @ '"'=> {
+						 	self.token.push(t);
+							self.push_to_tok_buffer();
+							let mut ch = self.get_next_char();
+						 	while ch!='"' {
+									self.token.push(ch);
+									ch = self.get_next_char();
+								}
+							
+							self.push_to_tok_buffer();
+							self.token_buffer.push("\"".to_string());
+
+						 	
+						 },
+
+						 t @ '{'| t @ '('| t @ '[' | t @ '}'| t @ ')'| t @ ']'=>{
 						 	//convert the Vec<token> to string
 						 /*	let token:String = self.token.iter().cloned().collect();
 						 	//push into token vector stream
