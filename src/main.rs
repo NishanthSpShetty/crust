@@ -50,16 +50,7 @@ impl<'a> Tokenizer<'a>{
 			//println!(" char {} ",self.current_char);
 			
 			match self.current_char{
-					     ' '|'\n'|'\t' =>{/*
-					     	//	self.skip_whitespace();
-						 	let token:String = self.token.iter().cloned().collect();
-						 	//push into token vector stream
-							if !token.is_empty(){
-								token_buffer.push(token);
-							}
-							self.token.clear();
-							//push the char into current token set
-						 */
+					     ' '|'\n'|'\t' =>{
 						 self.push_to_tok_buffer();
 						 	continue;	
 						 },
@@ -81,32 +72,14 @@ impl<'a> Tokenizer<'a>{
 						 },
 
 						 t @ '{'| t @ '('| t @ '[' | t @ '}'| t @ ')'| t @ ']'=>{
-						 	//convert the Vec<token> to string
-						 /*	let token:String = self.token.iter().cloned().collect();
-						 	//push into token vector stream
-							
-							if !token.is_empty(){
-								token_buffer.push(token);
-							}
 							
 							
-							self.token.clear();
-							*/
-						 self.push_to_tok_buffer();
+						 	self.push_to_tok_buffer();
 							//push the char into current token set
 							self.token.push(t);
 
-							/*
-						 	//convert the Vec<token> to string
-						 	let token:String = self.token.iter().cloned().collect();
-						 	//push into token vector stream
-							if !token.is_empty(){
-								token_buffer.push(token);
-							}
-							self.token.clear();	
-							*/
 
-						 self.push_to_tok_buffer();
+							self.push_to_tok_buffer();
 							
 						},
 						e @  _ => {
@@ -114,10 +87,9 @@ impl<'a> Tokenizer<'a>{
 						},
 				}
 			
-	//		println!["Current pos : {} len {} ",self.pos,self.length];
 		}
 		
-		
+		//return the stream clone to struct internal object
 		self.token_buffer.clone()	
 	}
 
