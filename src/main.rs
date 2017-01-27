@@ -1,29 +1,42 @@
 use std::str::Chars;
 
-#[allow(dead_code)]
 struct Tokenizer<'a>{
 	pos: usize,
 	current_char:char,
 	token:Vec<char>,
 	length:usize,
 	input:Chars<'a>,
+	token_buffer:Vec<String>,
 	}
 
 impl<'a> Tokenizer<'a>{
 
+	/* tokenizer constructor
+	 * Create object of type Tokenizer
+	 * and returns it
+	 */
 	fn new(text:&str)-> Tokenizer{
 		
 		let token:Vec<char> = Vec::new();
-	
-		let s = Tokenizer{pos:0,current_char:' ',length:text.len(),token:token,input:text.chars()};
-		//return the self object
-		s
+		let token_stream:Vec<String> = Vec::new();
+		//create structure object and initialize
+		let self_object = Tokenizer{ pos:0,current_char:' ',
+				   length:text.len(),
+				   token:token,
+				   token_buffer:token_stream,
+				   input:text.chars()
+				   };
+		self_object
 	}
 
+	/* tokenize
+	 * function walks over given code text and 
+	 * returns the stream of tokens
+	 */
 	fn tokenize(&mut self)-> Vec<String>{
 
 		//token vector to be returned
-		let mut token_buffer:Vec<String> =Vec::new();
+	//	let mut token_buffer:Vec<String> =Vec::new();
 
 		loop{	
 			//get the character at self.pos
@@ -37,7 +50,7 @@ impl<'a> Tokenizer<'a>{
 			//println!(" char {} ",self.current_char);
 			
 			match self.current_char{
-					     ' '|'\n'|'\t' =>{
+					     ' '|'\n'|'\t' =>{/*
 					     	//	self.skip_whitespace();
 						 	let token:String = self.token.iter().cloned().collect();
 						 	//push into token vector stream
@@ -46,11 +59,13 @@ impl<'a> Tokenizer<'a>{
 							}
 							self.token.clear();
 							//push the char into current token set
-						 continue;	
+						 */
+						 self.push_to_tok_buffer();
+						 	continue;	
 						 },
 						 t @ '{'| t @ '('| t @ '[' | t @ '}'| t @ ')'| t @ ']'|t @ '"'  => {
 						 	//convert the Vec<token> to string
-						 	let token:String = self.token.iter().cloned().collect();
+						 /*	let token:String = self.token.iter().cloned().collect();
 						 	//push into token vector stream
 							
 							if !token.is_empty(){
@@ -59,10 +74,12 @@ impl<'a> Tokenizer<'a>{
 							
 							
 							self.token.clear();
+							*/
+						 self.push_to_tok_buffer();
 							//push the char into current token set
 							self.token.push(t);
 
-							
+							/*
 						 	//convert the Vec<token> to string
 						 	let token:String = self.token.iter().cloned().collect();
 						 	//push into token vector stream
@@ -70,6 +87,10 @@ impl<'a> Tokenizer<'a>{
 								token_buffer.push(token);
 							}
 							self.token.clear();	
+							*/
+
+						 self.push_to_tok_buffer();
+							
 						},
 						e @  _ => {
 							self.token.push(e);		
@@ -80,20 +101,32 @@ impl<'a> Tokenizer<'a>{
 		}
 		
 		
-		token_buffer	
+		self.token_buffer.clone()	
 	}
 
-	fn get_next_char(&mut self)->char {
-//		let ch= self.input.nth(self.pos).unwrap();
+	
+	/* get_next_token:
+	 * returns the next char in a input stream
+	 * pointed by `pos` position
+	 */
+	 fn get_next_char(&mut self)->char {
 		let ch=self.input.next().unwrap();
 		self.pos+=1;
 		ch
 	}
+	
 
-	fn skip_whitespace(&mut self){
-		while self.pos<self.length-1 && self.get_next_char()==' ' {
+	/* function to put each token into
+	 * the token stream as it read
+	 */
+	fn push_to_tok_buffer(&mut self){
+		let token:String = self.token.iter().cloned().collect();
+		if !token.is_empty(){
+			self.token_buffer.push(token);
+			}
+		self.token.clear();
 		}
-	}
+
 }
 
 
