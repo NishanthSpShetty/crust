@@ -1,0 +1,6 @@
+[package]
+name = "cpp_to_rust"
+version = "0.1.0"
+authors = ["NishanthSpShetty <nishanthspshetty@gmail.com>"]
+
+[dependencies]
