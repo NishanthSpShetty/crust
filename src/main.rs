@@ -87,7 +87,7 @@ impl<'a> Tokenizer<'a> {
                 }
                 t @ 'a' ... 'z' | t @ 'A' ... 'Z' => {
                     self.token.push(t);
-                    while true {
+                    loop{
                         let ch = self.get_next_char();
                         match ch {
                             'a' ... 'z' | 'A' ... 'Z' | '0' ... '9' => {
