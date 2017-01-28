@@ -104,7 +104,7 @@ impl<'a> Tokenizer<'a> {
                       self.push_to_tok_buffer();
 		    },
                   
-		  '+' | '-' | '*' | '/' | '%' | '&' | '|' | '!' => {
+		  '+' | '-' | '*' | '%' | '&' | '|' | '!' => {
 		  	self.push_advance();
 			loop{
 				match self.current_char {
@@ -118,6 +118,44 @@ impl<'a> Tokenizer<'a> {
 			}
 			self.push_to_tok_buffer();
 		  },
+
+		'/' => {
+			self.push_advance();
+			match self.current_char {
+				'*' => {
+					//start of multi line comment
+					loop{
+						self.push_advance();
+						if self.current_char=='*' {
+							self.push_advance();
+							if self.current_char =='/'{
+								self.push_advance();
+
+								break;
+								}
+							}
+						}
+					},
+				'/' => {
+					//single line comment
+					loop{
+						match self.current_char{
+							'\n'|'\r'=>{
+								break;
+								},
+							_ => self.push_advance(),
+							}
+						};
+					},
+				'=' => {
+					self.push_advance();
+					},
+				_ => {},
+				
+			};	
+			
+		 	self.push_to_tok_buffer(); 
+		 },
 		  _ => {
                       self.push_advance();
                       self.push_to_tok_buffer();
@@ -166,6 +204,15 @@ impl<'a> Tokenizer<'a> {
         	self.token.push(self.current_char);
         	self.current_char = self.get_next_char();
     	}
+	
+	/* move_back:
+	 * move back the pointer back and pops token content
+	 */
+	 fn move_back(&mut self){
+	 	self.current_char = self.token.pop().unwrap();
+		self.pos-=1;
+	}
+		
 }
 
 
