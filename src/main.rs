@@ -18,32 +18,23 @@ fn main() {
 	//get the reader
 	let mut reader = BufReader::new(&file);
 	let mut text:String = String::new();
-	let size = reader.read_to_string(&mut text);
+	let size = reader.read_to_string(&mut text).expect("");
 	
-	println!("Source size : {:?} ",size);
+	println!("Input file size : {}bytes ",size);
 		
 	let mut tok = lexer::Tokenizer::new(&text);
-    	println!("Tokenizing: {}",text);
+    	println!("Tokenizing :\n____________________________________________________________________________________
+	\n {}",text);
+	println!("__________________________________________________________________________________");
     
     	let tokens = tok.tokenize();
 
     	for i in &tokens {
-        	println!["[ {} ]",i];
+        	println!["[ {} ], ",i];
 	}
 
-	let output:String = tokens.iter().cloned().collect();
-/*	
-	let file =  OpenOptions::new().write(true).open("./test_code/output.rs");
+	let output:String = tokens.join(" ");
 
-/*	let mut file = match File::create("./test_code/output.rs"){
-		Ok(f) => f,
-		Err(..) => {},
-		};
-*/	let writer =  match BufWriter::new(&file){
-		Ok(writer) => writer,
-		Err(..) => {}
-		};
-*/
 	let mut file = File::create("./test_code/output.rs").expect("Unable to open file to write");
 
 	file.write_all(output.as_bytes()).expect("Unable to write to file");
