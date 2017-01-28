@@ -55,58 +55,64 @@ impl<'a> Tokenizer<'a> {
                     self.push_to_tok_buffer();
                     self.current_char = self.get_next_char();
                 },
-                t @ '"'=> {
-                    self.token.push(t);
-//                    self.push_to_tok_buffer();
-                    let mut ch = self.get_next_char();
-                    while ch!='"' {
-                        self.token.push(ch);
-                        ch = self.get_next_char();
+                '"'=> {
+                    //
+                    self.push_advance();
+                    while self.current_char != '"' {
+                        self.push_advance();
                     }
-                    self.token.push('\"');
+                    self.push_advance();
 					self.push_to_tok_buffer();
-
-                    self.current_char = self.get_next_char();
                 },
-                t @ '{'| t @ '('| t @ '[' | t @ '}'| t @ ')'| t @ ']'=> {
-                    self.token.push(t);
+                '{'| '('| '[' | '}'| ')'| ']'=> {
+                    self.push_advance();
                     self.push_to_tok_buffer();
-                    self.current_char = self.get_next_char()
 				},
-                t @ '<' | t @ '>' | t @ '=' => {
-                    self.token.push(t);
-                    let ch = self.get_next_char();
-                    match ch {
+                '<' | '>' | '=' => {
+                    self.push_advance();
+                    match self.current_char {
                         '>' | '<' | '=' => {
-                            self.token.push(ch);
-                            self.current_char = self.get_next_char()
+                            self.push_advance();
                         }
                         _ => {}
                     }
                     self.push_to_tok_buffer();
                 }
-                t @ 'a' ... 'z' | t @ 'A' ... 'Z' => {
-                    self.token.push(t);
+                'a' ... 'z' | 'A' ... 'Z' => {
+                    self.push_advance();
                     while true {
-                        let ch = self.get_next_char();
-                        match ch {
+                        match self.current_char {
                             'a' ... 'z' | 'A' ... 'Z' | '0' ... '9' => {
-                                self.token.push(ch);
+                                self.push_advance();
                             }
                             _ => {
-                                self.current_char = ch;
                                 break;
                             }
                         }
                     }
                     self.push_to_tok_buffer();
                 }
-				e @  _ => {
-
-                    self.token.push(e);		
+                '0' ... '9' => {
+                    self.push_advance();
+                    if self.current_char == '.' {
+                        self.push_advance();
+                    }
+                    while true {
+                        match self.current_char {
+                            '0' ... '9' => {
+                                self.push_advance();
+                            }
+                            _ => {
+                                break;
+                            }
+                        }
+                    }
                     self.push_to_tok_buffer();
-                    self.current_char = self.get_next_char();
-				},
+                }
+                e @ _ => {
+                    self.push_advance();
+                    self.push_to_tok_buffer();
+                }
 			}
 			if self.pos > self.length {
                 break;
@@ -142,6 +148,14 @@ impl<'a> Tokenizer<'a> {
 		self.token.clear();
 	}
 
+    /* push_advance:
+     * push the char token passed to it onto self.token
+     * gets next char and stores it in self.current_char
+     */
+    fn push_advance(&mut self) {
+        self.token.push(self.current_char);
+        self.current_char = self.get_next_char();
+    }
 }
 
 
@@ -150,9 +164,9 @@ impl<'a> Tokenizer<'a> {
 fn main() {
     // let mut tok = Tokenizer{pos:-1,current_char:' ',token:&Vec<char>::new()};
 
-    let text = "int main(){
-                    cout<<\"hello world\";
-                }".to_string();
+    let text = "int main() {
+        cout << \"Hello World\";
+        int a = 125;".to_string();
     let mut tok = Tokenizer::new(&text);
     println!("Tokenizing: {}",text);
     /*  for i in 0..text.len(){
