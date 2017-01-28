@@ -80,7 +80,7 @@ impl<'a> Tokenizer<'a> {
                 }
                 'a' ... 'z' | 'A' ... 'Z' => {
                     self.push_advance();
-                    while true {
+                    loop {
                         match self.current_char {
                             'a' ... 'z' | 'A' ... 'Z' | '0' ... '9' => {
                                 self.push_advance();
@@ -97,7 +97,7 @@ impl<'a> Tokenizer<'a> {
                     if self.current_char == '.' {
                         self.push_advance();
                     }
-                    while true {
+                    loop {
                         match self.current_char {
                             '0' ... '9' => {
                                 self.push_advance();
@@ -109,7 +109,7 @@ impl<'a> Tokenizer<'a> {
                     }
                     self.push_to_tok_buffer();
                 }
-                e @ _ => {
+                _ => {
                     self.push_advance();
                     self.push_to_tok_buffer();
                 }
