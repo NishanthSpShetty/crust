@@ -47,18 +47,27 @@ impl<'a> Tokenizer<'a> {
                             self.current_char = self.get_next_char();
                         },
                 	'"'=> {
-                    	    self.push_advance();
-                    	    while self.current_char != '"' {
-                        	self.push_advance();
-                    	    }
-                    	    self.push_advance();
-			    self.push_to_tok_buffer();
-		       },
+                        self.push_advance();
+                    	while self.current_char != '"' {
+                            self.push_advance();
+                    	}
+                    	self.push_advance();
+			            self.push_to_tok_buffer();
+                    },
 
-                      '{'| '('| '[' | '}'| ')'| ']'=> {
-                    	   self.push_advance();
-                    	   self.push_to_tok_buffer();
-		       },
+                    '\'' => {
+                        self.push_advance();
+                        while self.current_char != '\'' {
+                            self.push_advance();
+                        }
+                        self.push_advance();
+                        self.push_to_tok_buffer();
+                    }
+
+                    '{'| '('| '[' | '}'| ')'| ']'=> {
+                        self.push_advance();
+                    	self.push_to_tok_buffer();
+                    },
                 
 		     '<' | '>' | '=' => {
                           self.push_advance();

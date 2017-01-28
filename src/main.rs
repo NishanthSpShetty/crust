@@ -8,6 +8,7 @@ fn main() {
         	cout << \"Hello World\";
         	int a = 125.78;
 		float _floating_name=8797.78778;
+        char a = '3';
 		a+=100; 
 		a/=02;
 		mod = a[2]/b;
