@@ -48,11 +48,20 @@ impl<'a> Tokenizer<'a> {
                         },
                 	'"'=> {
                         self.push_advance();
-                    	while self.current_char != '"' {
-                            self.push_advance();
-                    	}
+                    	
+			while self.current_char != '"' {
+                         	
+			 	self.push_advance();
+                    		if self.current_char == '\\'{
+				//	self.token.push('$');
+					self.push_advance();
+					self.push_advance();
+				}
+			}
+
                     	self.push_advance();
-			            self.push_to_tok_buffer();
+		//	println!(" stream : {:?}",self.token);	
+			self.push_to_tok_buffer();
                     },
 
                     '\'' => {
@@ -221,7 +230,13 @@ impl<'a> Tokenizer<'a> {
 	 	self.current_char = self.token.pop().unwrap();
 		self.pos-=1;
 	}
-		
+	
+	/* prev_char
+	 * returns the previously read character
+	 */
+	 fn prev_char(&mut self)->char{
+	 	*self.token.last().unwrap()
+	}
 }
 
 

@@ -1,4 +1,4 @@
-# C++ to Rust converter
+# _C++_ to _Rust_ converter
 ## A simple C++ to *Rust* translator written in Rust.
 ------------------------------------------------------------------------
 C++ is a system programming language widely used in development of operating system,  firmwares, device drivers and in some application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer.  

@@ -1,36 +1,50 @@
 mod library;
 
+use std::fs::File;
+use std::io::Read;
+use std::io::Write;
+use std::io::BufReader;
+
+
+
 use library::lexer;
 
 fn main() {
 
-	let text = "int main() {
-        	cout << \"Hello World\";
-        	int a = 125.78;
-		float _floating_name=8797.78778;
-        char a = '3';
-		a+=100; 
-		a/=02;
-		mod = a[2]/b;
-		if(a==100 &&b==100){
-			/*multiline comment
-treated as one single
-token.*/
-			//and this
-			cout<<\"I dont know what  to do here\"<<endl;
-		}
-		}".to_string();
-    	
+	let file = match File::open("./test_code/test.cpp"){
+		Ok(f) => f,
+		Err(..) => panic!("Unable to open input source file."),
+		};
+	//get the reader
+	let mut reader = BufReader::new(&file);
+	let mut text:String = String::new();
+	let size = reader.read_to_string(&mut text);
+	
+	println!("Source size : {:?} ",size);
+		
 	let mut tok = lexer::Tokenizer::new(&text);
     	println!("Tokenizing: {}",text);
-    	/*  for i in 0..text.len(){
-        	println!(" {} ",text.chars().nth(i).unwrap());
-		}
-	*/
     
     	let tokens = tok.tokenize();
 
-    	for i in tokens {
+    	for i in &tokens {
         	println!["[ {} ]",i];
 	}
+
+	let output:String = tokens.iter().cloned().collect();
+/*	
+	let file =  OpenOptions::new().write(true).open("./test_code/output.rs");
+
+/*	let mut file = match File::create("./test_code/output.rs"){
+		Ok(f) => f,
+		Err(..) => {},
+		};
+*/	let writer =  match BufWriter::new(&file){
+		Ok(writer) => writer,
+		Err(..) => {}
+		};
+*/
+	let mut file = File::create("./test_code/output.rs").expect("Unable to open file to write");
+
+	file.write_all(output.as_bytes()).expect("Unable to write to file");
 }
