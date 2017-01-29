@@ -61,4 +61,40 @@ pub enum Type{
 	KEYWORD_DEFAULT,
 	KEYWORD_RETURN,
 	
-}
+};
+
+
+pub struct Tokens{
+	value:String,
+	typ:Type,
+	ln:i32,
+	};
+
+
+impl Tokens{
+
+	fn get_token_type(&self)->Type{
+		self.typ
+	}
+
+	fn get_token_value(&self)->String{
+		self.value	
+	}
+
+	fn get_token_ln(&self)->i32{
+		self.ln
+	}
+	
+	fn set_token_value(&mut self,val:&str){
+		self.value = val.to_string();
+	}
+
+	fn set_token_type(&mut self,typ:Type){
+		self.typ = typ;
+	}
+
+	fn set_token_ln(&mut self,ln:i32){
+		self.ln = ln;
+	}
+	
+};
