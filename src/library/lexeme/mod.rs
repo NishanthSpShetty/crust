@@ -1,8 +1,8 @@
 #[allow(dead_code)]
-use std::fmt;
 
 #[derive(Debug)]
 #[derive(Clone,Copy)]
+#[allow(non_camel_case_types)]
 pub enum Type {
 	DATATYPE,
 	RETTYPE,
@@ -36,15 +36,19 @@ pub enum Type {
 	OP_ASSIGN,//
 	OP_INDIRECT,//differentiate b/w this and OP_BITAND during parsing?
 
-
 	STRING,//
 	//for specific type info
-	INT, //i32 //
-	FLOAT, //f32 //
-	CHAR, //char //
-	DOUBLE, //f64 
-	SHORT, //i16
-	
+	PRIMITIVE_INT, //i32 //
+	PRIMITIVE_FLOAT, //f32 //
+	PRIMITIVE_CHAR, //char //
+	PRIMITIVE_DOUBLE, //f64 
+	PRIMITIVE_SHORT, //i16
+	PRIMITIVE_TYPEDEF, //typdef => Type
+
+	CHAR_VAL,
+	NUM_INT,
+	NUM_FLOAT,
+
 	LEFT_CBRACE,//
 	RIGHT_CBRACE,//
 	LEFT_BRACKET,//

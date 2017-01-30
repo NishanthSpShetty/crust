@@ -5,7 +5,6 @@ use library::lexeme::Type;
 
 use std::str::Chars;
 
-// #[derive(Copy)]
 pub struct Tokenizer<'a> {
     line_no: i32,
     pos: usize,
@@ -93,7 +92,7 @@ impl<'a> Tokenizer<'a> {
                     }
 
                     self.push_advance();
-                    self.push_to_tok_buffer(Type::CHAR);
+                    self.push_to_tok_buffer(Type::CHAR_VAL);
                 },
 
                 '{' => {
@@ -198,7 +197,7 @@ impl<'a> Tokenizer<'a> {
 
                 '0'...'9' => {
                     self.push_advance();
-                    let isInt: bool = true;
+                    let mut is_int: bool = true;
 
                     loop {
                         match self.current_char {
@@ -207,17 +206,17 @@ impl<'a> Tokenizer<'a> {
                             }
                             '.' => {
                                 self.push_advance();
-                                let isInt: bool = false;
+                                is_int = false;
                             }
                             _ => {
                                 break;
                             }
                         };
                     }
-                    if isInt {
-                        self.push_to_tok_buffer(Type::INT);
+                    if is_int {
+                        self.push_to_tok_buffer(Type::NUM_INT);
                     } else {
-                        self.push_to_tok_buffer(Type::FLOAT);
+                        self.push_to_tok_buffer(Type::NUM_FLOAT);
                     }
                 }
 
