@@ -1,3 +1,5 @@
+#[allow(dead_code)]
+
 mod library;
 
 use std::io;
@@ -7,13 +9,15 @@ use std::io::Write;
 use std::io::BufReader;
 
 
-
+use library::lexeme::Type;
 use library::lexer;
+use library::lexeme::Token;
+
 
 fn main() {
     let mut input = String::new();
     println!("Enter the C/C++ file to be tokenized(for now...): ");
-    io::stdin().read_line(&mut input);
+    io::stdin().read_line(&mut input).expect("Unable to read");
 
     let file = match File::open(input.trim()) {
         Ok(f) => f,
@@ -22,7 +26,7 @@ fn main() {
     // get the reader
     let mut reader = BufReader::new(&file);
     let mut text: String = String::new();
-    let size = reader.read_to_string(&mut text).expect("");
+    let size = reader.read_to_string(&mut text).expect("Unable to read file.");
 
     println!("Input file size : {}bytes ", size);
 
@@ -32,15 +36,15 @@ fn main() {
               {}", text);
     println!("__________________________________________________________________________________");
 
-    let tokens = tok.tokenize();
-
-    for i in &tokens {
-        println!["[ {} ], ", i];
+    // let tokens = tok.tokenize();
+    tok.tokenize();
+    for i in tok.token_buffer {
+        println!["[ {:?} ], ",i];
     }
 
-    let output: String = tokens.join(" ");
+    // let output: String = tok.token_buffer.join(" ");
 
-    let mut file = File::create("./test_cases/unit_tests/output.rs").expect("Unable to open file to write");
+    // let mut file = File::create("./test_cases/unit_tests/output.rs").expect("Unable to open file to write");
 
-    file.write_all(output.as_bytes()).expect("Unable to write to file");
+    // file.write_all(output.as_bytes()).expect("Unable to write to file");
 }

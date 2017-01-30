@@ -1,13 +1,19 @@
+#[allow(dead_code)]
+
+use library::lexeme::Token;
+use library::lexeme::Type;
 
 use std::str::Chars;
 
+// #[derive(Copy)]
 pub struct Tokenizer<'a> {
+    line_no: i32,
     pos: usize,
     current_char: char,
     token: Vec<char>,
     length: usize,
     input: Chars<'a>,
-    token_buffer: Vec<String>,
+    pub token_buffer: Vec<Token>,
 }
 
 impl<'a> Tokenizer<'a> {
@@ -18,11 +24,12 @@ impl<'a> Tokenizer<'a> {
     pub fn new(text: &str) -> Tokenizer {
 
         let token: Vec<char> = Vec::new();
-        let token_stream: Vec<String> = Vec::new();
+        let token_stream: Vec<Token> = Vec::new();
 
         // create structure object and initialize
         let self_object = Tokenizer {
             pos: 0,
+            line_no: 0,
             current_char: ' ',
             length: text.len(),
             token: token,
@@ -35,16 +42,28 @@ impl<'a> Tokenizer<'a> {
     // tokenize
     // function walks over given code text and
     // returns the stream of tokens
-    //
-    pub fn tokenize(&mut self) -> Vec<String> {
+    // trait bound Clone
+    pub fn tokenize(&mut self) -> Vec<Token> {
 
         self.current_char = self.get_next_char();
         loop {
             match self.current_char {
-                ' ' | '\n' | '\t' => {
-                    self.push_to_tok_buffer();
+                '\n' => {
+                    self.push_to_tok_buffer(Type::NEWLINE);
+                    self.line_no += 1;
+                    self.current_char = self.get_next_char()
+                },
+
+                ' ' => {
+                    self.push_to_tok_buffer(Type::WHITESPACE);
                     self.current_char = self.get_next_char();
-                }
+                },
+
+                '\t' => {
+                    self.push_to_tok_buffer(Type::TABSPACE);
+                    self.current_char = self.get_next_char();
+                },
+
                 '"' => {
                     self.push_advance();
 
@@ -60,8 +79,8 @@ impl<'a> Tokenizer<'a> {
 
                     self.push_advance();
                     // 	println!(" stream : {:?}",self.token);
-                    self.push_to_tok_buffer();
-                }
+                    self.push_to_tok_buffer(Type::STRING);
+                },
 
                 '\'' => {
                     self.push_advance();
@@ -74,23 +93,92 @@ impl<'a> Tokenizer<'a> {
                     }
 
                     self.push_advance();
-                    self.push_to_tok_buffer();
-                }
+                    self.push_to_tok_buffer(Type::CHAR);
+                },
 
-                '{' | '(' | '[' | '}' | ')' | ']' => {
+                '{' => {
                     self.push_advance();
-                    self.push_to_tok_buffer();
+                    self.push_to_tok_buffer(Type::LEFT_CBRACE);
+                },
+
+                '(' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::LEFT_BRACKET);
+                },
+
+                '[' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::LEFT_SBRACKET);
+                },
+
+                '}' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::RIGHT_CBRACE);
+                },
+
+                ')' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::RIGHT_BRACKET);
+                },
+
+                ']' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::RIGHT_SBRACKET);
                 }
 
-                '<' | '>' | '=' => {
+                '<' => {
                     self.push_advance();
                     match self.current_char {
-                        '>' | '<' | '=' => {
+                        '<' => {
                             self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_BITLSHIFT);
+                        },
+                        
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_LE);
+                        },
+
+                        _ => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_LT);
                         }
-                        _ => {}
                     }
-                    self.push_to_tok_buffer();
+                },
+                
+                '>' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '>' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_BITRSHIFT);
+                        },
+
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_GE);
+                        },
+
+                        _ => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_GT);
+                        }
+                    }
+                },
+                
+                '=' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_EQU);
+                        },
+
+                        _ => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_ASSIGN);
+                        }
+                    }
                 }
 
                 '_' | 'a'...'z' | 'A'...'Z' => {
@@ -105,11 +193,13 @@ impl<'a> Tokenizer<'a> {
                             }
                         }
                     }
-                    self.push_to_tok_buffer();
+                    self.push_to_tok_buffer(Type::IDENTIFIER);
                 }
 
                 '0'...'9' => {
                     self.push_advance();
+                    let isInt: bool = true;
+
                     loop {
                         match self.current_char {
                             '0'...'9' => {
@@ -117,29 +207,126 @@ impl<'a> Tokenizer<'a> {
                             }
                             '.' => {
                                 self.push_advance();
+                                let isInt: bool = false;
                             }
                             _ => {
                                 break;
                             }
                         };
                     }
-                    self.push_to_tok_buffer();
+                    if isInt {
+                        self.push_to_tok_buffer(Type::INT);
+                    } else {
+                        self.push_to_tok_buffer(Type::FLOAT);
+                    }
                 }
 
-                '+' | '-' | '*' | '%' | '&' | '|' | '!' => {
+                '+' => {
                     self.push_advance();
-                    loop {
-                        match self.current_char {
-                            '+' | '=' | '-' | '&' | '|' => {
-                                self.push_advance();
-                            }
-                            _ => {
-                                break;
-                            }
-                        };
-                    }
-                    self.push_to_tok_buffer();
-                }
+                    match self.current_char {
+                        '+' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_INC);
+                        },
+                        
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_PLUSEQU);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_PLUS);
+                        }
+                    };
+                },
+
+                '-' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '-' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_DEC);
+                        },
+                        
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_MINEQU);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_MINUS);
+                        }
+                    };
+                },
+                
+                '*' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_MULEQU);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_MUL);
+                        }
+                    };
+                },
+                
+                '%' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_MODEQU);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_MOD);
+                        }
+                    };
+                },
+
+                '~' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::OP_BITNEG);
+                },
+
+                // could be address or bitwise operator
+                '&' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '&' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_LOGAND);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_BITAND);
+                        }
+                    };
+                },
+                
+                '|' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '|' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_LOGOR);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_BITOR);
+                        }
+                    };
+                },
+                
+                '!' => {
+                    self.push_advance();
+                    match self.current_char {
+                        '=' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_NEQ);
+                        },
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_LOGNOT);
+                        }
+                    };
+                },
 
                 '/' => {
                     self.push_advance();
@@ -152,36 +339,53 @@ impl<'a> Tokenizer<'a> {
                                     self.push_advance();
                                     if self.current_char == '/' {
                                         self.push_advance();
-
+                                        self.push_to_tok_buffer(Type::COMMENT_MULTI);
                                         break;
                                     }
                                 }
                             }
-                        }
+                        },
+
                         '/' => {
                             // single line comment
                             loop {
                                 match self.current_char {
                                     '\n' | '\r' => {
+                                        self.line_no += 1;
+                                        self.push_to_tok_buffer(Type::COMMENT_SINGLE);
                                         break;
-                                    }
+                                    },
+
                                     _ => self.push_advance(),
                                 }
                             }
-                        }
+                        },
+
                         '=' => {
                             self.push_advance();
+                            self.push_to_tok_buffer(Type::OP_DIVEQU);
+                        },
+
+                        _ => {
+                            self.push_to_tok_buffer(Type::OP_DIV);
                         }
-                        _ => {}
-
                     };
+                },
 
-                    self.push_to_tok_buffer();
-                }
+                ';' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::SEMICOLON);
+                },
+                
+                ',' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::COMMA);
+                },
+
                 _ => {
                     self.push_advance();
-                    self.push_to_tok_buffer();
-                }
+                    self.push_to_tok_buffer(Type::OTHER);
+                },
             };
 
             if self.pos > self.length {
@@ -210,10 +414,11 @@ impl<'a> Tokenizer<'a> {
     // function to put each token into
     // the token stream as it read
     //
-    fn push_to_tok_buffer(&mut self) {
+    fn push_to_tok_buffer(&mut self, tok_type: Type) {
         let token: String = self.token.iter().cloned().collect();
         if !token.is_empty() {
-            self.token_buffer.push(token);
+            let t = Token::new(token, tok_type, self.line_no);
+            self.token_buffer.push(t);
         }
         self.token.clear();
     }
@@ -241,6 +446,10 @@ impl<'a> Tokenizer<'a> {
     fn prev_char(&mut self) -> char {
         *self.token.last().unwrap()
     }
+
+    // pub fn get_token_buffer(&mut self) -> Vec<Token> {
+    //     self.token_buffer.clone();
+    // }
 }
 
 
@@ -259,13 +468,14 @@ mod test {
         };
         let mut reader = BufReader::new(&file);
         let mut text: String = String::new();
-        reader.read_to_string(&mut text);
+        reader.read_to_string(&mut text).expect("I dont expect anything from anyone");
         text
     }
 
     #[test]
     fn test_get_next_char() {
         let get_next_char = |x: &str| lexer::Tokenizer::new(&x).get_next_char();
+        
         assert_eq!(' ', get_next_char(""));
         assert_eq!(' ', get_next_char(" "));
         assert_eq!('a', get_next_char("abc"));

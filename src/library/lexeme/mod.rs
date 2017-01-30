@@ -1,48 +1,66 @@
-pub enum Type{
+#[allow(dead_code)]
+use std::fmt;
+
+#[derive(Debug)]
+#[derive(Clone,Copy)]
+pub enum Type {
 	DATATYPE,
 	RETTYPE,
-	OP_EQU,
-	OP_NEQ,
-	OP_PLUS,
-	OP_MINUS,
-	OP_MUL,
-	OP_DIV,
-	OP_MOD,
-	OP_PLUSEQU,
-	OP_MINEQU,
-	OP_MULEQU,
-	OP_DIVEQU,
-	OP_BITAND,
-	OP_BITOR,
-	OP_BITNEG,
-	OP_BITLSHIFT,
-	OP_BITRSHIFT,
-	OP_LOGAND,
-	OP_LOGOR,
-	OP_LOGNOT,
-	OP_INC,
-	OP_DEC,
-	OP_LE,
-	OP_GE,
-	OP_ADDROF,
-	OP_ASSIGN,
+	OP_EQU,//
+	OP_NEQ,//
+	OP_PLUS,//
+	OP_MINUS,//
+	OP_MUL,//
+	OP_DIV,//
+	OP_MOD,//
+	OP_PLUSEQU,//
+	OP_MINEQU,//
+	OP_MULEQU,//
+	OP_DIVEQU,//
+	OP_MODEQU,//
+	OP_BITAND,//
+	OP_BITOR,//
+	OP_BITNEG,//
+	OP_BITLSHIFT,//
+	OP_BITRSHIFT,//
+	OP_LOGAND,//
+	OP_LOGOR,//
+	OP_LOGNOT,//
+	OP_INC,//
+	OP_DEC,//
+	OP_GT,//
+	OP_LT,//
+	OP_LE,//
+	OP_GE,//
+	OP_ADDROF,//differentiate b/w this and OP_MUL during parsing?
+	OP_ASSIGN,//
+	OP_INDIRECT,//differentiate b/w this and OP_BITAND during parsing?
 
-	STRING,
+
+	STRING,//
 	//for specific type info
-	INT, //i32
-	FLOAT, //f32
-	CHAR, //char
-	DOUBLE, //f64
+	INT, //i32 //
+	FLOAT, //f32 //
+	CHAR, //char //
+	DOUBLE, //f64 
 	SHORT, //i16
 	
-	LEFT_CBRACE,
-	RIGHT_CBRACE,
-	LEFT_BRACKET,
-	RIGHT_BRACKET,
-	LEFT_SBRACKET,
-	RIGHT_SBRACKET,
-	SEMICOLON,
-	IDENTIFIER,
+	LEFT_CBRACE,//
+	RIGHT_CBRACE,//
+	LEFT_BRACKET,//
+	RIGHT_BRACKET,//
+	LEFT_SBRACKET,//
+	RIGHT_SBRACKET,//
+	SEMICOLON,//
+	COMMA,//
+	NEWLINE,//
+	WHITESPACE,//
+	TABSPACE,//
+	COMMENT_SINGLE,//
+	COMMENT_MULTI,//
+
+	IDENTIFIER,//
+
 	KEYWORD_CLASS,
 	KEYWORD_FOR,
 	KEYWORD_WHILE,
@@ -60,28 +78,58 @@ pub enum Type{
 	KEYWORD_CONST,
 	KEYWORD_DEFAULT,
 	KEYWORD_RETURN,
-	
-};
+
+	OTHER // for testing
+}
+
+// trait Clone {
+// 	 fn clone(&self) -> Type
+// }
 
 
-pub struct Tokens{
-	value:String,
-	typ:Type,
-	ln:i32,
-	};
+// impl Clone for Type {
+//     fn clone(&self) -> Type { *self }
+// }
 
+// impl fmt::Debug for Type {
+// 	fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+// 		write!(f, "{}", );
+// 	}
+// }
 
-impl Tokens{
+#[derive(Debug)]
+pub struct Token{
+	value: String,
+	typ: Type,
+	ln: i32,
+	}
 
-	fn get_token_type(&self)->Type{
+impl Clone for Token{
+	fn clone(&self)->Token{
+		let v = self.value.clone();
+		Token{value:v,..*self }
+	}
+}
+
+impl Token{
+
+	pub fn new(token: String, tok_type: Type, line_no: i32) -> Token {
+		Token {
+			value: token,
+			typ: tok_type,
+			ln: line_no
+		}
+	}
+
+	pub fn get_token_type(&self)->Type{
 		self.typ
 	}
 
-	fn get_token_value(&self)->String{
-		self.value	
+	pub fn get_token_value(&self)->String{
+		self.value.clone()
 	}
 
-	fn get_token_ln(&self)->i32{
+	pub fn get_token_ln(&self)->i32{
 		self.ln
 	}
 	
@@ -96,5 +144,11 @@ impl Tokens{
 	fn set_token_ln(&mut self,ln:i32){
 		self.ln = ln;
 	}
+
+	// fn join(&mut self) {
+	// 	for t in self. {
+	// 		unimplemented!();
+	// 	}
+	// }
 	
-};
+}
