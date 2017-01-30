@@ -2,6 +2,7 @@
 
 #[derive(Debug)]
 #[derive(Clone,Copy)]
+#[derive(PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum Type {
 	DATATYPE,
@@ -55,11 +56,9 @@ pub enum Type {
 	RIGHT_BRACKET,//
 	LEFT_SBRACKET,//
 	RIGHT_SBRACKET,//
+	COLON,//
 	SEMICOLON,//
 	COMMA,//
-	NEWLINE,//
-	WHITESPACE,//
-	TABSPACE,//
 	COMMENT_SINGLE,//
 	COMMENT_MULTI,//
 
@@ -102,6 +101,7 @@ pub enum Type {
 // }
 
 #[derive(Debug)]
+#[derive(PartialEq, Eq)]
 pub struct Token{
 	value: String,
 	typ: Type,

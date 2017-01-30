@@ -48,18 +48,11 @@ impl<'a> Tokenizer<'a> {
         loop {
             match self.current_char {
                 '\n' => {
-                    self.push_to_tok_buffer(Type::NEWLINE);
                     self.line_no += 1;
                     self.current_char = self.get_next_char()
                 },
 
-                ' ' => {
-                    self.push_to_tok_buffer(Type::WHITESPACE);
-                    self.current_char = self.get_next_char();
-                },
-
-                '\t' => {
-                    self.push_to_tok_buffer(Type::TABSPACE);
+                ' ' | '\t' => {
                     self.current_char = self.get_next_char();
                 },
 
@@ -174,7 +167,6 @@ impl<'a> Tokenizer<'a> {
                         },
 
                         _ => {
-                            self.push_advance();
                             self.push_to_tok_buffer(Type::OP_ASSIGN);
                         }
                     }
@@ -375,6 +367,11 @@ impl<'a> Tokenizer<'a> {
                     self.push_advance();
                     self.push_to_tok_buffer(Type::SEMICOLON);
                 },
+
+                ':' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(Type::COLON);
+                },
                 
                 ',' => {
                     self.push_advance();
@@ -459,6 +456,8 @@ mod test {
     // use std::io::Write;
     use std::io::BufReader;
     use library::lexer;
+    use library::lexeme::Type;
+    use library::lexeme::Token;
 
     fn read_file(path: &str) -> String {
         let file = match File::open(path) {
@@ -536,36 +535,101 @@ mod test {
         // check if tok.token is empty
         // check if tok.token_buffer has current token
         tok.current_char = tok.get_next_char();
-        tok.push_advance();
-        tok.push_to_tok_buffer();
-        assert_eq!(0, tok.token.len());
-        assert_eq!(vec!["a", ], tok.token_buffer);
 
         tok.push_advance();
-        tok.push_to_tok_buffer();
+        tok.push_to_tok_buffer(Type::IDENTIFIER);
+        assert_eq!(tok.token_buffer[0].get_token_type(), Type::IDENTIFIER);
+        assert_eq!(tok.token_buffer[0].get_token_value(), String::from("a"));
+        assert_eq!(tok.token_buffer[0].get_token_ln(), 0);
+        assert_eq!(0, tok.token.len());
+
+        tok.push_advance();
+        tok.push_to_tok_buffer(Type::OP_ASSIGN);
+        assert_eq!(tok.token_buffer[1].get_token_type(), Type::OP_ASSIGN);
+        assert_eq!(tok.token_buffer[1].get_token_value(), String::from("="));
+        assert_eq!(tok.token_buffer[1].get_token_ln(), 0);
 
         tok.push_advance();
         tok.push_advance();
         tok.push_advance();
-        tok.push_to_tok_buffer();
+        tok.push_to_tok_buffer(Type::STRING);
+        assert_eq!(tok.token_buffer[2].get_token_type(), Type::STRING);
+        assert_eq!(tok.token_buffer[2].get_token_value(), String::from("\"H\""));
+        assert_eq!(tok.token_buffer[2].get_token_ln(), 0);
         assert_eq!(0, tok.token.len());
-        assert_eq!(vec!["a", "=", "\"H\""], tok.token_buffer);
     }
 
     #[test]
     fn test_tokenize() {
         let text = read_file("test_cases/unit_tests/test_tokenize.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec!["class", "SomeClassName", "{", "public", ":", "SomeClassName",
-                              "(", ")", "{", "}","static", "int", "a", ";", "}", ";", "int",
-                              "main", "(", ")", "{",
-                              "/*printf(\"hello world\");\nthis is C ..\nso */",
-                              "//let write some c++", "cout", "<<",
-                              "\"hello \\\\ \\t \\r \\f \\b \\\" world\\n\"", "<<", "endl",
-                              ";", "int", "a", "=", "100.123", "+", "100", ";", "if", "(",
-                              "a", "==", "100", "&&", "b", "==", "10", ")", "cout", "<<",
-                              "\"i dont know\"", ";", "a", "=", "\'c\'", ";", "a", "=",
-                              "\'\\n\'", ";", "a", "=", "\'\\\'\'", ";", "}"];
+        let tok_vector = vec![
+                                Token::new(String::from("class"), Type::IDENTIFIER, 0),
+                                Token::new(String::from("SomeClassName"), Type::IDENTIFIER, 0),
+                                Token::new(String::from("{"), Type::LEFT_CBRACE, 1),
+                                Token::new(String::from("public"), Type::IDENTIFIER, 2),
+                                Token::new(String::from(":"), Type::COLON, 2),
+                                Token::new(String::from("SomeClassName"), Type::IDENTIFIER, 3),
+                                Token::new(String::from("("), Type::LEFT_BRACKET, 3),
+                                Token::new(String::from(")"), Type::RIGHT_BRACKET, 3),
+                                Token::new(String::from("{"), Type::LEFT_CBRACE, 4),
+                                Token::new(String::from("}"), Type::RIGHT_CBRACE, 5),
+                                Token::new(String::from("static"), Type::IDENTIFIER, 6),
+                                Token::new(String::from("int"), Type::IDENTIFIER, 6), 
+                                Token::new(String::from("a"), Type::IDENTIFIER, 6),
+                                Token::new(String::from(";"), Type::SEMICOLON, 6),
+								Token::new(String::from("}"), Type::RIGHT_CBRACE, 7),
+								Token::new(String::from(";"), Type::SEMICOLON, 7),
+								Token::new(String::from("int"), Type::IDENTIFIER, 9),
+								Token::new(String::from("main"), Type::IDENTIFIER, 9),
+								Token::new(String::from("("), Type::LEFT_BRACKET, 9), 
+								Token::new(String::from(")"), Type::RIGHT_BRACKET, 9),
+								Token::new(String::from("{"), Type::LEFT_CBRACE, 10),
+								Token::new(String::from("/*printf(\"hello world\");\nthis is C ..\nso */"), Type::COMMENT_MULTI, 11),
+								Token::new(String::from("//let write some c++"), Type::COMMENT_SINGLE, 13),
+								Token::new(String::from("cout"), Type::IDENTIFIER, 14),
+								Token::new(String::from("<<"), Type::OP_BITLSHIFT, 14),
+								Token::new(String::from("\"hello \\\\ \\t \\r \\f \\b \\\" world\\n\""), Type::STRING, 14),
+								Token::new(String::from("<<"), Type::OP_BITLSHIFT, 15),
+								Token::new(String::from("endl"), Type::IDENTIFIER, 15),
+								Token::new(String::from(";"), Type::SEMICOLON, 15),
+								Token::new(String::from("int"), Type::IDENTIFIER, 16),
+								Token::new(String::from("a"), Type::IDENTIFIER, 16),
+								Token::new(String::from("="), Type::OP_ASSIGN, 16),
+								Token::new(String::from("100.123"), Type::NUM_FLOAT, 16),
+								Token::new(String::from("+"), Type::OP_PLUS, 16),
+								Token::new(String::from("100"), Type::NUM_INT, 16),
+								Token::new(String::from(";"), Type::SEMICOLON, 16),
+								Token::new(String::from("if"), Type::IDENTIFIER, 18),
+								Token::new(String::from("("), Type::LEFT_BRACKET, 18),
+								Token::new(String::from("a"), Type::IDENTIFIER, 18),
+								Token::new(String::from("=="), Type::OP_EQU, 18),
+								Token::new(String::from("100"), Type::NUM_INT, 18),
+								Token::new(String::from("&&"), Type::OP_LOGAND, 18),
+								Token::new(String::from("b"), Type::IDENTIFIER, 18),
+								Token::new(String::from("=="), Type::OP_EQU, 18),
+								Token::new(String::from("10"), Type::NUM_INT, 18),
+								Token::new(String::from(")"), Type::RIGHT_BRACKET, 18),
+								Token::new(String::from("cout"), Type::IDENTIFIER, 19),
+								Token::new(String::from("<<"), Type::OP_BITLSHIFT, 19),
+								Token::new(String::from("\"i dont know\""), Type::STRING, 19),
+								Token::new(String::from(";"), Type::SEMICOLON, 19),
+								Token::new(String::from("a"), Type::IDENTIFIER, 20),
+								Token::new(String::from("="), Type::OP_ASSIGN, 20),
+								Token::new(String::from("\'c\'"), Type::CHAR_VAL, 20),
+								Token::new(String::from(";"), Type::SEMICOLON, 20),
+								Token::new(String::from("a"), Type::IDENTIFIER, 21),
+								Token::new(String::from("="), Type::OP_ASSIGN, 21),
+								Token::new(String::from("\'\\n\'"), Type::CHAR_VAL, 21),
+								Token::new(String::from(";"), Type::SEMICOLON, 21),
+								Token::new(String::from("a"), Type::IDENTIFIER, 22),
+								Token::new(String::from("="), Type::OP_ASSIGN, 22) ,
+								Token::new(String::from("\'\\\'\'"), Type::CHAR_VAL, 22),
+								Token::new(String::from(";"), Type::SEMICOLON, 22),
+								Token::new(String::from("}"), Type::RIGHT_CBRACE, 23) ];
+        // for i in 0 .. tok_vector.len() {
+            // assert_eq!(tok_vector[i], tok.tokenize()[i]);
+        // }
         assert_eq!(tok_vector, tok.tokenize());
     }
 }
