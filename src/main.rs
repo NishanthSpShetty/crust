@@ -15,6 +15,7 @@ use library::lexer;
 fn main() {
     let mut input = String::new();
     print!("Enter the C/C++ file to be tokenized(for now...) : ");
+    io::stdout().flush().ok().expect("");
     io::stdin().read_line(&mut input).expect("Unable to read");
 
     let file = match File::open(String::from("./test_cases/unit_tests/")+input.trim()) {
