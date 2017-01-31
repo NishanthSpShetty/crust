@@ -1,4 +1,4 @@
-class SomeClassName
+protected class SomeClassName
 {
   public:
     SomeClassName()
@@ -22,4 +22,28 @@ so */
     a = 'c';
     a = '\n';
     a = '\'';
+
+	switch (a){
+		case '\n' : do_something()
+				break;
+
+		case '\'' : do_something()
+				break;
+		case '\r' : do_something()
+				break;
+		case '\b' : do_something()
+				break;
+		case '\f' : do_something()
+				break;
+		case '\t' : do_something()
+				break;
+		case '\a' : do_something()
+				break;
+		default:
+			    do_the_same_damn_thing()
+	}
+
+	while(){}
+	do{}while(1);
+
 }
