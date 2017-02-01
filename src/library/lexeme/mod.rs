@@ -32,22 +32,26 @@ pub enum Type {
     OP_LT, //
     OP_LE, //
     OP_GE, //
-    OP_ADDROF, //differentiate b/w this and OP_MUL during parsing?
+    OP_ADDROF, // differentiate b/w this and OP_MUL during parsing?
     OP_ASSIGN, //
-    OP_INDIRECT, //differentiate b/w this and OP_BITAND during parsing?
+    OP_INDIRECT, // differentiate b/w this and OP_BITAND during parsing?
 
     STRING, //
-    //for specific type info
-    PRIMITIVE_INT, //i32 //
-    PRIMITIVE_FLOAT, //f32 //
-    PRIMITIVE_CHAR, //char //
-    PRIMITIVE_DOUBLE, //f64
-    PRIMITIVE_SHORT, //i16
-    PRIMITIVE_TYPEDEF, //typdef => Type
+    // for specific type info
+    PRIMITIVE_INT, // i32 //
+    PRIMITIVE_FLOAT, // f32 //
+    PRIMITIVE_CHAR, // char //
+    PRIMITIVE_DOUBLE, // f64
+    PRIMITIVE_SHORT, // i16
+    PRIMITIVE_LONG, //
+    PRIMITIVE_TYPEDEF, // typdef => Type
+    PRIMITIVE_BOOL, //
 
-    CHAR_VAL,
-    NUM_INT,
-    NUM_FLOAT,
+    CHAR_VAL, //
+    NUM_INT, //
+    NUM_FLOAT, //
+    TRUE_VAL, //
+    FALSE_VAL, //
 
     LEFT_CBRACE, //
     RIGHT_CBRACE, //
@@ -63,23 +67,26 @@ pub enum Type {
 
     IDENTIFIER, //
 
-    KEYWORD_CLASS,
-    KEYWORD_FOR,
-    KEYWORD_WHILE,
-    KEYWORD_DO,
-    KEYWORD_BREAK,
-    KEYWORD_CONTINUE,
-    KEYWORD_SWITCH,
-    KEYWORD_IF,
-    KEYWORD_ELSE,
-    KEYWORD_PUBLIC,
-    KEYWORD_PRIVATE,
-    KEYWORD_PROTECTED,
-    KEYWORD_CASE,
-    KEYWORD_STATIC,
-    KEYWORD_CONST,
-    KEYWORD_DEFAULT,
-    KEYWORD_RETURN,
+    KEYWORD_UNSIGNED, //
+    KEYWORD_SIGNED, //
+
+    KEYWORD_CLASS, //
+    KEYWORD_FOR, //
+    KEYWORD_WHILE, //
+    KEYWORD_DO, //
+    KEYWORD_BREAK, //
+    KEYWORD_CONTINUE, //
+    KEYWORD_SWITCH, //
+    KEYWORD_IF, //
+    KEYWORD_ELSE, //
+    KEYWORD_PUBLIC, //
+    KEYWORD_PRIVATE, //
+    KEYWORD_PROTECTED, //
+    KEYWORD_CASE, //
+    KEYWORD_STATIC, //
+    KEYWORD_CONST, //
+    KEYWORD_DEFAULT, //
+    KEYWORD_RETURN, //
 
     OTHER, // for testing
 }
@@ -146,10 +153,4 @@ impl Token {
     fn set_token_ln(&mut self, ln: i32) {
         self.ln = ln;
     }
-
-    // fn join(&mut self) {
-    // 	for t in self. {
-    // 		unimplemented!();
-    // 	}
-    // }
 }

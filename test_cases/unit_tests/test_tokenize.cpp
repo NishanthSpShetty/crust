@@ -15,35 +15,29 @@ so */
     //let write some c++
     cout << "hello \\ \t \r \f \b \" world\n"
 	 << endl;
-    int a = 100.123 + 100;
-
+    float a = 100.123 + 100;
+	double b = 122.0253553 * 645.7689 / 346;
+	long c = 5999999;
+	bool d = false || true;
+	unsigned short short1 = 4;
+	unsigned short short2 = (short1 << 1) >> 2;
     if (a == 100 && b == 10)
 	cout << "i dont know";
-    a = 'c';
-    a = '\n';
-    a = '\'';
+
+	char e = 'c';
+    e = '\n';
+    e = '\'';
 
 	switch (a){
-		case '\n' : do_something()
-				break;
-
-		case '\'' : do_something()
-				break;
-		case '\r' : do_something()
-				break;
-		case '\b' : do_something()
-				break;
-		case '\f' : do_something()
-				break;
-		case '\t' : do_something()
-				break;
-		case '\a' : do_something()
+		case '\n' : do_something();
 				break;
 		default:
-			    do_the_same_damn_thing()
+			    do_the_same_damn_thing();
 	}
 
-	while(){}
+	while(){
+		continue;
+	}
 	do{}while(1);
 
 }
