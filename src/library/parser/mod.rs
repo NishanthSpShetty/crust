@@ -30,7 +30,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
     let mut lookahead: usize = 0;
     let mut temp_lexeme: Vec<Token> = Vec::new();
 
-    println!(" LEXEME RECIEVED {:?}",lexeme);
+   // println!(" LEXEME RECIEVED {:?}",lexeme);
     while head < lexeme.len() {
         match lexeme[head].get_token_type() {
             PRIMITIVE_INT => {
@@ -74,8 +74,11 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 };
             }
             KEYWORD_IF => {
-                println!("if found");
-                while lexeme[lookahead].get_token_type() != SEMICOLON {
+                //println!("if found");
+                let mut end = SEMICOLON;
+                while lexeme[lookahead].get_token_type() != RIGHT_BRACKET{lookahead+=1}
+                if lexeme[lookahead+1].get_token_type() == LEFT_CBRACE{ end= RIGHT_CBRACE}
+                while lexeme[lookahead].get_token_type() != end {
                     lookahead += 1;
                 }
                 lookahead+=1;
@@ -92,7 +95,12 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 stream.append(&mut parse_if(&temp_lexeme));
                 temp_lexeme.clear();
             }
-            _ => {}
+            _ => {
+                if lexeme[head].get_token_type() != RIGHT_CBRACE{
+                stream.push(lexeme[head].get_token_value());
+                }
+                head+=1;
+            }
         };
     }
     //return the rust lexeme to main
@@ -146,7 +154,7 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     //parse the function body
     while lexeme[head].get_token_type() != LEFT_CBRACE { head+=1 }
                 head+=1;
-                while head < lexeme.len()-1 {
+                while head < lexeme.len() {
                     let l: Token = Token::new(lexeme[head].get_token_value(),
                                               lexeme[head].get_token_type(),
                                               lexeme[head].get_token_ln(),
@@ -192,7 +200,7 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
         head += 1;
 
     }
-    println!(" {:?}", sym_tab);
+ //   println!(" {:?}", sym_tab);
 
     let mut stream: Vec<String> = Vec::new();
     for i in &sym_tab {
@@ -214,7 +222,7 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
     let mut head: usize = 0;
     let mut cond: String = String::new();
     let mut stream: Vec<String> = Vec::new();
-    println!("Parsing if");
+  //  println!("Parsing if");
     while head < lexeme.len() {
         match lexeme[head].get_token_type() {
             KEYWORD_IF => stream.push("if".to_string()),
@@ -230,9 +238,9 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
 
             }
             LEFT_CBRACE => {
-           /*         let mut temp_lexeme:Vec<Token>=Vec::new();
+                   let mut temp_lexeme:Vec<Token>=Vec::new();
                     head+=1;
-                    println!("Head {} ",head);                
+                   // println!("Head {} ",head);                
                     while lexeme[head].get_token_type() != RIGHT_CBRACE {
                     let l: Token = Token::new(lexeme[head].get_token_value(),
                                               lexeme[head].get_token_type(),
@@ -246,7 +254,6 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
                 
                 //println!(" Calling recurrent parser : {:?}",temp_lexeme);
                 stream.append(&mut parse_program(temp_lexeme));
-                */
             },
 
             _ => stream.push(lexeme[head].get_token_value()),
