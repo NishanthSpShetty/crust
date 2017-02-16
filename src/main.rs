@@ -51,7 +51,7 @@ fn main() {
         out.push(temp);
     }
    // println!(" {:?} ", out);
-    let output: String = out.join(" ");
+ //   let output: String = out.join(" ");
    // println!("Translated code : \n {}", output);
     
 //    file.write_all(output.as_bytes()).expect("Unable to write to file");

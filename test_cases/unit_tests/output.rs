@@ -1,3 +1,5 @@
- let a : i32 ; let b : i32 ; let a : i32 ; if a==100 {
- a = 100 ; 
+fn main(args: i32) -> i32 {
+    if value == 0 {
+        value = 100000;
+    }
 }
