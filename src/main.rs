@@ -10,12 +10,12 @@ use std::io::BufReader;
 
 
 use library::lexer;
-
+use library::parser;
 
 fn main() {
     let mut input = String::new();
     print!("Enter the C/C++ file to be tokenized(for now...) : ");
-    io::stdout().flush().ok().expect("");
+    io::stdout().flush().ok().expect("Buffer cleaning error");
     io::stdin().read_line(&mut input).expect("Unable to read");
 
     let file = match File::open(String::from("./test_cases/unit_tests/") + input.trim()) {
@@ -40,7 +40,7 @@ fn main() {
     let tokens = tok.tokenize();
     // tok.tokenize();
     let mut ln = 0;
-    for i in tokens {
+    for i in &tokens {
         println!["[ {:?} ], ", i];
         // out = out + &(i.get_token_value()) as &str;
         let mut temp = i.get_token_value();
@@ -48,13 +48,22 @@ fn main() {
             temp = "\n".to_string() + &temp[..];
         }
         ln = i.get_token_ln();
-        out.push(temp)
+        out.push(temp);
     }
     println!(" {:?} ", out);
     let output: String = out.join(" ");
-    println!("Translated code : {}", output);
+    println!("Translated code : \n {}", output);
     let mut file = File::create("./test_cases/unit_tests/output.rs")
         .expect("Unable to open file to write");
 
-    file.write_all(output.as_bytes()).expect("Unable to write to file");
+//    file.write_all(output.as_bytes()).expect("Unable to write to file");
+	let s =  parser::parse_if(tokens);
+	let mut o:String=String::new();
+	for i in s {
+		o = o+" ";
+		o = o+&i[..];
+		}
+		println!("\n{} ",o);
+
+    file.write_all(o.as_bytes()).expect("Unable to write to file");
 }

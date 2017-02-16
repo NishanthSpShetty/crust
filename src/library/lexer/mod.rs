@@ -7,6 +7,7 @@ use std::str::Chars;
 
 pub struct Tokenizer<'a> {
     line_no: i32,
+    id:i32,
     pos: usize,
     current_char: char,
     token: Vec<char>,
@@ -28,7 +29,8 @@ impl<'a> Tokenizer<'a> {
         // create structure object and initialize
         let self_object = Tokenizer {
             pos: 0,
-            line_no: 0,
+            id:0,
+	    line_no: 0,
             current_char: ' ',
             length: text.len(),
             token: token,
@@ -440,6 +442,7 @@ impl<'a> Tokenizer<'a> {
             "return" => KEYWORD_RETURN,
             "true" => TRUE_VAL,
             "false" => FALSE_VAL,
+	    "new" => KEYWORD_NEW,
             _ => IDENTIFIER,
         }
     }
@@ -450,9 +453,10 @@ impl<'a> Tokenizer<'a> {
     fn push_to_tok_buffer(&mut self, tok_type: Type) {
         let token: String = self.token.iter().cloned().collect();
         if !token.is_empty() {
-            let t = Token::new(token, tok_type, self.line_no);
+            let t = Token::new(token, tok_type, self.line_no,self.id);
             self.token_buffer.push(t);
-        }
+            self.id+=1;	
+	}
         self.token.clear();
     }
 

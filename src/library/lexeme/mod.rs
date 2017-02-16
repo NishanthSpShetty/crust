@@ -71,6 +71,7 @@ pub enum Type {
     KEYWORD_SIGNED, //
 
     KEYWORD_CLASS, //
+    KEYWORD_NEW,
     KEYWORD_FOR, //
     KEYWORD_WHILE, //
     KEYWORD_DO, //
@@ -112,6 +113,7 @@ pub struct Token {
     value: String,
     typ: Type,
     ln: i32,
+    id:i32
 }
 
 impl Clone for Token {
@@ -122,12 +124,13 @@ impl Clone for Token {
 }
 
 impl Token {
-    pub fn new(token: String, tok_type: Type, line_no: i32) -> Token {
+    pub fn new(token: String, tok_type: Type, line_no: i32,id_:i32) -> Token {
         Token {
             value: token,
             typ: tok_type,
             ln: line_no,
-        }
+            id: id_,
+	}
     }
 
     pub fn get_token_type(&self) -> Type {
@@ -142,6 +145,10 @@ impl Token {
         self.ln
     }
 
+    pub fn get_token_id(&self) -> i32 {
+        self.id
+    }
+
     fn set_token_value(&mut self, val: &str) {
         self.value = val.to_string();
     }
@@ -152,5 +159,8 @@ impl Token {
 
     fn set_token_ln(&mut self, ln: i32) {
         self.ln = ln;
+    }
+    fn set_token_id(&mut self, id_: i32) {
+        self.id = id_;
     }
 }
