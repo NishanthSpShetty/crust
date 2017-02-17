@@ -2,6 +2,7 @@
 
 mod library;
 
+use std::process::Command;
 use std::io;
 use std::fs::File;
 use std::io::Read;
@@ -67,4 +68,7 @@ fn main() {
     let mut file = File::create("./test_cases/unit_tests/output.rs")
         .expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
+
+    Command::new("rustfmt").arg("./test_cases/unit_tests/output.rs").spawn().expect("Failed to format the translated code");
+
 }
