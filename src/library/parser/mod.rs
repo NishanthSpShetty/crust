@@ -126,37 +126,28 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     stream.push("(".to_string());
 
     //parse the argument
-    while lexeme[head].get_token_type() != RIGHT_BRACKET { 
-                    stream.push(lexeme[head+1].get_token_value()); //int f(int val)
-                    stream.push(":".to_string());
-
-                    match lexeme[head].get_token_type(){
-                        PRIMITIVE_INT => stream.push("i32".to_string()),
-                        PRIMITIVE_FLOAT => stream.push("f32".to_string()),
-                        PRIMITIVE_CHAR => stream.push("char".to_string()),
-                        PRIMITIVE_DOUBLE => stream.push("f64".to_string()),
-                        PRIMITIVE_SHORT => stream.push("i16".to_string()),
-                        PRIMITIVE_LONG => stream.push("i64".to_string()),
-                        PRIMITIVE_BOOL => stream.push("bool".to_string()),
-                        _ => {}
-                    }
-                     head+=2
+    while lexeme[head].get_token_type() != RIGHT_BRACKET {
+        
+        // push identifier
+        stream.push(lexeme[head+1].get_token_value()); //int f(int val)
+        stream.push(":".to_string());
+        
+        // parse argument type
+        if let Some(rust_type) = parse_type(lexeme[head].get_token_type() as i32) {
+            stream.push(rust_type);
         }
+        
+        head+=2
+    }
     stream.push(")".to_string());
     stream.push("->".to_string());
     
-    match lexeme[0].get_token_type(){
-                        PRIMITIVE_INT => stream.push("i32".to_string()),
-                        PRIMITIVE_FLOAT => stream.push("f32".to_string()),
-                        PRIMITIVE_CHAR => stream.push("char".to_string()),
-                        PRIMITIVE_DOUBLE => stream.push("f64".to_string()),
-                        PRIMITIVE_SHORT => stream.push("i16".to_string()),
-                        PRIMITIVE_LONG => stream.push("i64".to_string()),
-                        PRIMITIVE_BOOL => stream.push("bool".to_string()),
-                        _ => {}
-                    }
-                    
-            stream.push("{".to_string());
+    // parse return type
+    if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
+        stream.push(rust_type);
+    }
+    
+    stream.push("{".to_string());
     
     //parse the function body
     while lexeme[head].get_token_type() != LEFT_CBRACE { head+=1 }
@@ -192,7 +183,9 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     while head < lexeme.len() {
 
         match lexeme[head].get_token_type() {
+
             IDENTIFIER => sym.id_name = lexeme[head].get_token_value(),
+            
             OP_ASSIGN => {
                 head += 1;
                 sym.assigned_val = lexeme[head].get_token_value();
@@ -213,19 +206,22 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
 
     let mut stream: Vec<String> = Vec::new();
     for i in &sym_tab {
+
+        // get identifier
         stream.push("let".to_string());
         stream.push(i.id_name.clone());
         stream.push(":".to_string());
-        match i.typ {
-            0 => stream.push("i32".to_string()),
-            1 => stream.push("i16".to_string()),
-            2 => stream.push("i64".to_string()),
-            3 => stream.push("f32".to_string()),
-            4 => stream.push("f64".to_string()),
-            5 => stream.push("char".to_string()),
-            6 => stream.push("bool".to_string()),
-            _ => {println!("Lexeme Type {}\n", i.typ); stream.push("UNKNOWN_TYPE".to_string());},
+
+        // get the rust type
+        if let Some(rust_type) = parse_type(i.typ) {
+            stream.push(rust_type);
         }
+        else {
+            println!("Lexeme Type {}\n", i.typ);
+            stream.push("UNKNOWN_TYPE".to_string());
+        }
+
+        // take care of assignment
         if i.is_assigned {
             stream.push("=".to_string());
             stream.push((&i.assigned_val).to_string());
@@ -282,4 +278,22 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
 
     stream.push("\n}".to_string());
     stream
+}
+
+/**
+* fn parse_type
+*   c_type : integer value of Type
+*   return : either the equivalent rust type as a string or None, if does not correspond to any c datatype
+*/ 
+fn parse_type(c_type: i32) -> Option<String> {
+    match c_type {
+        0 => Some("i32".to_string()),
+        1 => Some("i16".to_string()),
+        2 => Some("i64".to_string()),
+        3 => Some("f32".to_string()),
+        4 => Some("f64".to_string()),
+        5 => Some("char".to_string()),
+        6 => Some("bool".to_string()),
+        _ => {None}
+    }
 }
