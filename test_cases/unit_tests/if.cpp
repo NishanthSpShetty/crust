@@ -1,9 +1,9 @@
-int main(int args){
-int a,b=192364;
-int val==100;
-	if(value==0){
-		a=-108;
-		value=100000;
+
+char main(float args){
+		long value = 5;
+		if(value==0){
+			value=100000;
+			int inside_if=100;
+		}
 	}
-}
 	

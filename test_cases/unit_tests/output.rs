@@ -1,9 +1,7 @@
-fn main(args: i32) -> i32 {
-    let a: i32;
-    let b: i32;
-    let val: i32;
+fn main(args: f32) -> char {
+    let value: i64 = 5;
     if value == 0 {
-        a = -108;
         value = 100000;
+        let inside_if: i32 = 100;
     }
 }

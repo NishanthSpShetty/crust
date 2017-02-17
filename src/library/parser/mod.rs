@@ -32,26 +32,40 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
    // println!(" LEXEME RECIEVED {:?}",lexeme);
     while head < lexeme.len() {
-        match lexeme[head].get_token_type() {
-            PRIMITIVE_INT => {
+
+        // gets both base type and token type
+        match lexeme[head].get_type() {
+
+            // matches any datatype
+            (BASE_DATATYPE, _) => {
                 lookahead += 2;
+
+                
                 match lexeme[lookahead].get_token_type() {
+                    
+                    // function
                     LEFT_BRACKET => {
+
+                        
+
                         while lexeme[lookahead].get_token_type() != RIGHT_CBRACE {
                             lookahead += 1;
                         }
                         lookahead += 1;
                         while head != lookahead {
-                            let l: Token = Token::new(lexeme[head].get_token_value(),
-                                                      lexeme[head].get_token_type(),
-                                                      lexeme[head].get_token_ln(),
-                                                      lexeme[head].get_token_id());
+                            // let l: Token = Token::new(lexeme[head].get_token_value(),
+                            //                           lexeme[head].get_token_type(),
+                            //                           lexeme[head].get_token_ln(),
+                            //                           lexeme[head].get_token_id());
+                            let l: Token = lexeme[head].clone();
                             temp_lexeme.push(l);
                             head += 1;
                         }
                         stream.append(&mut parse_function(&temp_lexeme));
                         temp_lexeme.clear();
                     }
+
+                    // declaration or assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
                         while lexeme[lookahead].get_token_type() != SEMICOLON {
                             lookahead += 1;
@@ -59,10 +73,11 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
                         lookahead += 1;
                         while head != lookahead {
-                            let l: Token = Token::new(lexeme[head].get_token_value(),
-                                                      lexeme[head].get_token_type(),
-                                                      lexeme[head].get_token_ln(),
-                                                      lexeme[head].get_token_id());
+                            // let l: Token = Token::new(lexeme[head].get_token_value(),
+                            //                           lexeme[head].get_token_type(),
+                            //                           lexeme[head].get_token_ln(),
+                            //                           lexeme[head].get_token_id());
+                            let l: Token = lexeme[head].clone();
                             temp_lexeme.push(l);
                             head += 1;
                         }
@@ -73,7 +88,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                     _ => {}
                 };
             }
-            KEYWORD_IF => {
+            (_,KEYWORD_IF) => {
                 //println!("if found");
                 let mut end = SEMICOLON;
                 while lexeme[lookahead].get_token_type() != RIGHT_BRACKET{lookahead+=1}
@@ -85,25 +100,24 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 
 
                 while head != lookahead {
-                    let l: Token = Token::new(lexeme[head].get_token_value(),
-                                              lexeme[head].get_token_type(),
-                                              lexeme[head].get_token_ln(),
-                                              lexeme[head].get_token_id());
+                let l: Token = lexeme[head].clone();
                     temp_lexeme.push(l);
                     head += 1;
                 }
                 stream.append(&mut parse_if(&temp_lexeme));
                 temp_lexeme.clear();
             }
-            _ => {
+            (_,_) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE{
                 stream.push(lexeme[head].get_token_value());
                 }
                 head+=1;
             }
         };
+    
     }
     //return the rust lexeme to main
+    
     stream
 }
 
@@ -120,45 +134,34 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     stream.push("(".to_string());
 
     //parse the argument
-    while lexeme[head].get_token_type() != RIGHT_BRACKET { 
-                    stream.push(lexeme[head+1].get_token_value()); //int f(int val)
-                    stream.push(":".to_string());
-                    match lexeme[head].get_token_type(){
-                        PRIMITIVE_INT => stream.push("i32".to_string()),
-                        PRIMITIVE_FLOAT => stream.push("f32".to_string()),
-                        PRIMITIVE_CHAR => stream.push("char".to_string()),
-                        PRIMITIVE_DOUBLE => stream.push("f64".to_string()),
-                        PRIMITIVE_SHORT => stream.push("i16".to_string()),
-                        PRIMITIVE_LONG => stream.push("i64".to_string()),
-                        PRIMITIVE_BOOL => stream.push("bool".to_string()),
-                        _ => {}
-                    }
-                     head+=2
+    while lexeme[head].get_token_type() != RIGHT_BRACKET {
+        
+        // push identifier
+        stream.push(lexeme[head+1].get_token_value()); //int f(int val)
+        stream.push(":".to_string());
+        
+        // parse argument type
+        if let Some(rust_type) = parse_type(lexeme[head].get_token_type() as i32) {
+            stream.push(rust_type);
         }
+        
+        head+=2
+    }
     stream.push(")".to_string());
     stream.push("->".to_string());
     
-    match lexeme[0].get_token_type(){
-                        PRIMITIVE_INT => stream.push("i32".to_string()),
-                        PRIMITIVE_FLOAT => stream.push("f32".to_string()),
-                        PRIMITIVE_CHAR => stream.push("char".to_string()),
-                        PRIMITIVE_DOUBLE => stream.push("f64".to_string()),
-                        PRIMITIVE_SHORT => stream.push("i16".to_string()),
-                        PRIMITIVE_LONG => stream.push("i64".to_string()),
-                        PRIMITIVE_BOOL => stream.push("bool".to_string()),
-                        _ => {}
-                    }
-                    
-            stream.push("{".to_string());
+    // parse return type
+    if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
+        stream.push(rust_type);
+    }
+    
+    stream.push("{".to_string());
     
     //parse the function body
     while lexeme[head].get_token_type() != LEFT_CBRACE { head+=1 }
                 head+=1;
                 while head < lexeme.len() {
-                    let l: Token = Token::new(lexeme[head].get_token_value(),
-                                              lexeme[head].get_token_type(),
-                                              lexeme[head].get_token_ln(),
-                                              lexeme[head].get_token_id());
+                    let l: Token = lexeme[head].clone();
                     temp_lexeme.push(l);
                     head += 1;
                 }
@@ -184,7 +187,9 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     while head < lexeme.len() {
 
         match lexeme[head].get_token_type() {
+
             IDENTIFIER => sym.id_name = lexeme[head].get_token_value(),
+            
             OP_ASSIGN => {
                 head += 1;
                 sym.assigned_val = lexeme[head].get_token_value();
@@ -192,7 +197,8 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             }
 
             SEMICOLON | COMMA => {
-                sym.typ = 0;
+                // used enum value in the symbol table
+                sym.typ = lexeme[0].get_token_type() as i32;
                 sym_tab.push(sym.clone());
             }
             _ => {}
@@ -204,13 +210,25 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
 
     let mut stream: Vec<String> = Vec::new();
     for i in &sym_tab {
+
+        // get identifier
         stream.push("let".to_string());
         stream.push(i.id_name.clone());
         stream.push(":".to_string());
-        match i.typ {
-            0 => stream.push("i32".to_string()),
-            1 => stream.push("f32".to_string()),
-            _ => stream.push("UNKNOWN_TYPE".to_string()),
+
+        // get the rust type
+        if let Some(rust_type) = parse_type(i.typ) {
+            stream.push(rust_type);
+        }
+        else {
+            println!("Lexeme Type {}\n", i.typ);
+            stream.push("UNKNOWN_TYPE".to_string());
+        }
+
+        // take care of assignment
+        if i.is_assigned {
+            stream.push("=".to_string());
+            stream.push((&i.assigned_val).to_string());
         }
         stream.push(";".to_string());
     }
@@ -218,6 +236,8 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     stream
 }
 
+
+//if parser
 fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
     let mut head: usize = 0;
     let mut cond: String = String::new();
@@ -238,23 +258,31 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
 
             }
             LEFT_CBRACE => {
-                   let mut temp_lexeme:Vec<Token>=Vec::new();
-                    head+=1;
-                   // println!("Head {} ",head);                
-                    while lexeme[head].get_token_type() != RIGHT_CBRACE {
-                    let l: Token = Token::new(lexeme[head].get_token_value(),
-                                              lexeme[head].get_token_type(),
-                                              lexeme[head].get_token_ln(),
-                                              lexeme[head].get_token_id());
-                    temp_lexeme.push(l);
-             
-                    head += 1;
-               
+                let mut temp_lexeme:Vec<Token>=Vec::new();
+                let mut lookahead:usize = head;
+                let mut paranthesis =1;
+                lookahead+=1;
+                let mut max_par = paranthesis;
+                while paranthesis!=0 && lookahead<lexeme.len(){
+                    if lexeme[lookahead].get_token_type() == LEFT_CBRACE{paranthesis+=1;}
+                    if lexeme[lookahead].get_token_type() == RIGHT_CBRACE{paranthesis-=1;}
+                    lookahead+=1;
+                    if paranthesis>max_par { max_par=paranthesis;}
+                    println!(" {} P{} ",lookahead,paranthesis);
                 }
-                
-                //println!(" Calling recurrent parser : {:?}",temp_lexeme);
+                if max_par!=1 { max_par=0;}else { max_par=1}
+                head+=1;
+                println!(" ID{} {} ",lexeme[head].get_token_id(),max_par);
+                while head < lookahead-max_par {
+                    let l: Token = lexeme[head].clone();
+                    temp_lexeme.push(l);
+                   head += 1;
+                }
+                for i in &temp_lexeme{
+                println!(" Calling recurrent parser : {:?}",i);
+                }
                 stream.append(&mut parse_program(temp_lexeme));
-            },
+            },  
 
             _ => stream.push(lexeme[head].get_token_value()),
         }
@@ -263,4 +291,22 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
 
     stream.push("\n}".to_string());
     stream
+}
+
+/**
+* fn parse_type
+*   c_type : integer value of Type
+*   return : either the equivalent rust type as a string or None, if does not correspond to any c datatype
+*/ 
+fn parse_type(c_type: i32) -> Option<String> {
+    match c_type {
+        0 => Some("i32".to_string()),
+        1 => Some("i16".to_string()),
+        2 => Some("i64".to_string()),
+        3 => Some("f32".to_string()),
+        4 => Some("f64".to_string()),
+        5 => Some("char".to_string()),
+        6 => Some("bool".to_string()),
+        _ => {None}
+    }
 }
