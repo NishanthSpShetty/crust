@@ -4,7 +4,25 @@
 #[derive(PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum Type {
-    DATATYPE,
+    
+    // for specific type info
+    PRIMITIVE_INT, // i32 //
+    PRIMITIVE_SHORT, // i16
+    PRIMITIVE_LONG, // i64
+    PRIMITIVE_FLOAT, // f32 //
+    PRIMITIVE_DOUBLE, // f64
+    PRIMITIVE_CHAR, // char //
+    PRIMITIVE_BOOL, // bool
+//--->Put Types before this and make changes in parser while inserting into symbol table
+
+//---> Base Types for tokens for recognizing different token categories
+    BASE_DATATYPE,
+    BASE_BINOP,
+    BASE_UNOP,
+    BASE_ASSIGNOP,
+    BASE_NONE,
+
+
     RETTYPE,
     OP_EQU, //
     OP_NEQ, //
@@ -37,15 +55,8 @@ pub enum Type {
     OP_INDIRECT, // differentiate b/w this and OP_BITAND during parsing?
 
     STRING, //
-    // for specific type info
-    PRIMITIVE_INT, // i32 //
-    PRIMITIVE_FLOAT, // f32 //
-    PRIMITIVE_CHAR, // char //
-    PRIMITIVE_DOUBLE, // f64
-    PRIMITIVE_SHORT, // i16
-    PRIMITIVE_LONG, //
+
     PRIMITIVE_TYPEDEF, // typdef => Type
-    PRIMITIVE_BOOL, //
 
     CHAR_VAL, //
     NUM_INT, //
@@ -67,8 +78,8 @@ pub enum Type {
 
     IDENTIFIER, //
 
-    KEYWORD_UNSIGNED, //
-    KEYWORD_SIGNED, //
+    KEYWORD_UNSIGNED, // u16, u32, u64
+    KEYWORD_SIGNED, // 
 
     KEYWORD_CLASS, //
     KEYWORD_NEW,
@@ -111,6 +122,8 @@ pub enum Type {
 #[derive(PartialEq, Eq)]
 pub struct Token {
     value: String,
+    // base type of token
+    base_type: Type,
     typ: Type,
     ln: i32,
     id:i32
@@ -124,17 +137,26 @@ impl Clone for Token {
 }
 
 impl Token {
-    pub fn new(token: String, tok_type: Type, line_no: i32,id_:i32) -> Token {
+    pub fn new(token: String, base_type: Type, tok_type: Type, line_no: i32,id_:i32) -> Token {
         Token {
             value: token,
+            base_type: base_type,
             typ: tok_type,
             ln: line_no,
             id: id_,
 	}
     }
 
+    // returns both base type and token type. Used in parse_program
+    pub fn get_type(&self) -> (Type, Type) {
+        (self.base_type, self.typ)
+    }
     pub fn get_token_type(&self) -> Type {
         self.typ
+    }
+    
+    pub fn get_base_type(&self) -> Type {
+        self.base_type
     }
 
     pub fn get_token_value(&self) -> String {
@@ -155,6 +177,10 @@ impl Token {
 
     fn set_token_type(&mut self, typ: Type) {
         self.typ = typ;
+    }
+    
+    fn set_base_type(&mut self, typ: Type) {
+        self.base_type = typ;
     }
 
     fn set_token_ln(&mut self, ln: i32) {

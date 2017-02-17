@@ -1,5 +1,3 @@
-fn main(args: i32) -> i32 {
-    if value == 0 {
-        value = 100000;
-    }
-}
+ fn main ( args : f32 ) -> char { let value : i64 = 5 ; if value==0 {
+ value = 100000 ; 
+} }

@@ -30,7 +30,7 @@ impl<'a> Tokenizer<'a> {
         let self_object = Tokenizer {
             pos: 0,
             id:0,
-	    line_no: 0,
+	        line_no: 0,
             current_char: ' ',
             length: text.len(),
             token: token,
@@ -73,7 +73,7 @@ impl<'a> Tokenizer<'a> {
 
                     self.push_advance();
                     // 	println!(" stream : {:?}",self.token);
-                    self.push_to_tok_buffer(STRING);
+                    self.push_to_tok_buffer(STRING, BASE_NONE);
                 }
 
                 '\'' => {
@@ -87,37 +87,37 @@ impl<'a> Tokenizer<'a> {
                     }
 
                     self.push_advance();
-                    self.push_to_tok_buffer(CHAR_VAL);
+                    self.push_to_tok_buffer(CHAR_VAL, BASE_NONE);
                 }
 
                 '{' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(LEFT_CBRACE);
+                    self.push_to_tok_buffer(LEFT_CBRACE, BASE_NONE);
                 }
 
                 '(' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(LEFT_BRACKET);
+                    self.push_to_tok_buffer(LEFT_BRACKET, BASE_NONE);
                 }
 
                 '[' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(LEFT_SBRACKET);
+                    self.push_to_tok_buffer(LEFT_SBRACKET, BASE_NONE);
                 }
 
                 '}' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(RIGHT_CBRACE);
+                    self.push_to_tok_buffer(RIGHT_CBRACE, BASE_NONE);
                 }
 
                 ')' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(RIGHT_BRACKET);
+                    self.push_to_tok_buffer(RIGHT_BRACKET, BASE_NONE);
                 }
 
                 ']' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(RIGHT_SBRACKET);
+                    self.push_to_tok_buffer(RIGHT_SBRACKET, BASE_NONE);
                 }
 
                 '<' => {
@@ -125,17 +125,17 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '<' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_BITLSHIFT);
+                            self.push_to_tok_buffer(OP_BITLSHIFT, BASE_BINOP);
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_LE);
+                            self.push_to_tok_buffer(OP_LE, BASE_BINOP);
                         }
 
                         _ => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_LT);
+                            self.push_to_tok_buffer(OP_LT, BASE_BINOP);
                         }
                     }
                 }
@@ -145,17 +145,17 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '>' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_BITRSHIFT);
+                            self.push_to_tok_buffer(OP_BITRSHIFT, BASE_BINOP);
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_GE);
+                            self.push_to_tok_buffer(OP_GE, BASE_BINOP);
                         }
 
                         _ => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_GT);
+                            self.push_to_tok_buffer(OP_GT, BASE_BINOP);
                         }
                     }
                 }
@@ -165,11 +165,11 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_EQU);
+                            self.push_to_tok_buffer(OP_EQU, BASE_BINOP);
                         }
 
                         _ => {
-                            self.push_to_tok_buffer(OP_ASSIGN);
+                            self.push_to_tok_buffer(OP_ASSIGN, BASE_NONE);
                         }
                     }
                 }
@@ -186,8 +186,8 @@ impl<'a> Tokenizer<'a> {
                             }
                         }
                     }
-                    let token_type = self.identify_token_type();
-                    self.push_to_tok_buffer(token_type);
+                    let (token_type, base_type) = self.identify_token_type();
+                    self.push_to_tok_buffer(token_type, base_type);
                 }
 
                 '0'...'9' => {
@@ -209,9 +209,9 @@ impl<'a> Tokenizer<'a> {
                         };
                     }
                     if is_int {
-                        self.push_to_tok_buffer(NUM_INT);
+                        self.push_to_tok_buffer(NUM_INT, BASE_NONE);
                     } else {
-                        self.push_to_tok_buffer(NUM_FLOAT);
+                        self.push_to_tok_buffer(NUM_FLOAT, BASE_NONE);
                     }
                 }
 
@@ -220,15 +220,15 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '+' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_INC);
+                            self.push_to_tok_buffer(OP_INC, BASE_UNOP);
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_PLUSEQU);
+                            self.push_to_tok_buffer(OP_PLUSEQU, BASE_ASSIGNOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_PLUS);
+                            self.push_to_tok_buffer(OP_PLUS, BASE_BINOP);
                         }
                     };
                 }
@@ -238,15 +238,15 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '-' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_DEC);
+                            self.push_to_tok_buffer(OP_DEC, BASE_UNOP);
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_MINEQU);
+                            self.push_to_tok_buffer(OP_MINEQU, BASE_ASSIGNOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_MINUS);
+                            self.push_to_tok_buffer(OP_MINUS, BASE_BINOP);
                         }
                     };
                 }
@@ -256,10 +256,10 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_MULEQU);
+                            self.push_to_tok_buffer(OP_MULEQU, BASE_ASSIGNOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_MUL);
+                            self.push_to_tok_buffer(OP_MUL, BASE_BINOP);
                         }
                     };
                 }
@@ -269,17 +269,17 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_MODEQU);
+                            self.push_to_tok_buffer(OP_MODEQU, BASE_ASSIGNOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_MOD);
+                            self.push_to_tok_buffer(OP_MOD, BASE_BINOP);
                         }
                     };
                 }
 
                 '~' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(OP_BITNEG);
+                    self.push_to_tok_buffer(OP_BITNEG, BASE_UNOP);
                 }
 
                 // could be address or bitwise operator
@@ -288,10 +288,10 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '&' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_LOGAND);
+                            self.push_to_tok_buffer(OP_LOGAND, BASE_BINOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_BITAND);
+                            self.push_to_tok_buffer(OP_BITAND, BASE_BINOP);
                         }
                     };
                 }
@@ -301,10 +301,10 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '|' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_LOGOR);
+                            self.push_to_tok_buffer(OP_LOGOR, BASE_BINOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_BITOR);
+                            self.push_to_tok_buffer(OP_BITOR, BASE_BINOP);
                         }
                     };
                 }
@@ -314,10 +314,10 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_NEQ);
+                            self.push_to_tok_buffer(OP_NEQ, BASE_ASSIGNOP);
                         }
                         _ => {
-                            self.push_to_tok_buffer(OP_LOGNOT);
+                            self.push_to_tok_buffer(OP_LOGNOT, BASE_UNOP);
                         }
                     };
                 }
@@ -333,7 +333,7 @@ impl<'a> Tokenizer<'a> {
                                     self.push_advance();
                                     if self.current_char == '/' {
                                         self.push_advance();
-                                        self.push_to_tok_buffer(COMMENT_MULTI);
+                                        self.push_to_tok_buffer(COMMENT_MULTI, BASE_NONE);
                                         break;
                                     }
                                 }
@@ -346,7 +346,7 @@ impl<'a> Tokenizer<'a> {
                                 match self.current_char {
                                     '\n' | '\r' => {
                                         self.line_no += 1;
-                                        self.push_to_tok_buffer(COMMENT_SINGLE);
+                                        self.push_to_tok_buffer(COMMENT_SINGLE, BASE_NONE);
                                         break;
                                     }
 
@@ -357,33 +357,33 @@ impl<'a> Tokenizer<'a> {
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_DIVEQU);
+                            self.push_to_tok_buffer(OP_DIVEQU, BASE_ASSIGNOP);
                         }
 
                         _ => {
-                            self.push_to_tok_buffer(OP_DIV);
+                            self.push_to_tok_buffer(OP_DIV, BASE_BINOP);
                         }
                     };
                 }
 
                 ';' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(SEMICOLON);
+                    self.push_to_tok_buffer(SEMICOLON, BASE_NONE);
                 }
 
                 ':' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(COLON);
+                    self.push_to_tok_buffer(COLON, BASE_NONE);
                 }
 
                 ',' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(COMMA);
+                    self.push_to_tok_buffer(COMMA, BASE_NONE);
                 }
 
                 _ => {
                     self.push_advance();
-                    self.push_to_tok_buffer(OTHER);
+                    self.push_to_tok_buffer(OTHER, BASE_NONE);
                 }
             };
 
@@ -410,50 +410,50 @@ impl<'a> Tokenizer<'a> {
     }
 
 
-    fn identify_token_type(&self) -> Type {
+    fn identify_token_type(&self) -> (Type, Type) {
         let tok: String = self.token.iter().cloned().collect();
         match tok.as_ref() {
-            "int" => PRIMITIVE_INT,
-            "long" => PRIMITIVE_LONG,
-            "char" => PRIMITIVE_CHAR,
-            "float" => PRIMITIVE_FLOAT,
-            "double" => PRIMITIVE_DOUBLE,
-            "short" => PRIMITIVE_SHORT,
-            "bool" => PRIMITIVE_BOOL,
-            "signed" => KEYWORD_SIGNED,
-            "unsigned" => KEYWORD_UNSIGNED,
-            "typedef" => PRIMITIVE_TYPEDEF,
-            "class" => KEYWORD_CLASS,
-            "break" => KEYWORD_BREAK,
-            "continue" => KEYWORD_CONTINUE,
-            "for" => KEYWORD_FOR,
-            "while" => KEYWORD_WHILE,
-            "switch" => KEYWORD_SWITCH,
-            "if" => KEYWORD_IF,
-            "else" => KEYWORD_ELSE,
-            "do" => KEYWORD_DO,
-            "public" => KEYWORD_PUBLIC,
-            "private" => KEYWORD_PRIVATE,
-            "protected" => KEYWORD_PROTECTED,
-            "case" => KEYWORD_CASE,
-            "static" => KEYWORD_STATIC,
-            "const" => KEYWORD_CONST,
-            "default" => KEYWORD_DEFAULT,
-            "return" => KEYWORD_RETURN,
-            "true" => TRUE_VAL,
-            "false" => FALSE_VAL,
-	    "new" => KEYWORD_NEW,
-            _ => IDENTIFIER,
+            "int" => (PRIMITIVE_INT, BASE_DATATYPE),
+            "long" => (PRIMITIVE_LONG, BASE_DATATYPE),
+            "char" => (PRIMITIVE_CHAR, BASE_DATATYPE),
+            "float" => (PRIMITIVE_FLOAT, BASE_DATATYPE),
+            "double" => (PRIMITIVE_DOUBLE, BASE_DATATYPE),
+            "short" => (PRIMITIVE_SHORT, BASE_DATATYPE),
+            "bool" => (PRIMITIVE_BOOL, BASE_DATATYPE),
+            "signed" => (KEYWORD_SIGNED, BASE_NONE),
+            "unsigned" => (KEYWORD_UNSIGNED, BASE_NONE),
+            "typedef" => (PRIMITIVE_TYPEDEF, BASE_NONE),
+            "class" => (KEYWORD_CLASS, BASE_NONE),
+            "break" => (KEYWORD_BREAK, BASE_NONE),
+            "continue" => (KEYWORD_CONTINUE, BASE_NONE),
+            "for" => (KEYWORD_FOR, BASE_NONE),
+            "while" => (KEYWORD_WHILE, BASE_NONE),
+            "switch" => (KEYWORD_SWITCH, BASE_NONE),
+            "if" => (KEYWORD_IF, BASE_NONE),
+            "else" => (KEYWORD_ELSE, BASE_NONE),
+            "do" => (KEYWORD_DO, BASE_NONE),
+            "public" => (KEYWORD_PUBLIC, BASE_NONE),
+            "private" => (KEYWORD_PRIVATE, BASE_NONE),
+            "protected" => (KEYWORD_PROTECTED, BASE_NONE),
+            "case" => (KEYWORD_CASE, BASE_NONE),
+            "static" => (KEYWORD_STATIC, BASE_NONE),
+            "const" => (KEYWORD_CONST, BASE_NONE),
+            "default" => (KEYWORD_DEFAULT, BASE_NONE),
+            "return" => (KEYWORD_RETURN, BASE_NONE),
+            "true" => (TRUE_VAL, BASE_NONE),
+            "false" => (FALSE_VAL, BASE_NONE),
+	        "new" => (KEYWORD_NEW, BASE_NONE),
+            _ => (IDENTIFIER, BASE_NONE),
         }
     }
 
     // function to put each token into
     // the token stream as it read
     //
-    fn push_to_tok_buffer(&mut self, tok_type: Type) {
+    fn push_to_tok_buffer(&mut self, tok_type: Type, base_type: Type) {
         let token: String = self.token.iter().cloned().collect();
         if !token.is_empty() {
-            let t = Token::new(token, tok_type, self.line_no,self.id);
+            let t = Token::new(token, base_type, tok_type, self.line_no,self.id);
             self.token_buffer.push(t);
             self.id+=1;	
 	}
@@ -578,29 +578,32 @@ mod test {
         tok.current_char = tok.get_next_char();
 
         tok.push_advance();
-        tok.push_to_tok_buffer(IDENTIFIER);
+        tok.push_to_tok_buffer(IDENTIFIER, BASE_NONE);
         assert_eq!(tok.token_buffer[0].get_token_type(), IDENTIFIER);
+        assert_eq!(tok.token_buffer[0].get_base_type, BASE_NONE);
         assert_eq!(tok.token_buffer[0].get_token_value(), String::from("a"));
         assert_eq!(tok.token_buffer[0].get_token_ln(), 0);
         assert_eq!(0, tok.token.len());
 
         tok.push_advance();
-        tok.push_to_tok_buffer(OP_ASSIGN);
+        tok.push_to_tok_buffer(OP_ASSIGN, BASE_NONE);
         assert_eq!(tok.token_buffer[1].get_token_type(), OP_ASSIGN);
+        assert_eq!(tok.token_buffer[1].get_base_type(), BASE_NONE);
         assert_eq!(tok.token_buffer[1].get_token_value(), String::from("="));
         assert_eq!(tok.token_buffer[1].get_token_ln(), 0);
 
         tok.push_advance();
         tok.push_advance();
         tok.push_advance();
-        tok.push_to_tok_buffer(STRING);
+        tok.push_to_tok_buffer(STRING, BASE_NONE);
         assert_eq!(tok.token_buffer[2].get_token_type(), STRING);
+        assert_eq!(tok.token_buffer[2].get_base_type(), BASE_NONE);
         assert_eq!(tok.token_buffer[2].get_token_value(), String::from("\"H\""));
         assert_eq!(tok.token_buffer[2].get_token_ln(), 0);
         assert_eq!(0, tok.token.len());
     }
 
-    #[test]
+
     fn test_tokenize() {
         let text = read_file("test_cases/unit_tests/test_tokenize.cpp");
         let mut tok = lexer::Tokenizer::new(&text);

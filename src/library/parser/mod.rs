@@ -32,26 +32,37 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
     println!(" LEXEME RECIEVED {:?}",lexeme);
     while head < lexeme.len() {
-        match lexeme[head].get_token_type() {
-            PRIMITIVE_INT => {
+
+        // gets both base type and token type
+        match lexeme[head].get_type() {
+
+            // matches any datatype
+            (BASE_DATATYPE, _) => {
                 lookahead += 2;
+
+                
                 match lexeme[lookahead].get_token_type() {
+                    
+                    // function
                     LEFT_BRACKET => {
                         while lexeme[lookahead].get_token_type() != RIGHT_CBRACE {
                             lookahead += 1;
                         }
                         lookahead += 1;
                         while head != lookahead {
-                            let l: Token = Token::new(lexeme[head].get_token_value(),
-                                                      lexeme[head].get_token_type(),
-                                                      lexeme[head].get_token_ln(),
-                                                      lexeme[head].get_token_id());
+                            // let l: Token = Token::new(lexeme[head].get_token_value(),
+                            //                           lexeme[head].get_token_type(),
+                            //                           lexeme[head].get_token_ln(),
+                            //                           lexeme[head].get_token_id());
+                            let l: Token = lexeme[head].clone();
                             temp_lexeme.push(l);
                             head += 1;
                         }
                         stream.append(&mut parse_function(&temp_lexeme));
                         temp_lexeme.clear();
                     }
+
+                    // declaration or assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
                         while lexeme[lookahead].get_token_type() != SEMICOLON {
                             lookahead += 1;
@@ -59,10 +70,11 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
                         lookahead += 1;
                         while head != lookahead {
-                            let l: Token = Token::new(lexeme[head].get_token_value(),
-                                                      lexeme[head].get_token_type(),
-                                                      lexeme[head].get_token_ln(),
-                                                      lexeme[head].get_token_id());
+                            // let l: Token = Token::new(lexeme[head].get_token_value(),
+                            //                           lexeme[head].get_token_type(),
+                            //                           lexeme[head].get_token_ln(),
+                            //                           lexeme[head].get_token_id());
+                            let l: Token = lexeme[head].clone();
                             temp_lexeme.push(l);
                             head += 1;
                         }
@@ -73,7 +85,8 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                     _ => {}
                 };
             }
-            KEYWORD_IF => {
+
+            (_, KEYWORD_IF) => {
                 println!("if found");
                 while lexeme[lookahead].get_token_type() != SEMICOLON {
                     lookahead += 1;
@@ -82,17 +95,18 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 
 
                 while head != lookahead {
-                    let l: Token = Token::new(lexeme[head].get_token_value(),
-                                              lexeme[head].get_token_type(),
-                                              lexeme[head].get_token_ln(),
-                                              lexeme[head].get_token_id());
+                    // let l: Token = Token::new(lexeme[head].get_token_value(),
+                    //                           lexeme[head].get_token_type(),
+                    //                           lexeme[head].get_token_ln(),
+                    //                           lexeme[head].get_token_id());
+                    let l: Token = lexeme[head].clone();
                     temp_lexeme.push(l);
                     head += 1;
                 }
                 stream.append(&mut parse_if(&temp_lexeme));
                 temp_lexeme.clear();
             }
-            _ => {}
+            (_, _) => {}
         };
     }
     //return the rust lexeme to main
@@ -115,6 +129,7 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     while lexeme[head].get_token_type() != RIGHT_BRACKET { 
                     stream.push(lexeme[head+1].get_token_value()); //int f(int val)
                     stream.push(":".to_string());
+
                     match lexeme[head].get_token_type(){
                         PRIMITIVE_INT => stream.push("i32".to_string()),
                         PRIMITIVE_FLOAT => stream.push("f32".to_string()),
@@ -147,10 +162,11 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     while lexeme[head].get_token_type() != LEFT_CBRACE { head+=1 }
                 head+=1;
                 while head < lexeme.len()-1 {
-                    let l: Token = Token::new(lexeme[head].get_token_value(),
-                                              lexeme[head].get_token_type(),
-                                              lexeme[head].get_token_ln(),
-                                              lexeme[head].get_token_id());
+                    // let l: Token = Token::new(lexeme[head].get_token_value(),
+                    //                           lexeme[head].get_token_type(),
+                    //                           lexeme[head].get_token_ln(),
+                    //                           lexeme[head].get_token_id());
+                    let l: Token = lexeme[head].clone();
                     temp_lexeme.push(l);
                     head += 1;
                 }
@@ -184,7 +200,8 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             }
 
             SEMICOLON | COMMA => {
-                sym.typ = 0;
+                // used enum value in the symbol table
+                sym.typ = lexeme[0].get_token_type() as i32;
                 sym_tab.push(sym.clone());
             }
             _ => {}
@@ -201,8 +218,17 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push(":".to_string());
         match i.typ {
             0 => stream.push("i32".to_string()),
-            1 => stream.push("f32".to_string()),
-            _ => stream.push("UNKNOWN_TYPE".to_string()),
+            1 => stream.push("i16".to_string()),
+            2 => stream.push("i64".to_string()),
+            3 => stream.push("f32".to_string()),
+            4 => stream.push("f64".to_string()),
+            5 => stream.push("char".to_string()),
+            6 => stream.push("bool".to_string()),
+            _ => {println!("Lexeme Type {}\n", i.typ); stream.push("UNKNOWN_TYPE".to_string());},
+        }
+        if i.is_assigned {
+            stream.push("=".to_string());
+            stream.push((&i.assigned_val).to_string());
         }
         stream.push(";".to_string());
     }
