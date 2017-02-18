@@ -1,22 +1,20 @@
-char main(float args){
-	if(condition = true)
-		int value=100000;
-	
-	if(condition = true)
-		if(condition = true)
-			int value=100000;
-	
-	if(condition = true) {
-		if(condition = true)
-			int value=100000;
-	}
+int a=100;
 
-	if(condition = true) {
-		if(condition = true) {
-			int value=100000;
-		}
-	}
 
-	int value=100000;
-	int inside_if=100;
+int main(){
+	if(a==100){
+		/* this is inside if
+		this comment 
+		//shadow of a 
+		alone panic's
+		*/
+		int a = 9999; 
+		another(a);
+	}
+	/*hopefully if compiles*/
+	println!("workd");
+}
+
+int another(int a){
+println!(" got a : {}",a);
 }

@@ -443,6 +443,8 @@ impl<'a> Tokenizer<'a> {
             "true" => (TRUE_VAL, BASE_NONE),
             "false" => (FALSE_VAL, BASE_NONE),
 	        "new" => (KEYWORD_NEW, BASE_NONE),
+            "main" => (MAIN,BASE_NONE),
+            "void" => (PRIMITIVE_VOID,BASE_DATATYPE),
             _ => (IDENTIFIER, BASE_NONE),
         }
     }

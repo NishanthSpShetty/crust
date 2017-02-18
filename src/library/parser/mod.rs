@@ -21,7 +21,7 @@ impl Clone for SymbolTable {
     }
 }
 
-
+static mut in_block_stmnt:bool = false;
 
 pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
@@ -43,6 +43,8 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                     
                     // function
                     LEFT_BRACKET => {
+                        //inside the function
+                       unsafe{ in_block_stmnt = true;}
                         while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                             lookahead += 1;
                         }
@@ -53,6 +55,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                             head += 1;
                         }
                         stream.append(&mut parse_function(&temp_lexeme));
+                       unsafe{ in_block_stmnt = false; }
                         temp_lexeme.clear();
                     }
 
@@ -82,6 +85,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 }
                 lookahead += 1;
                 if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
+                   unsafe {in_block_stmnt = true;}
                     lookahead = skip_block(&lexeme, lookahead+1);
                 }
                 else {
@@ -97,12 +101,18 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
                 // add if without braces
             }
+            
+            (_,COMMENT_SINGLE) | (_,COMMENT_MULTI) => {
+                stream.push(lexeme[head].get_token_value()+"\n");
+                head+=1;
+            },
             (_,_) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE{
                 stream.push(lexeme[head].get_token_value());
                 }
                 head+=1;
-            }
+            },
+
         };
     
     }
@@ -139,6 +149,14 @@ fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
     lookahead
 }
 
+
+/**
+ * parse_function
+ * this function will parse c/c++ function into rust
+ * equivalent function definition
+ */ 
+
+
 fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     let mut temp_lexeme:Vec<Token> = Vec::new();
     let mut head:usize=3;
@@ -147,7 +165,8 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     stream.push("fn".to_string());
     stream.push(lexeme[1].get_token_value());
     stream.push("(".to_string());
-
+    if lexeme[1].get_token_type()!=MAIN{
+       
     //parse the argument
     while lexeme[head].get_token_type() != RIGHT_BRACKET {
         
@@ -169,7 +188,9 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
         stream.push(rust_type);
     }
-    
+    }else {
+        stream.push(")".to_string());
+    }
     stream.push("{".to_string());
     
     //parse the function body
@@ -185,6 +206,12 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     head += 1;
     stream
 }
+
+/**
+ * parse_declaration
+ * this function will parse c/c++ declaration into rust
+ * equivalent statements
+ */ 
 
 fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     let mut sym_tab: Vec<SymbolTable> = Vec::new();
@@ -223,8 +250,12 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     for i in &sym_tab {
 
         // get identifier
-        stream.push("let".to_string());
-        stream.push(i.id_name.clone());
+        //for declaration out of any blocks(global)
+       unsafe{
+        if in_block_stmnt == false { stream.push("static".to_string());}
+        else { stream.push("let".to_string()); }
+       }
+       stream.push(i.id_name.clone());
         stream.push(":".to_string());
 
         // get the rust type
@@ -246,7 +277,13 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
 }
 
 
-//if parser
+
+/**
+ * parse_if
+ * this function will parse c/c++ if statements into rust
+ * equivalent statements
+ */ 
+
 fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;

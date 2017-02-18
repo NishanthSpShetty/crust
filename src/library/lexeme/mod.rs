@@ -13,6 +13,7 @@ pub enum Type {
     PRIMITIVE_DOUBLE, // f64
     PRIMITIVE_CHAR, // char //
     PRIMITIVE_BOOL, // bool
+    PRIMITIVE_VOID,
 //--->Put Types before this and make changes in parser while inserting into symbol table
 
 //---> Base Types for tokens for recognizing different token categories
@@ -81,6 +82,7 @@ pub enum Type {
     KEYWORD_UNSIGNED, // u16, u32, u64
     KEYWORD_SIGNED, // 
 
+    MAIN,
     KEYWORD_CLASS, //
     KEYWORD_NEW,
     KEYWORD_FOR, //
