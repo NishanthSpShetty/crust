@@ -37,7 +37,6 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
             // matches any datatype
             (BASE_DATATYPE, _) => {
                 lookahead += 2;
-                
                 match lexeme[lookahead].get_token_type() {
                     
                     // function
@@ -60,7 +59,6 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
                     // declaration or assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
-                        
                         while lexeme[lookahead].get_token_type() != SEMICOLON {
                             lookahead += 1;
                         }
@@ -102,8 +100,10 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
             }
             
             (BASE_COMMENT, _) => {
+                print_lexemes(&lexeme, head, head+1);
                 stream.push(lexeme[head].get_token_value()+"\n");
                 head+=1;
+                lookahead = head;
             },
             (_,_) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE{
