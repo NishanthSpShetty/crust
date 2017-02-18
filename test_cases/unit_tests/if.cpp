@@ -1,14 +1,22 @@
-
 char main(float args){
-		long value = 5;
-		if(value==0){
-			if(value==1){
-				int value = 1;
-			}
-			if(value>=2)
-				int value=3;
+	if(condition = true)
+		int value=100000;
+	
+	if(condition = true)
+		if(condition = true)
 			int value=100000;
-			int inside_if=100;
+	
+	if(condition = true) {
+		if(condition = true)
+			int value=100000;
+	}
+
+	if(condition = true) {
+		if(condition = true) {
+			int value=100000;
 		}
 	}
-	
+
+	int value=100000;
+	int inside_if=100;
+}

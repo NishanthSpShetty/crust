@@ -38,7 +38,6 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
             // matches any datatype
             (BASE_DATATYPE, _) => {
                 lookahead += 2;
-
                 
                 match lexeme[lookahead].get_token_type() {
                     
@@ -59,10 +58,10 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
                     // declaration or assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
+                        
                         while lexeme[lookahead].get_token_type() != SEMICOLON {
                             lookahead += 1;
                         }
-
                         lookahead += 1;
                         while head != lookahead {
                             let l: Token = lexeme[head].clone();
@@ -112,6 +111,14 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
     stream
 }
 
+// for debugging
+fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
+    println!("-----------------------");
+    for i in start..end {
+        println!("{}>>>{}", i, lexeme[i].get_token_value());
+    }
+    println!("-----------------------");
+}
 fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
     while lexeme[lookahead].get_token_type() != SEMICOLON {
         lookahead += 1;
@@ -120,7 +127,6 @@ fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
 }
 fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
     let mut paren = 1;
-    let mut max_paren = paren;
     while paren != 0 && lookahead < lexeme.len() { // is the second condition really required?
         if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
             paren += 1;
@@ -129,16 +135,8 @@ fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
             paren -= 1;
         }
         lookahead+=1;
-        if paren > max_paren {
-            max_paren = paren;
-        }
     }
-    if max_paren == 1 {
-        lookahead-1
-    }
-    else {
-        lookahead
-    }
+    lookahead
 }
 
 fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
