@@ -1,6 +1,6 @@
 use library::lexeme::Type::*;
 use library::lexeme::Token;
-use std;
+
 #[derive(Debug)]
 struct SymbolTable {
     typ: i32,
@@ -21,7 +21,7 @@ impl Clone for SymbolTable {
     }
 }
 
-static mut in_block_stmnt:bool = false;
+static mut IN_BLOCK_STMNT:bool = false;
 
 pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
@@ -31,7 +31,6 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
     let mut temp_lexeme: Vec<Token> = Vec::new();
 
     while head < lexeme.len() {
-
         // gets both base type and token type
         match lexeme[head].get_type() {
 
@@ -44,7 +43,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                     // function
                     LEFT_BRACKET => {
                         //inside the function
-                       unsafe{ in_block_stmnt = true;}
+                       unsafe{ IN_BLOCK_STMNT = true;}
                         while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                             lookahead += 1;
                         }
@@ -55,7 +54,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                             head += 1;
                         }
                         stream.append(&mut parse_function(&temp_lexeme));
-                       unsafe{ in_block_stmnt = false; }
+                       unsafe{ IN_BLOCK_STMNT = false; }
                         temp_lexeme.clear();
                     }
 
@@ -85,7 +84,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 }
                 lookahead += 1;
                 if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
-                   unsafe {in_block_stmnt = true;}
+                   unsafe {IN_BLOCK_STMNT = true;}
                     lookahead = skip_block(&lexeme, lookahead+1);
                 }
                 else {
@@ -102,7 +101,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                 // add if without braces
             }
             
-            (_,COMMENT_SINGLE) | (_,COMMENT_MULTI) => {
+            (BASE_COMMENT, _) => {
                 stream.push(lexeme[head].get_token_value()+"\n");
                 head+=1;
             },
@@ -123,11 +122,11 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
 // for debugging
 fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
-    println!("-----------------------");
+    println!("----------lexeme-start------------");
     for i in start..end {
         println!("{}>>>{}", i, lexeme[i].get_token_value());
     }
-    println!("-----------------------");
+    println!("----------lexeme-end------------");
 }
 fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
     while lexeme[lookahead].get_token_type() != SEMICOLON {
@@ -203,7 +202,6 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     }
     stream.append(&mut parse_program(temp_lexeme));
     stream.push("}".to_string());
-    head += 1;
     stream
 }
 
@@ -252,7 +250,7 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
         // get identifier
         //for declaration out of any blocks(global)
        unsafe{
-        if in_block_stmnt == false { stream.push("static".to_string());}
+        if IN_BLOCK_STMNT == false { stream.push("static".to_string());}
         else { stream.push("let".to_string()); }
        }
        stream.push(i.id_name.clone());

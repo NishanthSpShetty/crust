@@ -21,6 +21,7 @@ pub enum Type {
     BASE_BINOP,
     BASE_UNOP,
     BASE_ASSIGNOP,
+    BASE_COMMENT,
     BASE_NONE,
 
 

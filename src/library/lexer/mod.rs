@@ -333,7 +333,7 @@ impl<'a> Tokenizer<'a> {
                                     self.push_advance();
                                     if self.current_char == '/' {
                                         self.push_advance();
-                                        self.push_to_tok_buffer(COMMENT_MULTI, BASE_NONE);
+                                        self.push_to_tok_buffer(COMMENT_MULTI, BASE_COMMENT);
                                         break;
                                     }
                                 }
@@ -344,9 +344,10 @@ impl<'a> Tokenizer<'a> {
                             // single line comment
                             loop {
                                 match self.current_char {
-                                    '\n' | '\r' => {
+                                    '\n' | '\r' | '\0' => {
+                                        self.push_to_tok_buffer(COMMENT_SINGLE, BASE_COMMENT);
+                                        self.current_char = self.get_next_char();
                                         self.line_no += 1;
-                                        self.push_to_tok_buffer(COMMENT_SINGLE, BASE_NONE);
                                         break;
                                     }
 
@@ -405,7 +406,7 @@ impl<'a> Tokenizer<'a> {
         if let Some(ch) = self.input.next() {
             ch
         } else {
-            ' '
+            '\0'
         }
     }
 
@@ -517,7 +518,7 @@ mod test {
     fn test_get_next_char() {
         let get_next_char = |x: &str| lexer::Tokenizer::new(&x).get_next_char();
 
-        assert_eq!(' ', get_next_char(""));
+        assert_eq!('\0', get_next_char(""));
         assert_eq!(' ', get_next_char(" "));
         assert_eq!('a', get_next_char("abc"));
         assert_eq!('\\', get_next_char("\\"));
@@ -550,6 +551,7 @@ mod test {
         // do push_advance()
         // check tok.token has first char
         // check if current_char has been advanced
+        
         tok.current_char = tok.get_next_char();
         tok.push_advance();
         assert_eq!(tok.token, ['a']);
@@ -565,7 +567,7 @@ mod test {
         tok.push_advance();
         tok.push_advance();
         assert_eq!(tok.token, ['a', '=', '\"', 'H', '\"']);
-        assert_eq!(tok.current_char, ' ');
+        assert_eq!(tok.current_char, '\0');
     }
 
     #[test]
@@ -648,6 +650,18 @@ mod test {
                  Token::new(String::from("bool"), BASE_DATATYPE, PRIMITIVE_BOOL, 6, 6),
                  Token::new(String::from("typedef"), BASE_NONE, PRIMITIVE_TYPEDEF, 7, 7),
         ];
+        assert_eq!(tok_vector, tok.tokenize());
+    }
+
+    #[test]
+    fn test_tokenize_comments() {
+        let text = read_file("test_cases/unit_tests/tokenize_comments.cpp");
+        let mut tok = lexer::Tokenizer::new(&text);
+        let tok_vector = vec![
+            Token::new(String::from("//Hello World"), BASE_COMMENT, COMMENT_SINGLE, 0, 0),
+            Token::new(String::from("/** hello\n* ,\n* world\n*/"), BASE_COMMENT, COMMENT_MULTI, 1, 1),
+            Token::new(String::from("// Goodbye"), BASE_COMMENT, COMMENT_SINGLE, 2, 2),
+            ];
         assert_eq!(tok_vector, tok.tokenize());
     }
 }
