@@ -22,6 +22,7 @@ pub enum Type {
     BASE_UNOP,
     BASE_ASSIGNOP,
     BASE_COMMENT,
+    BASE_VALUE,
     BASE_NONE,
 
 
@@ -56,11 +57,10 @@ pub enum Type {
     OP_ASSIGN, //
     OP_INDIRECT, // differentiate b/w this and OP_BITAND during parsing?
 
-    STRING, //
-
     PRIMITIVE_TYPEDEF, // typdef => Type
 
     CHAR_VAL, //
+    STRING, //
     NUM_INT, //
     NUM_FLOAT, //
     TRUE_VAL, //

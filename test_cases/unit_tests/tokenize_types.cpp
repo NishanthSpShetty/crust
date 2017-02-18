@@ -5,4 +5,5 @@ float
 double
 char
 bool
+void
 typedef

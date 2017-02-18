@@ -73,7 +73,7 @@ impl<'a> Tokenizer<'a> {
 
                     self.push_advance();
                     // 	println!(" stream : {:?}",self.token);
-                    self.push_to_tok_buffer(STRING, BASE_NONE);
+                    self.push_to_tok_buffer(STRING, BASE_VALUE);
                 }
 
                 '\'' => {
@@ -87,7 +87,7 @@ impl<'a> Tokenizer<'a> {
                     }
 
                     self.push_advance();
-                    self.push_to_tok_buffer(CHAR_VAL, BASE_NONE);
+                    self.push_to_tok_buffer(CHAR_VAL, BASE_VALUE);
                 }
 
                 '{' => {
@@ -134,7 +134,6 @@ impl<'a> Tokenizer<'a> {
                         }
 
                         _ => {
-                            self.push_advance();
                             self.push_to_tok_buffer(OP_LT, BASE_BINOP);
                         }
                     }
@@ -154,7 +153,6 @@ impl<'a> Tokenizer<'a> {
                         }
 
                         _ => {
-                            self.push_advance();
                             self.push_to_tok_buffer(OP_GT, BASE_BINOP);
                         }
                     }
@@ -209,9 +207,9 @@ impl<'a> Tokenizer<'a> {
                         };
                     }
                     if is_int {
-                        self.push_to_tok_buffer(NUM_INT, BASE_NONE);
+                        self.push_to_tok_buffer(NUM_INT, BASE_VALUE);
                     } else {
-                        self.push_to_tok_buffer(NUM_FLOAT, BASE_NONE);
+                        self.push_to_tok_buffer(NUM_FLOAT, BASE_VALUE);
                     }
                 }
 
@@ -314,7 +312,7 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(OP_NEQ, BASE_ASSIGNOP);
+                            self.push_to_tok_buffer(OP_NEQ, BASE_BINOP);
                         }
                         _ => {
                             self.push_to_tok_buffer(OP_LOGNOT, BASE_UNOP);
@@ -441,8 +439,8 @@ impl<'a> Tokenizer<'a> {
             "const" => (KEYWORD_CONST, BASE_NONE),
             "default" => (KEYWORD_DEFAULT, BASE_NONE),
             "return" => (KEYWORD_RETURN, BASE_NONE),
-            "true" => (TRUE_VAL, BASE_NONE),
-            "false" => (FALSE_VAL, BASE_NONE),
+            "true" => (TRUE_VAL, BASE_VALUE),
+            "false" => (FALSE_VAL, BASE_VALUE),
 	        "new" => (KEYWORD_NEW, BASE_NONE),
             "main" => (MAIN,BASE_NONE),
             "void" => (PRIMITIVE_VOID,BASE_DATATYPE),
@@ -648,7 +646,8 @@ mod test {
                  Token::new(String::from("double"), BASE_DATATYPE, PRIMITIVE_DOUBLE, 4, 4),
                  Token::new(String::from("char"), BASE_DATATYPE, PRIMITIVE_CHAR, 5, 5),
                  Token::new(String::from("bool"), BASE_DATATYPE, PRIMITIVE_BOOL, 6, 6),
-                 Token::new(String::from("typedef"), BASE_NONE, PRIMITIVE_TYPEDEF, 7, 7),
+                 Token::new(String::from("void"), BASE_DATATYPE, PRIMITIVE_VOID, 7, 7),
+                 Token::new(String::from("typedef"), BASE_NONE, PRIMITIVE_TYPEDEF, 8, 8),
         ];
         assert_eq!(tok_vector, tok.tokenize());
     }
@@ -664,184 +663,91 @@ mod test {
             ];
         assert_eq!(tok_vector, tok.tokenize());
     }
+
+    #[test]
+    fn test_tokenize_operators() {
+        let text = read_file("test_cases/unit_tests/tokenize_operators.cpp");
+        let mut tok = lexer::Tokenizer::new(&text);
+        let tok_vector = vec![
+            Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 0),
+            Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 1),
+            Token::new(String::from("~"), BASE_UNOP, OP_BITNEG, 2, 2),
+            Token::new(String::from("!"), BASE_UNOP, OP_LOGNOT, 3, 3),
+
+            Token::new(String::from("+"), BASE_BINOP, OP_PLUS, 4, 4),
+            Token::new(String::from("-"), BASE_BINOP, OP_MINUS, 5, 5),
+            Token::new(String::from("/"), BASE_BINOP, OP_DIV, 6, 6),
+            Token::new(String::from("*"), BASE_BINOP, OP_MUL, 7, 7),
+            Token::new(String::from("%"), BASE_BINOP, OP_MOD, 8, 8),
+            Token::new(String::from(">"), BASE_BINOP, OP_GT, 9, 9),
+            Token::new(String::from(">="), BASE_BINOP, OP_GE, 10, 10),
+            Token::new(String::from(">>"), BASE_BINOP, OP_BITRSHIFT, 11, 11),
+            Token::new(String::from("<"), BASE_BINOP, OP_LT, 12, 12),
+            Token::new(String::from("<="), BASE_BINOP, OP_LE, 13, 13),
+            Token::new(String::from("<<"), BASE_BINOP, OP_BITLSHIFT, 14, 14),
+            Token::new(String::from("=="), BASE_BINOP, OP_EQU, 15, 15),
+            Token::new(String::from("!="), BASE_BINOP, OP_NEQ, 16, 16),
+            Token::new(String::from("&"), BASE_BINOP, OP_BITAND, 17, 17),
+            Token::new(String::from("&&"), BASE_BINOP, OP_LOGAND, 18, 18),
+            Token::new(String::from("|"), BASE_BINOP, OP_BITOR, 19, 19),
+            Token::new(String::from("||"), BASE_BINOP, OP_LOGOR, 20, 20),
+
+            Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 21, 21),
+            Token::new(String::from("+="), BASE_ASSIGNOP, OP_PLUSEQU, 22, 22),
+            Token::new(String::from("-="), BASE_ASSIGNOP, OP_MINEQU, 23, 23),
+            Token::new(String::from("/="), BASE_ASSIGNOP, OP_DIVEQU, 24, 24),
+            Token::new(String::from("%="), BASE_ASSIGNOP, OP_MODEQU, 25, 25),
+        ];
+        assert_eq!(tok_vector, tok.tokenize());
+    }
+
+    #[test]
+    fn test_tokenize_punctuations() {
+        let text = read_file("test_cases/unit_tests/tokenize_punctuations.cpp");
+        let mut tok = lexer::Tokenizer::new(&text);
+        let tok_vector = vec![
+            Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 0),
+            Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 1, 1),
+            Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 2, 2),
+            Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 3, 3),
+            Token::new(String::from("["), BASE_NONE, LEFT_SBRACKET, 4, 4),
+            Token::new(String::from("]"), BASE_NONE, RIGHT_SBRACKET, 5, 5),
+            Token::new(String::from(":"), BASE_NONE, COLON, 6, 6),
+            Token::new(String::from(";"), BASE_NONE, SEMICOLON, 7, 7),
+            Token::new(String::from(","), BASE_NONE, COMMA, 8, 8),
+        ];
+        assert_eq!(tok_vector, tok.tokenize());
+    }
+
+    #[test]
+    fn test_tokenize_values() {
+        let text = read_file("test_cases/unit_tests/tokenize_values.cpp");
+        let mut tok = lexer::Tokenizer::new(&text);
+        let tok_vector = vec![
+            Token::new(String::from("\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=[]\\;\',./~!@#$%^&*()_+{}|:\\\"<>?\\\"\'\""), BASE_VALUE, STRING, 0, 0),
+            Token::new(String::from("'a'"), BASE_VALUE, CHAR_VAL, 1, 1),
+            Token::new(String::from("\'\\\'\'"), BASE_VALUE, CHAR_VAL, 2, 2),
+            Token::new(String::from("\'\\\"\'"), BASE_VALUE, CHAR_VAL, 3, 3),
+            Token::new(String::from("\'\\\\\'"), BASE_VALUE, CHAR_VAL, 4, 4),
+            Token::new(String::from("1234567890"), BASE_VALUE, NUM_INT, 5, 5),
+            Token::new(String::from("1234567890.0987654321"), BASE_VALUE, NUM_FLOAT, 6, 6),
+            Token::new(String::from("true"), BASE_VALUE, TRUE_VAL, 7, 7),
+            Token::new(String::from("false"), BASE_VALUE, FALSE_VAL, 8, 8),
+        ];
+        assert_eq!(tok_vector, tok.tokenize());
+    }
+
+    #[test]
+    fn test_tokenize_ids() {
+        let text = read_file("test_cases/unit_tests/tokenize_ids.cpp");
+        let mut tok = lexer::Tokenizer::new(&text);
+        let tok_vector = vec![
+            Token::new(String::from("_"), BASE_NONE, IDENTIFIER, 0, 0),
+            Token::new(String::from("_1123abcd_deff04"), BASE_NONE, IDENTIFIER, 1, 1),
+            Token::new(String::from("abcd_deff04_"), BASE_NONE, IDENTIFIER, 2, 2),
+            Token::new(String::from("inte"), BASE_NONE, IDENTIFIER, 3, 3),
+            Token::new(String::from("main"), BASE_NONE, MAIN, 4, 4),
+        ];
+        assert_eq!(tok_vector, tok.tokenize());
+    }
 }
-                //  Token::new(String::from("SomeClassName"), BASE_NONE, IDENTIFIER, 0, 1),
-                //  Token::new(String::from("{"), LEFT_CBRACE, 1),
-                 
-                //  Token::new(String::from("public"), KEYWORD_PUBLIC, 2),
-                //  Token::new(String::from(":"), COLON, 2),
-                 
-                //  Token::new(String::from("SomeClassName"), IDENTIFIER, 3),
-                //  Token::new(String::from("("), LEFT_BRACKET, 3),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 3),
-                 
-                //  Token::new(String::from("{"), LEFT_CBRACE, 4),
-                 
-                //  Token::new(String::from("}"), RIGHT_CBRACE, 5),
-                 
-                //  Token::new(String::from("static"), KEYWORD_STATIC, 6),
-                //  Token::new(String::from("int"), PRIMITIVE_INT, 6),
-                //  Token::new(String::from("a"), IDENTIFIER, 6),
-                //  Token::new(String::from(";"), SEMICOLON, 6),
-                 
-                //  Token::new(String::from("}"), RIGHT_CBRACE, 7),
-                //  Token::new(String::from(";"), SEMICOLON, 7),
-                 
-                //  Token::new(String::from("int"), PRIMITIVE_INT, 9),
-                //  Token::new(String::from("main"), IDENTIFIER, 9),
-                //  Token::new(String::from("("), LEFT_BRACKET, 9),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 9),
-                 
-                //  Token::new(String::from("{"), LEFT_CBRACE, 10),
-                 
-                //  Token::new(String::from("/*printf(\"hello world\");\nthis is C ..\nso */"),
-                //             COMMENT_MULTI,
-                //             11),
-                 
-                //  Token::new(String::from("//let write some c++"), COMMENT_SINGLE, 13),
-                 
-                //  Token::new(String::from("cout"), IDENTIFIER, 14),
-                //  Token::new(String::from("<<"), OP_BITLSHIFT, 14),
-                //  Token::new(String::from("\"hello \\\\ \\t \\r \\f \\b \\\" world\\n\""),
-                //             STRING,
-                //             14),
-                 
-                //  Token::new(String::from("<<"), OP_BITLSHIFT, 15),
-                //  Token::new(String::from("endl"), IDENTIFIER, 15),
-                //  Token::new(String::from(";"), SEMICOLON, 15),
-
-                //  Token::new(String::from("float"), PRIMITIVE_FLOAT, 16),
-                //  Token::new(String::from("a"), IDENTIFIER, 16),
-                //  Token::new(String::from("="), OP_ASSIGN, 16),
-                //  Token::new(String::from("100.123"), NUM_FLOAT, 16),
-                //  Token::new(String::from("+"), OP_PLUS, 16),
-                //  Token::new(String::from("100"), NUM_INT, 16),
-                //  Token::new(String::from(";"), SEMICOLON, 16),
-
-                //  Token::new(String::from("double"), PRIMITIVE_DOUBLE, 17),
-                //  Token::new(String::from("b"), IDENTIFIER, 17),
-                //  Token::new(String::from("="), OP_ASSIGN, 17),
-                //  Token::new(String::from("122.0253553"), NUM_FLOAT, 17),
-                //  Token::new(String::from("*"), OP_MUL, 17),
-                //  Token::new(String::from("645.7689"), NUM_FLOAT, 17),
-                //  Token::new(String::from("/"), OP_DIV, 17),
-                //  Token::new(String::from("346"), NUM_INT, 17),
-                //  Token::new(String::from(";"), SEMICOLON, 17),
-
-                //  Token::new(String::from("long"), PRIMITIVE_LONG, 18),
-                //  Token::new(String::from("c"), IDENTIFIER, 18),
-                //  Token::new(String::from("="), OP_ASSIGN, 18),
-                //  Token::new(String::from("5999999"), NUM_INT, 18),
-                //  Token::new(String::from(";"), SEMICOLON, 18),
-                 
-                //  Token::new(String::from("bool"), PRIMITIVE_BOOL, 19),
-                //  Token::new(String::from("d"), IDENTIFIER, 19),
-                //  Token::new(String::from("="), OP_ASSIGN, 19),
-                //  Token::new(String::from("false"), FALSE_VAL, 19),
-                //  Token::new(String::from("||"), OP_LOGOR, 19),
-                //  Token::new(String::from("true"), TRUE_VAL, 19),
-                //  Token::new(String::from(";"), SEMICOLON, 19),
-
-                //  Token::new(String::from("unsigned"), KEYWORD_UNSIGNED, 20),
-                //  Token::new(String::from("short"), PRIMITIVE_SHORT, 20),
-                //  Token::new(String::from("short1"), IDENTIFIER, 20),
-                //  Token::new(String::from("="), OP_ASSIGN, 20),
-                //  Token::new(String::from("4"), NUM_INT, 20),
-                //  Token::new(String::from(";"), SEMICOLON, 20),
-
-                //  Token::new(String::from("unsigned"), KEYWORD_UNSIGNED, 21),
-                //  Token::new(String::from("short"), PRIMITIVE_SHORT, 21),
-                //  Token::new(String::from("short2"), IDENTIFIER, 21),
-                //  Token::new(String::from("="), OP_ASSIGN, 21),
-                //  Token::new(String::from("("), LEFT_BRACKET, 21),
-                //  Token::new(String::from("short1"), IDENTIFIER, 21),
-                //  Token::new(String::from("<<"), OP_BITLSHIFT, 21),
-                //  Token::new(String::from("1"), NUM_INT, 21),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 21),
-                //  Token::new(String::from(">>"), OP_BITRSHIFT, 21),
-                //  Token::new(String::from("2"), NUM_INT, 21),
-                //  Token::new(String::from(";"), SEMICOLON, 21),
-
-                //  Token::new(String::from("if"), KEYWORD_IF, 22),
-                //  Token::new(String::from("("), LEFT_BRACKET, 22),
-                //  Token::new(String::from("a"), IDENTIFIER, 22),
-                //  Token::new(String::from("=="), OP_EQU, 22),
-                //  Token::new(String::from("100"), NUM_INT, 22),
-                //  Token::new(String::from("&&"), OP_LOGAND, 22),
-                //  Token::new(String::from("b"), IDENTIFIER, 22),
-                //  Token::new(String::from("=="), OP_EQU, 22),
-                //  Token::new(String::from("10"), NUM_INT, 22),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 22),
-
-                //  Token::new(String::from("cout"), IDENTIFIER, 23),
-                //  Token::new(String::from("<<"), OP_BITLSHIFT, 23),
-                //  Token::new(String::from("\"i dont know\""), STRING, 23),
-                //  Token::new(String::from(";"), SEMICOLON, 23),
-
-                //  Token::new(String::from("char"), PRIMITIVE_CHAR, 25),
-                //  Token::new(String::from("e"), IDENTIFIER, 25),
-                //  Token::new(String::from("="), OP_ASSIGN, 25),
-                //  Token::new(String::from("\'c\'"), CHAR_VAL, 25),
-                //  Token::new(String::from(";"), SEMICOLON, 25),
-
-                //  Token::new(String::from("e"), IDENTIFIER, 26),
-                //  Token::new(String::from("="), OP_ASSIGN, 26),
-                //  Token::new(String::from("\'\\n\'"), CHAR_VAL, 26),
-                //  Token::new(String::from(";"), SEMICOLON, 26),
-
-                //  Token::new(String::from("e"), IDENTIFIER, 27),
-                //  Token::new(String::from("="), OP_ASSIGN, 27),
-                //  Token::new(String::from("\'\\\'\'"), CHAR_VAL, 27),
-                //  Token::new(String::from(";"), SEMICOLON, 27),
-
-                //  Token::new(String::from("switch"), KEYWORD_SWITCH, 29),
-                //  Token::new(String::from("("), LEFT_BRACKET, 29),
-                //  Token::new(String::from("a"), IDENTIFIER, 29),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 29),
-                //  Token::new(String::from("{"), LEFT_CBRACE, 29),
-
-                //  Token::new(String::from("case"), KEYWORD_CASE, 30),
-                //  Token::new(String::from("\'\\n\'"), CHAR_VAL, 30),
-                //  Token::new(String::from(":"), COLON, 30),
-                //  Token::new(String::from("do_something"), IDENTIFIER, 30),
-                //  Token::new(String::from("("), LEFT_BRACKET, 30),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 30),
-                //  Token::new(String::from(";"), SEMICOLON, 30),
-
-                //  Token::new(String::from("break"), KEYWORD_BREAK, 31),
-                //  Token::new(String::from(";"), SEMICOLON, 31),
-
-                //  Token::new(String::from("default"), KEYWORD_DEFAULT, 32),
-                //  Token::new(String::from(":"), COLON, 32),
-
-                //  Token::new(String::from("do_the_same_damn_thing"), IDENTIFIER, 33),
-                //  Token::new(String::from("("), LEFT_BRACKET, 33),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 33),
-                //  Token::new(String::from(";"), SEMICOLON, 33),
-
-                //  Token::new(String::from("}"), RIGHT_CBRACE, 34),
-
-                //  Token::new(String::from("while"), KEYWORD_WHILE, 36),
-                //  Token::new(String::from("("), LEFT_BRACKET, 36),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 36),
-                //  Token::new(String::from("{"), LEFT_CBRACE, 36),
-
-                //  Token::new(String::from("continue"), KEYWORD_CONTINUE, 37),
-                //  Token::new(String::from(";"), SEMICOLON, 37),
-
-                //  Token::new(String::from("}"), RIGHT_CBRACE, 38),
-
-                //  Token::new(String::from("do"), KEYWORD_DO, 39),
-                //  Token::new(String::from("{"), LEFT_CBRACE, 39),
-                //  Token::new(String::from("}"), RIGHT_CBRACE, 39),
-                //  Token::new(String::from("while"), KEYWORD_WHILE, 39),
-                //  Token::new(String::from("("), LEFT_BRACKET, 39),
-                //  Token::new(String::from("1"), NUM_INT, 39),
-                //  Token::new(String::from(")"), RIGHT_BRACKET, 39),
-                //  Token::new(String::from(";"), SEMICOLON, 39),
-                //  Token::new(String::from("}"), RIGHT_CBRACE, 41),];
-        // for i in 0 .. tok_vector.len() {
-        // assert_eq!(tok_vector[i], tok.tokenize()[i]);
-        // }
-    // }
-// }
