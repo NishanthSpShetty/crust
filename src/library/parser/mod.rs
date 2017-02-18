@@ -102,7 +102,7 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
             }
             
             (BASE_COMMENT, _) => {
-                stream.push(lexeme[head].get_token_value()+"\n;");
+                stream.push(lexeme[head].get_token_value()+"\n");
                 head+=1;
             },
             (_,_) => {
