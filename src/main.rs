@@ -56,13 +56,15 @@ fn main() {
    // println!("Translated code : \n {}", output);
     
 //    file.write_all(output.as_bytes()).expect("Unable to write to file");
+
+    println!(" Tokenization completed....\n Invoking parser....");
 	let s =  parser::parse_program(tokens);
 	let mut o:String=String::new();
 	for i in s {
 		o = o+" ";
 		o = o+&i[..];
 		}
-		println!("\nParsed content \n{} ",o);
+		//println!("\nParsed content \n{} ",o);
 
     //write to a output file 
     let mut file = File::create("./test_cases/unit_tests/output.rs")
@@ -70,5 +72,5 @@ fn main() {
     file.write_all(o.as_bytes()).expect("Unable to write to file");
 
     Command::new("rustfmt").arg("./test_cases/unit_tests/output.rs").spawn().expect("Failed to format the translated code");
-
+    println!("Rust equivalent of source : {} is generated successfully, View the rust code in file : output.rs",input.trim());
 }

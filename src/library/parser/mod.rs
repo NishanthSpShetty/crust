@@ -100,10 +100,27 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
             }
             
             (BASE_COMMENT, _) => {
-                print_lexemes(&lexeme, head, head+1);
+               // print_lexemes(&lexeme, head, head+1);
                 stream.push(lexeme[head].get_token_value()+"\n");
                 head+=1;
                 lookahead = head;
+            },
+            (_,IDENTIFIER) =>{
+                println!("id found...");
+                lookahead=head;
+
+                 let mut temp_lexeme: Vec<Token> = Vec::new();
+                 lookahead = skip_stmt(&lexeme, lookahead);
+                  while head < lookahead {
+                   
+                    let l: Token = lexeme[head].clone();
+                    println!( " {} ",head);
+                    temp_lexeme.push(l);
+                    head += 1;
+                }
+                print_lexemes(&lexeme,0,lookahead);
+                println!("second stage");
+                stream.append(&mut parse_assignment(&temp_lexeme));
             },
             (_,_) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE{
@@ -129,9 +146,13 @@ fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
     println!("----------lexeme-end------------");
 }
 fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
+    print_lexemes(&lexeme,0,lexeme.len());
     while lexeme[lookahead].get_token_type() != SEMICOLON {
         lookahead += 1;
+                  
     }
+
+          println!( " {:?} {} ",lexeme,lookahead);
     lookahead+1
 }
 fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
@@ -337,4 +358,34 @@ fn parse_type(c_type: i32) -> Option<String> {
         6 => Some("bool".to_string()),
         _ => {None}
     }
+}
+
+
+/* fn parse_assignment
+* Function will parse assignment statements into rust equivalent 
+* code, as rust doesnt support compound assignment
+*/
+
+fn parse_assignment(lexeme:&Vec<Token>)->Vec<String> {
+    let mut stream :Vec<String> = Vec::new();
+    let mut lookahead = lexeme.len();
+    let mut head:usize = 0;
+    let mut thead:usize = 2;
+    let mut lexeme1:Vec<Token>=Vec::new();
+
+    if lexeme[head+3].get_token_type() != SEMICOLON{
+        while lexeme[thead].get_token_type() != SEMICOLON{
+            lexeme1.push(lexeme[thead].clone());
+            thead+=1;
+        }
+        lexeme1.push(lexeme[thead].clone());
+        stream.append(&mut parse_program(lexeme1))
+    }
+    stream.push(lexeme[0].get_token_value());
+    stream.push(lexeme[1].get_token_value());
+    stream.push(lexeme[2].get_token_value());
+    stream.push(";".to_string());
+
+
+    stream
 }
