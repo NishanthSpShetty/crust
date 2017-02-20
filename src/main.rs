@@ -51,26 +51,24 @@ fn main() {
         ln = i.get_token_ln();
         out.push(temp);
     }
-   // println!(" {:?} ", out);
- //   let output: String = out.join(" ");
-   // println!("Translated code : \n {}", output);
-    
-//    file.write_all(output.as_bytes()).expect("Unable to write to file");
+    //    file.write_all(output.as_bytes()).expect("Unable to write to file");
 
     println!(" Tokenization completed....\n Invoking parser....");
-	let s =  parser::parse_program(tokens);
-	let mut o:String=String::new();
-	for i in s {
-		o = o+" ";
-		o = o+&i[..];
-		}
-		//println!("\nParsed content \n{} ",o);
-
-    //write to a output file 
+    let s = parser::parse_program(tokens);
+    let mut o: String = String::new();
+    for i in s {
+        o = o + " ";
+        o = o + &i[..];
+    }
+    //write to a output file
     let mut file = File::create("./test_cases/unit_tests/output.rs")
         .expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
 
-    Command::new("rustfmt").arg("./test_cases/unit_tests/output.rs").spawn().expect("Failed to format the translated code");
-    println!("Rust equivalent of source : {} is generated successfully, View the rust code in file : output.rs",input.trim());
+    Command::new("rustfmt")
+        .arg("./test_cases/unit_tests/output.rs")
+        .spawn()
+        .expect("Failed to format the translated code");
+    println!("Rust equivalent of source : {} is generated successfully, View the rust code in file : output.rs",
+             input.trim());
 }

@@ -4,7 +4,6 @@
 #[derive(PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum Type {
-    
     // for specific type info
     PRIMITIVE_INT, // i32 //
     PRIMITIVE_SHORT, // i16
@@ -14,14 +13,14 @@ pub enum Type {
     PRIMITIVE_CHAR, // char //
     PRIMITIVE_BOOL, // bool
     PRIMITIVE_VOID,
-//---> Put Types before this and make changes in parser while inserting into symbol table
+    //---> Put Types before this and make changes in parser while inserting into symbol table
 
 //---> Unimplemented Types
     PRIMITIVE_TYPEDEF, // typdef => Type
     KEYWORD_UNSIGNED, // u16, u32, u64
-    KEYWORD_SIGNED, // 
+    KEYWORD_SIGNED, //
 
-//---> Put Base Types for tokens here for recognizing different token categories
+    //---> Put Base Types for tokens here for recognizing different token categories
     BASE_DATATYPE,
     BASE_BINOP,
     BASE_UNOP,
@@ -30,7 +29,7 @@ pub enum Type {
     BASE_VALUE,
     BASE_NONE,
 
-//---> Put operators here
+    //---> Put operators here
     OP_EQU, //
     OP_NEQ, //
     OP_PLUS, //
@@ -63,7 +62,7 @@ pub enum Type {
 
     RETTYPE,
 
-//---> Values here
+    //---> Values here
     CHAR_VAL, //
     STRING, //
     NUM_INT, //
@@ -71,7 +70,7 @@ pub enum Type {
     TRUE_VAL, //
     FALSE_VAL, //
 
-//---> Punctuations here
+    //---> Punctuations here
     LEFT_CBRACE, //
     RIGHT_CBRACE, //
     LEFT_BRACKET, //
@@ -82,13 +81,13 @@ pub enum Type {
     SEMICOLON, //
     COMMA, //
 
-//---> Comments here
+    //---> Comments here
     COMMENT_SINGLE, //
     COMMENT_MULTI, //
 
     IDENTIFIER, //
 
-//---> Keywords here
+    //---> Keywords here
     MAIN,
     KEYWORD_CLASS, //
     KEYWORD_NEW,
@@ -109,7 +108,7 @@ pub enum Type {
     KEYWORD_DEFAULT, //
     KEYWORD_RETURN, //
 
-//---> If all fails
+    //---> If all fails
     OTHER,
 }
 
@@ -122,7 +121,7 @@ pub struct Token {
     base_type: Type,
     typ: Type,
     ln: i32,
-    id:i32
+    id: i32,
 }
 
 impl Clone for Token {
@@ -133,14 +132,14 @@ impl Clone for Token {
 }
 
 impl Token {
-    pub fn new(token: String, base_type: Type, tok_type: Type, line_no: i32,id_:i32) -> Token {
+    pub fn new(token: String, base_type: Type, tok_type: Type, line_no: i32, id_: i32) -> Token {
         Token {
             value: token,
             base_type: base_type,
             typ: tok_type,
             ln: line_no,
             id: id_,
-	}
+        }
     }
 
     // returns both base type and token type. Used in parse_program
@@ -150,7 +149,7 @@ impl Token {
     pub fn get_token_type(&self) -> Type {
         self.typ
     }
-    
+
     pub fn get_base_type(&self) -> Type {
         self.base_type
     }
@@ -174,7 +173,7 @@ impl Token {
     fn set_token_type(&mut self, typ: Type) {
         self.typ = typ;
     }
-    
+
     fn set_base_type(&mut self, typ: Type) {
         self.base_type = typ;
     }

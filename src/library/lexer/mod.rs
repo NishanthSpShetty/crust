@@ -7,7 +7,7 @@ use std::str::Chars;
 
 pub struct Tokenizer<'a> {
     line_no: i32,
-    id:i32,
+    id: i32,
     pos: usize,
     current_char: char,
     token: Vec<char>,
@@ -29,8 +29,8 @@ impl<'a> Tokenizer<'a> {
         // create structure object and initialize
         let self_object = Tokenizer {
             pos: 0,
-            id:0,
-	        line_no: 0,
+            id: 0,
+            line_no: 0,
             current_char: ' ',
             length: text.len(),
             token: token,
@@ -441,9 +441,9 @@ impl<'a> Tokenizer<'a> {
             "return" => (KEYWORD_RETURN, BASE_NONE),
             "true" => (TRUE_VAL, BASE_VALUE),
             "false" => (FALSE_VAL, BASE_VALUE),
-	        "new" => (KEYWORD_NEW, BASE_NONE),
-            "main" => (MAIN,BASE_NONE),
-            "void" => (PRIMITIVE_VOID,BASE_DATATYPE),
+            "new" => (KEYWORD_NEW, BASE_NONE),
+            "main" => (MAIN, BASE_NONE),
+            "void" => (PRIMITIVE_VOID, BASE_DATATYPE),
             _ => (IDENTIFIER, BASE_NONE),
         }
     }
@@ -454,10 +454,10 @@ impl<'a> Tokenizer<'a> {
     fn push_to_tok_buffer(&mut self, tok_type: Type, base_type: Type) {
         let token: String = self.token.iter().cloned().collect();
         if !token.is_empty() {
-            let t = Token::new(token, base_type, tok_type, self.line_no,self.id);
+            let t = Token::new(token, base_type, tok_type, self.line_no, self.id);
             self.token_buffer.push(t);
-            self.id+=1;	
-	}
+            self.id += 1;
+        }
         self.token.clear();
     }
 
@@ -549,7 +549,7 @@ mod test {
         // do push_advance()
         // check tok.token has first char
         // check if current_char has been advanced
-        
+
         tok.current_char = tok.get_next_char();
         tok.push_advance();
         assert_eq!(tok.token, ['a']);
@@ -609,8 +609,8 @@ mod test {
     fn test_tokenize_keywords() {
         let text = read_file("test_cases/unit_tests/tokenize_keywords.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-                 Token::new(String::from("signed"), BASE_NONE, KEYWORD_SIGNED, 0, 0),
+        let tok_vector =
+            vec![Token::new(String::from("signed"), BASE_NONE, KEYWORD_SIGNED, 0, 0),
                  Token::new(String::from("unsigned"), BASE_NONE, KEYWORD_UNSIGNED, 1, 1),
                  Token::new(String::from("class"), BASE_NONE, KEYWORD_CLASS, 2, 2),
                  Token::new(String::from("new"), BASE_NONE, KEYWORD_NEW, 3, 3),
@@ -624,13 +624,16 @@ mod test {
                  Token::new(String::from("else"), BASE_NONE, KEYWORD_ELSE, 11, 11),
                  Token::new(String::from("public"), BASE_NONE, KEYWORD_PUBLIC, 12, 12),
                  Token::new(String::from("private"), BASE_NONE, KEYWORD_PRIVATE, 13, 13),
-                 Token::new(String::from("protected"), BASE_NONE, KEYWORD_PROTECTED, 14, 14),
+                 Token::new(String::from("protected"),
+                            BASE_NONE,
+                            KEYWORD_PROTECTED,
+                            14,
+                            14),
                  Token::new(String::from("case"), BASE_NONE, KEYWORD_CASE, 15, 15),
                  Token::new(String::from("static"), BASE_NONE, KEYWORD_STATIC, 16, 16),
                  Token::new(String::from("const"), BASE_NONE, KEYWORD_CONST, 17, 17),
                  Token::new(String::from("default"), BASE_NONE, KEYWORD_DEFAULT, 18, 18),
-                 Token::new(String::from("return"), BASE_NONE, KEYWORD_RETURN, 19, 19)
-        ];
+                 Token::new(String::from("return"), BASE_NONE, KEYWORD_RETURN, 19, 19)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -638,17 +641,20 @@ mod test {
     fn test_tokenize_types() {
         let text = read_file("test_cases/unit_tests/tokenize_types.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-                 Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+        let tok_vector =
+            vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
                  Token::new(String::from("short"), BASE_DATATYPE, PRIMITIVE_SHORT, 1, 1),
                  Token::new(String::from("long"), BASE_DATATYPE, PRIMITIVE_LONG, 2, 2),
                  Token::new(String::from("float"), BASE_DATATYPE, PRIMITIVE_FLOAT, 3, 3),
-                 Token::new(String::from("double"), BASE_DATATYPE, PRIMITIVE_DOUBLE, 4, 4),
+                 Token::new(String::from("double"),
+                            BASE_DATATYPE,
+                            PRIMITIVE_DOUBLE,
+                            4,
+                            4),
                  Token::new(String::from("char"), BASE_DATATYPE, PRIMITIVE_CHAR, 5, 5),
                  Token::new(String::from("bool"), BASE_DATATYPE, PRIMITIVE_BOOL, 6, 6),
                  Token::new(String::from("void"), BASE_DATATYPE, PRIMITIVE_VOID, 7, 7),
-                 Token::new(String::from("typedef"), BASE_NONE, PRIMITIVE_TYPEDEF, 8, 8),
-        ];
+                 Token::new(String::from("typedef"), BASE_NONE, PRIMITIVE_TYPEDEF, 8, 8)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -656,11 +662,21 @@ mod test {
     fn test_tokenize_comments() {
         let text = read_file("test_cases/unit_tests/tokenize_comments.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-            Token::new(String::from("//Hello World"), BASE_COMMENT, COMMENT_SINGLE, 0, 0),
-            Token::new(String::from("/** hello\n* ,\n* world\n*/"), BASE_COMMENT, COMMENT_MULTI, 1, 1),
-            Token::new(String::from("// Goodbye"), BASE_COMMENT, COMMENT_SINGLE, 2, 2),
-            ];
+        let tok_vector = vec![Token::new(String::from("//Hello World"),
+                                         BASE_COMMENT,
+                                         COMMENT_SINGLE,
+                                         0,
+                                         0),
+                              Token::new(String::from("/** hello\n* ,\n* world\n*/"),
+                                         BASE_COMMENT,
+                                         COMMENT_MULTI,
+                                         1,
+                                         1),
+                              Token::new(String::from("// Goodbye"),
+                                         BASE_COMMENT,
+                                         COMMENT_SINGLE,
+                                         2,
+                                         2)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -668,36 +684,34 @@ mod test {
     fn test_tokenize_operators() {
         let text = read_file("test_cases/unit_tests/tokenize_operators.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-            Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 0),
-            Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 1),
-            Token::new(String::from("~"), BASE_UNOP, OP_BITNEG, 2, 2),
-            Token::new(String::from("!"), BASE_UNOP, OP_LOGNOT, 3, 3),
+        let tok_vector = vec![Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 0),
+                              Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 1),
+                              Token::new(String::from("~"), BASE_UNOP, OP_BITNEG, 2, 2),
+                              Token::new(String::from("!"), BASE_UNOP, OP_LOGNOT, 3, 3),
 
-            Token::new(String::from("+"), BASE_BINOP, OP_PLUS, 4, 4),
-            Token::new(String::from("-"), BASE_BINOP, OP_MINUS, 5, 5),
-            Token::new(String::from("/"), BASE_BINOP, OP_DIV, 6, 6),
-            Token::new(String::from("*"), BASE_BINOP, OP_MUL, 7, 7),
-            Token::new(String::from("%"), BASE_BINOP, OP_MOD, 8, 8),
-            Token::new(String::from(">"), BASE_BINOP, OP_GT, 9, 9),
-            Token::new(String::from(">="), BASE_BINOP, OP_GE, 10, 10),
-            Token::new(String::from(">>"), BASE_BINOP, OP_BITRSHIFT, 11, 11),
-            Token::new(String::from("<"), BASE_BINOP, OP_LT, 12, 12),
-            Token::new(String::from("<="), BASE_BINOP, OP_LE, 13, 13),
-            Token::new(String::from("<<"), BASE_BINOP, OP_BITLSHIFT, 14, 14),
-            Token::new(String::from("=="), BASE_BINOP, OP_EQU, 15, 15),
-            Token::new(String::from("!="), BASE_BINOP, OP_NEQ, 16, 16),
-            Token::new(String::from("&"), BASE_BINOP, OP_BITAND, 17, 17),
-            Token::new(String::from("&&"), BASE_BINOP, OP_LOGAND, 18, 18),
-            Token::new(String::from("|"), BASE_BINOP, OP_BITOR, 19, 19),
-            Token::new(String::from("||"), BASE_BINOP, OP_LOGOR, 20, 20),
+                              Token::new(String::from("+"), BASE_BINOP, OP_PLUS, 4, 4),
+                              Token::new(String::from("-"), BASE_BINOP, OP_MINUS, 5, 5),
+                              Token::new(String::from("/"), BASE_BINOP, OP_DIV, 6, 6),
+                              Token::new(String::from("*"), BASE_BINOP, OP_MUL, 7, 7),
+                              Token::new(String::from("%"), BASE_BINOP, OP_MOD, 8, 8),
+                              Token::new(String::from(">"), BASE_BINOP, OP_GT, 9, 9),
+                              Token::new(String::from(">="), BASE_BINOP, OP_GE, 10, 10),
+                              Token::new(String::from(">>"), BASE_BINOP, OP_BITRSHIFT, 11, 11),
+                              Token::new(String::from("<"), BASE_BINOP, OP_LT, 12, 12),
+                              Token::new(String::from("<="), BASE_BINOP, OP_LE, 13, 13),
+                              Token::new(String::from("<<"), BASE_BINOP, OP_BITLSHIFT, 14, 14),
+                              Token::new(String::from("=="), BASE_BINOP, OP_EQU, 15, 15),
+                              Token::new(String::from("!="), BASE_BINOP, OP_NEQ, 16, 16),
+                              Token::new(String::from("&"), BASE_BINOP, OP_BITAND, 17, 17),
+                              Token::new(String::from("&&"), BASE_BINOP, OP_LOGAND, 18, 18),
+                              Token::new(String::from("|"), BASE_BINOP, OP_BITOR, 19, 19),
+                              Token::new(String::from("||"), BASE_BINOP, OP_LOGOR, 20, 20),
 
-            Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 21, 21),
-            Token::new(String::from("+="), BASE_ASSIGNOP, OP_PLUSEQU, 22, 22),
-            Token::new(String::from("-="), BASE_ASSIGNOP, OP_MINEQU, 23, 23),
-            Token::new(String::from("/="), BASE_ASSIGNOP, OP_DIVEQU, 24, 24),
-            Token::new(String::from("%="), BASE_ASSIGNOP, OP_MODEQU, 25, 25),
-        ];
+                              Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 21, 21),
+                              Token::new(String::from("+="), BASE_ASSIGNOP, OP_PLUSEQU, 22, 22),
+                              Token::new(String::from("-="), BASE_ASSIGNOP, OP_MINEQU, 23, 23),
+                              Token::new(String::from("/="), BASE_ASSIGNOP, OP_DIVEQU, 24, 24),
+                              Token::new(String::from("%="), BASE_ASSIGNOP, OP_MODEQU, 25, 25)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -705,17 +719,15 @@ mod test {
     fn test_tokenize_punctuations() {
         let text = read_file("test_cases/unit_tests/tokenize_punctuations.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-            Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 0),
-            Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 1, 1),
-            Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 2, 2),
-            Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 3, 3),
-            Token::new(String::from("["), BASE_NONE, LEFT_SBRACKET, 4, 4),
-            Token::new(String::from("]"), BASE_NONE, RIGHT_SBRACKET, 5, 5),
-            Token::new(String::from(":"), BASE_NONE, COLON, 6, 6),
-            Token::new(String::from(";"), BASE_NONE, SEMICOLON, 7, 7),
-            Token::new(String::from(","), BASE_NONE, COMMA, 8, 8),
-        ];
+        let tok_vector = vec![Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 0),
+                              Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 1, 1),
+                              Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 2, 2),
+                              Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 3, 3),
+                              Token::new(String::from("["), BASE_NONE, LEFT_SBRACKET, 4, 4),
+                              Token::new(String::from("]"), BASE_NONE, RIGHT_SBRACKET, 5, 5),
+                              Token::new(String::from(":"), BASE_NONE, COLON, 6, 6),
+                              Token::new(String::from(";"), BASE_NONE, SEMICOLON, 7, 7),
+                              Token::new(String::from(","), BASE_NONE, COMMA, 8, 8)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -723,17 +735,23 @@ mod test {
     fn test_tokenize_values() {
         let text = read_file("test_cases/unit_tests/tokenize_values.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-            Token::new(String::from("\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=[]\\;\',./~!@#$%^&*()_+{}|:\\\"<>?\\\"\'\""), BASE_VALUE, STRING, 0, 0),
-            Token::new(String::from("'a'"), BASE_VALUE, CHAR_VAL, 1, 1),
-            Token::new(String::from("\'\\\'\'"), BASE_VALUE, CHAR_VAL, 2, 2),
-            Token::new(String::from("\'\\\"\'"), BASE_VALUE, CHAR_VAL, 3, 3),
-            Token::new(String::from("\'\\\\\'"), BASE_VALUE, CHAR_VAL, 4, 4),
-            Token::new(String::from("1234567890"), BASE_VALUE, NUM_INT, 5, 5),
-            Token::new(String::from("1234567890.0987654321"), BASE_VALUE, NUM_FLOAT, 6, 6),
-            Token::new(String::from("true"), BASE_VALUE, TRUE_VAL, 7, 7),
-            Token::new(String::from("false"), BASE_VALUE, FALSE_VAL, 8, 8),
-        ];
+        let tok_vector = vec![Token::new(String::from("\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=[]\\;\',./~!@#$%^&*()_+{}|:\\\"<>?\\\"\'\""),
+                                         BASE_VALUE,
+                                         STRING,
+                                         0,
+                                         0),
+                              Token::new(String::from("'a'"), BASE_VALUE, CHAR_VAL, 1, 1),
+                              Token::new(String::from("\'\\\'\'"), BASE_VALUE, CHAR_VAL, 2, 2),
+                              Token::new(String::from("\'\\\"\'"), BASE_VALUE, CHAR_VAL, 3, 3),
+                              Token::new(String::from("\'\\\\\'"), BASE_VALUE, CHAR_VAL, 4, 4),
+                              Token::new(String::from("1234567890"), BASE_VALUE, NUM_INT, 5, 5),
+                              Token::new(String::from("1234567890.0987654321"),
+                                         BASE_VALUE,
+                                         NUM_FLOAT,
+                                         6,
+                                         6),
+                              Token::new(String::from("true"), BASE_VALUE, TRUE_VAL, 7, 7),
+                              Token::new(String::from("false"), BASE_VALUE, FALSE_VAL, 8, 8)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -741,14 +759,16 @@ mod test {
     fn test_tokenize_ids() {
         let text = read_file("test_cases/unit_tests/tokenize_ids.cpp");
         let mut tok = lexer::Tokenizer::new(&text);
-        let tok_vector = vec![
-            Token::new(String::from("_"), BASE_NONE, IDENTIFIER, 0, 0),
-            Token::new(String::from("_1123abcd_deff04"), BASE_NONE, IDENTIFIER, 1, 1),
-            Token::new(String::from("abcd_deff04_"), BASE_NONE, IDENTIFIER, 2, 2),
-            Token::new(String::from("inte"), BASE_NONE, IDENTIFIER, 3, 3),
-            Token::new(String::from("main"), BASE_NONE, MAIN, 4, 4),
-        ];
+        let tok_vector =
+            vec![Token::new(String::from("_"), BASE_NONE, IDENTIFIER, 0, 0),
+                 Token::new(String::from("_1123abcd_deff04"),
+                            BASE_NONE,
+                            IDENTIFIER,
+                            1,
+                            1),
+                 Token::new(String::from("abcd_deff04_"), BASE_NONE, IDENTIFIER, 2, 2),
+                 Token::new(String::from("inte"), BASE_NONE, IDENTIFIER, 3, 3),
+                 Token::new(String::from("main"), BASE_NONE, MAIN, 4, 4)];
         assert_eq!(tok_vector, tok.tokenize());
     }
 }
-
