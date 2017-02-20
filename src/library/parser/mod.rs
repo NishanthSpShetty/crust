@@ -23,13 +23,24 @@ impl Clone for SymbolTable {
 
 static mut IN_BLOCK_STMNT:bool = false;
 
+/**
+ * parse_program:
+ * parse c program from Token Vector
+ * return String Vector of Rust equivalent code
+ * supports:
+ * - method
+ * - variable declaration
+ * - variable assignment
+ * - if
+ * - comments
+ */
 pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
 
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
     let mut lookahead: usize = 0;
     let mut temp_lexeme: Vec<Token> = Vec::new();
-
+    
     while head < lexeme.len() {
         // gets both base type and token type
         match lexeme[head].get_type() {
@@ -38,36 +49,42 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
             (BASE_DATATYPE, _) => {
                 lookahead += 2;
                 match lexeme[lookahead].get_token_type() {
-                    
+    
                     // function
                     LEFT_BRACKET => {
                         //inside the function
-                       unsafe{ IN_BLOCK_STMNT = true;}
+                        unsafe{ IN_BLOCK_STMNT = true;}
+
                         while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                             lookahead += 1;
                         }
+                        // advance lookahead to end of block
                         lookahead = skip_block(&lexeme, lookahead+1);
+                        // collect entire function block
                         while head < lookahead {
                             let l: Token = lexeme[head].clone();
                             temp_lexeme.push(l);
                             head += 1;
                         }
+
+                        //parse function block
                         stream.append(&mut parse_function(&temp_lexeme));
-                       unsafe{ IN_BLOCK_STMNT = false; }
+                        unsafe{ IN_BLOCK_STMNT = false; }
+
                         temp_lexeme.clear();
                     }
 
-                    // declaration or assignment
+                    // variable declaration or assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
-                        while lexeme[lookahead].get_token_type() != SEMICOLON {
-                            lookahead += 1;
-                        }
-                        lookahead += 1;
+                        lookahead = skip_stmt(&lexeme, lookahead);
+
+                        // collect variable declaration
                         while head != lookahead {
                             let l: Token = lexeme[head].clone();
                             temp_lexeme.push(l);
                             head += 1;
                         }
+                        // parse declaration
                         stream.append(&mut parse_declaration(&temp_lexeme));
                         temp_lexeme.clear();
                     }
@@ -75,89 +92,118 @@ pub fn parse_program(lexeme:Vec<Token>) -> Vec<String> {
                     _ => {}
                 };
             }
+            
+            // matches if statement
             (_,KEYWORD_IF) => {
                 let mut temp_lexeme: Vec<Token> = Vec::new();
+
+                // move lookahead past conditon
                 while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
                     lookahead += 1;
                 }
                 lookahead += 1;
+
+                // move lookahead past block
                 if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
                    unsafe {IN_BLOCK_STMNT = true;}
                     lookahead = skip_block(&lexeme, lookahead+1);
                 }
+                // move lookahead past block for 'if' without braces
                 else {
                     lookahead = skip_stmt(&lexeme, lookahead);
                 }
-                
+                // collect if block
                 while head < lookahead {
                     let l: Token = lexeme[head].clone();
                     temp_lexeme.push(l);
                     head += 1;
                 }
-                stream.append(&mut parse_if(&temp_lexeme));
 
-                // add if without braces
+                // parse if
+                stream.append(&mut parse_if(&temp_lexeme));
             }
             
+            // matches single and multi-line comment
             (BASE_COMMENT, _) => {
                // print_lexemes(&lexeme, head, head+1);
                 stream.push(lexeme[head].get_token_value()+"\n");
                 head+=1;
                 lookahead = head;
             },
-            (_,IDENTIFIER) =>{
-                println!("id found...");
-                lookahead=head;
 
-                 let mut temp_lexeme: Vec<Token> = Vec::new();
-                 lookahead = skip_stmt(&lexeme, lookahead);
-                  while head < lookahead {
-                   
+            // assignment statements
+            (_,IDENTIFIER) =>{
+                let mut temp_lexeme: Vec<Token> = Vec::new();
+                
+                // move lookahead past statement
+                lookahead = skip_stmt(&lexeme, lookahead);
+
+                // collect statement
+                while head < lookahead {
                     let l: Token = lexeme[head].clone();
-                    println!( " {} ",head);
                     temp_lexeme.push(l);
                     head += 1;
                 }
-                print_lexemes(&lexeme,0,lookahead);
-                println!("second stage");
+                
+                // parse assignment
                 stream.append(&mut parse_assignment(&temp_lexeme));
             },
+
+            // if all fails
             (_,_) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE{
-                stream.push(lexeme[head].get_token_value());
+                    stream.push(lexeme[head].get_token_value());
                 }
                 head+=1;
+                lookahead = head;
             },
 
         };
     
     }
     //return the rust lexeme to main
-    
     stream
 }
 
-// for debugging
+
+/**
+ * print_lexemes:
+ * prints the lexemes in the lexeme vector
+ * from index start to end
+ */
 fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
     println!("----------lexeme-start------------");
     for i in start..end {
-        println!("{}>>>{}", i, lexeme[i].get_token_value());
+        println!("{}> {}", i, lexeme[i].get_token_value());
     }
     println!("----------lexeme-end------------");
 }
-fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
-    print_lexemes(&lexeme,0,lexeme.len());
-    while lexeme[lookahead].get_token_type() != SEMICOLON {
-        lookahead += 1;
-                  
-    }
 
-          println!( " {:?} {} ",lexeme,lookahead);
+
+/**
+ * skip_stmt:
+ * forwards the lookahead by one statement
+ * returns the lookahead at the lexeme after the semi-colon
+ */
+fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
+    while lexeme[lookahead].get_token_type() != SEMICOLON {
+        lookahead += 1;             
+    }
     lookahead+1
 }
+
+
+/**
+ * skip_block:
+ * forwards the lookahead by one block
+ * returns the lookahead at the lexeme after the closing brace
+ */
 fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
     let mut paren = 1;
-    while paren != 0 && lookahead < lexeme.len() { // is the second condition really required?
+
+    // while all braces are not closed
+    // skip nested blocks if any
+    while paren != 0 && lookahead < lexeme.len() {
         if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
             paren += 1;
         }
@@ -171,12 +217,9 @@ fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
 
 
 /**
- * parse_function
- * this function will parse c/c++ function into rust
- * equivalent function definition
+ * parse_function:
+ * parse c/c++ function into rust equivalent function
  */ 
-
-
 fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     let mut temp_lexeme:Vec<Token> = Vec::new();
     let mut head: usize=3;
@@ -187,9 +230,11 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     stream.push(lexeme[1].get_token_value());
     stream.push("(".to_string());
     
+    // parse arguments differenly for functions that are not main
+    // since rust does not have arguments or return type for main
     if lexeme[1].get_token_type()!=MAIN {
-       
-        //parse the argument
+
+        // collect arguments
         while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
             lookahead += 1;
         }
@@ -198,7 +243,10 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
             temp_lexeme.push(l);
             head += 1;
         }
+        // parse arguments
         stream.append(&mut parse_arguments(&temp_lexeme));
+        temp_lexeme.clear();
+
         stream.push(")".to_string());
         stream.push("->".to_string());
         
@@ -209,6 +257,8 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
 
         stream.push("{".to_string());
     }
+
+    // declare argc and argv inside main, if required
     else {
         stream.push(")".to_string());
         stream.push("{".to_string());
@@ -219,19 +269,33 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     }
     
     
-    //parse the function body
-    while lexeme[head].get_token_type() != LEFT_CBRACE { head+=1 }
+    while lexeme[head].get_token_type() != LEFT_CBRACE {
+        head+=1
+    }
     head+=1;
+
+    // collect function body
+    // len - 1  so that '}' is excluded
+    println!("{:?}", stream);
     while head < lexeme.len()-1 {
         let l: Token = lexeme[head].clone();
         temp_lexeme.push(l);
         head += 1;
     }
+    // parse function body
+    println!("fundtion");
+    print_lexemes(&temp_lexeme, 0, temp_lexeme.len());
     stream.append(&mut parse_program(temp_lexeme));
     stream.push("}".to_string());
     stream
 }
 
+
+/**
+ * parse-arguments:
+ * parse c/c++ formal arguments in the function signature
+ * into rust equivalent arguments
+ */
 fn parse_arguments(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream:Vec<String> = Vec::new();
     let mut head: usize = 0;
@@ -254,12 +318,12 @@ fn parse_arguments(lexeme: &Vec<Token>) -> Vec<String> {
     stream
 }
 
+
 /**
- * parse_declaration
- * this function will parse c/c++ declaration into rust
+ * parse_declaration:
+ * parse c/c++ declaration into rust
  * equivalent statements
  */ 
-
 fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     let mut sym_tab: Vec<SymbolTable> = Vec::new();
     let mut sym: SymbolTable = SymbolTable {
@@ -324,13 +388,11 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
 }
 
 
-
 /**
- * parse_if
- * this function will parse c/c++ if statements into rust
+ * parse_if:
+ * parse c/c++ if statements into rust
  * equivalent statements
  */ 
-
 fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
@@ -347,34 +409,34 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
                     head+=1;
     }
     head += 1;
-    //stream.push(")".to_string());
+
     stream.push("{".to_string());
 
-    // change end to right brace if braces are used
     if lexeme[head].get_token_type() == LEFT_CBRACE {
-        // end = RIGHT_CBRACE;
         head += 1;
-        // if block
     }
-    // head += 1;
 
+    // collect if body
     let mut temp_lexeme: Vec<Token> = Vec::new();
     while head < lexeme.len() {
         let l: Token = lexeme[head].clone();
         temp_lexeme.push(l);
         head += 1;
     }
+    // parse if body
     stream.append(&mut parse_program(temp_lexeme));
+
     stream.push("}".to_string());
     stream
 }
 
 
 /**
-* fn parse_type
-*   c_type : integer value of Type
-*   return : either the equivalent rust type as a string or None, if does not correspond to any c datatype
-*/ 
+ * fn parse_type:
+ * takes the integer value of type Type
+ * returns either the equivalent Rust type as a string or
+ * None, if does not correspond to any c/c++ type
+ */ 
 fn parse_type(c_type: i32) -> Option<String> {
     match c_type {
         0 => Some("i32".to_string()),
@@ -389,11 +451,11 @@ fn parse_type(c_type: i32) -> Option<String> {
 }
 
 
-/* fn parse_assignment
-* Function will parse assignment statements into rust equivalent 
-* code, as rust doesnt support compound assignment
-*/
-
+/* parse_assignment:
+ * parse c/c++ assignment statements into rust equivalent code
+ * compound assignments must be converted to declarations
+ * as rust doesnt support compound assignment
+ */
 fn parse_assignment(lexeme:&Vec<Token>)->Vec<String> {
     let mut stream :Vec<String> = Vec::new();
     let mut lookahead = lexeme.len();
@@ -413,7 +475,6 @@ fn parse_assignment(lexeme:&Vec<Token>)->Vec<String> {
     stream.push(lexeme[1].get_token_value());
     stream.push(lexeme[2].get_token_value());
     stream.push(";".to_string());
-
 
     stream
 }

@@ -1,4 +1,4 @@
-int not_main(int p, char q, long r){
+int not_main(int p, char q){
 int a,b,c;
 
 a=b=c=100;
