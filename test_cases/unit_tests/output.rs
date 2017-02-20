@@ -1,6 +1,4 @@
-fn not_main(p: i32, q: char, r: i64) -> i32 {
-    let p: i32;
-    let q: i32;
+fn not_main(p: i32, q: char) -> i32 {
     let a: i32;
     let b: i32;
     let c: i32;
