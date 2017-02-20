@@ -751,3 +751,4 @@ mod test {
         assert_eq!(tok_vector, tok.tokenize());
     }
 }
+
