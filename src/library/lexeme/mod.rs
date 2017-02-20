@@ -14,9 +14,14 @@ pub enum Type {
     PRIMITIVE_CHAR, // char //
     PRIMITIVE_BOOL, // bool
     PRIMITIVE_VOID,
-//--->Put Types before this and make changes in parser while inserting into symbol table
+//---> Put Types before this and make changes in parser while inserting into symbol table
 
-//---> Base Types for tokens for recognizing different token categories
+//---> Unimplemented Types
+    PRIMITIVE_TYPEDEF, // typdef => Type
+    KEYWORD_UNSIGNED, // u16, u32, u64
+    KEYWORD_SIGNED, // 
+
+//---> Put Base Types for tokens here for recognizing different token categories
     BASE_DATATYPE,
     BASE_BINOP,
     BASE_UNOP,
@@ -25,8 +30,7 @@ pub enum Type {
     BASE_VALUE,
     BASE_NONE,
 
-
-    RETTYPE,
+//---> Put operators here
     OP_EQU, //
     OP_NEQ, //
     OP_PLUS, //
@@ -57,8 +61,9 @@ pub enum Type {
     OP_ASSIGN, //
     OP_INDIRECT, // differentiate b/w this and OP_BITAND during parsing?
 
-    PRIMITIVE_TYPEDEF, // typdef => Type
+    RETTYPE,
 
+//---> Values here
     CHAR_VAL, //
     STRING, //
     NUM_INT, //
@@ -66,6 +71,7 @@ pub enum Type {
     TRUE_VAL, //
     FALSE_VAL, //
 
+//---> Punctuations here
     LEFT_CBRACE, //
     RIGHT_CBRACE, //
     LEFT_BRACKET, //
@@ -75,14 +81,14 @@ pub enum Type {
     COLON, //
     SEMICOLON, //
     COMMA, //
+
+//---> Comments here
     COMMENT_SINGLE, //
     COMMENT_MULTI, //
 
     IDENTIFIER, //
 
-    KEYWORD_UNSIGNED, // u16, u32, u64
-    KEYWORD_SIGNED, // 
-
+//---> Keywords here
     MAIN,
     KEYWORD_CLASS, //
     KEYWORD_NEW,
@@ -103,7 +109,8 @@ pub enum Type {
     KEYWORD_DEFAULT, //
     KEYWORD_RETURN, //
 
-    OTHER, // for testing
+//---> If all fails
+    OTHER,
 }
 
 

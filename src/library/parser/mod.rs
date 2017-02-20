@@ -179,39 +179,45 @@ fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize)->usize {
 
 fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     let mut temp_lexeme:Vec<Token> = Vec::new();
-    let mut head:usize=3;
-    
+    let mut head: usize=3;
+    let mut lookahead: usize = head;
     let mut stream:Vec<String> = Vec::new();
+    
     stream.push("fn".to_string());
     stream.push(lexeme[1].get_token_value());
     stream.push("(".to_string());
-    if lexeme[1].get_token_type()!=MAIN{
+    
+    if lexeme[1].get_token_type()!=MAIN {
        
-    //parse the argument
-    while lexeme[head].get_token_type() != RIGHT_BRACKET {
+        //parse the argument
+        while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
+            lookahead += 1;
+        }
+        while head < lookahead {
+            let l: Token = lexeme[head].clone();
+            temp_lexeme.push(l);
+            head += 1;
+        }
+        stream.append(&mut parse_arguments(&temp_lexeme));
+        stream.push(")".to_string());
+        stream.push("->".to_string());
         
-        // push identifier
-        stream.push(lexeme[head+1].get_token_value()); //int f(int val)
-        stream.push(":".to_string());
-        
-        // parse argument type
-        if let Some(rust_type) = parse_type(lexeme[head].get_token_type() as i32) {
+        // parse return type
+        if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
             stream.push(rust_type);
         }
-        
-        head+=2
+
+        stream.push("{".to_string());
     }
-    stream.push(")".to_string());
-    stream.push("->".to_string());
-    
-    // parse return type
-    if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
-        stream.push(rust_type);
-    }
-    }else {
+    else {
         stream.push(")".to_string());
+        stream.push("{".to_string());
+        if lexeme[head].get_token_type() != RIGHT_BRACKET {
+            stream.push("let mut argv = env::args();".to_string());
+            stream.push("let mut argc = argv.len();".to_string());
+        }
     }
-    stream.push("{".to_string());
+    
     
     //parse the function body
     while lexeme[head].get_token_type() != LEFT_CBRACE { head+=1 }
@@ -223,6 +229,28 @@ fn parse_function(lexeme: &Vec<Token>)->Vec<String> {
     }
     stream.append(&mut parse_program(temp_lexeme));
     stream.push("}".to_string());
+    stream
+}
+
+fn parse_arguments(lexeme: &Vec<Token>) -> Vec<String> {
+    let mut stream:Vec<String> = Vec::new();
+    let mut head: usize = 0;
+    while head < lexeme.len() {
+        if lexeme[head].get_token_type() == COMMA {
+            stream.push(",".to_string());
+            head += 1;
+            continue;
+        }
+        // push identifier
+        stream.push(lexeme[head+1].get_token_value()); //int f(int val)
+        stream.push(":".to_string());
+        
+        // parse argument type
+        if let Some(rust_type) = parse_type(lexeme[head].get_token_type() as i32) {
+            stream.push(rust_type);
+        }
+        head+=2;
+    }
     stream
 }
 
