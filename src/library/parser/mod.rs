@@ -480,6 +480,11 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     stream
 }
 
+#[cfg(test)]
+mod test{
+use library::lexeme::Type::*;
+use library::lexeme::Token;
+use library::parser::*;
 #[test]
 fn test_parse_if() {
     let tok_vector = vec![Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 0, 0),
@@ -500,4 +505,5 @@ fn test_parse_if() {
     let stream = vec!["if", "a", "==", "a", "{", "/*Do something here*/\n", ";", "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
+}
 }
