@@ -6,8 +6,8 @@ use library::lexeme::Type::*;
 use std::str::Chars;
 
 pub struct Tokenizer<'a> {
-    line_no: i32,
-    id: i32,
+    line_no: u32,
+    id: u32,
     pos: usize,
     current_char: char,
     token: Vec<char>,

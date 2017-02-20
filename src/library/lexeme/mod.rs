@@ -120,8 +120,8 @@ pub struct Token {
     // base type of token
     base_type: Type,
     typ: Type,
-    ln: i32,
-    id: i32,
+    ln: u32,
+    id: u32,
 }
 
 impl Clone for Token {
@@ -132,7 +132,7 @@ impl Clone for Token {
 }
 
 impl Token {
-    pub fn new(token: String, base_type: Type, tok_type: Type, line_no: i32, id_: i32) -> Token {
+    pub fn new(token: String, base_type: Type, tok_type: Type, line_no: u32, id_: u32) -> Token {
         Token {
             value: token,
             base_type: base_type,
@@ -158,11 +158,11 @@ impl Token {
         self.value.clone()
     }
 
-    pub fn get_token_ln(&self) -> i32 {
+    pub fn get_token_ln(&self) -> u32 {
         self.ln
     }
 
-    pub fn get_token_id(&self) -> i32 {
+    pub fn get_token_id(&self) -> u32 {
         self.id
     }
 
@@ -178,10 +178,69 @@ impl Token {
         self.base_type = typ;
     }
 
-    fn set_token_ln(&mut self, ln: i32) {
+    fn set_token_ln(&mut self, ln: u32) {
         self.ln = ln;
     }
-    fn set_token_id(&mut self, id_: i32) {
+    fn set_token_id(&mut self, id_: u32) {
         self.id = id_;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use library::lexeme::*;
+    
+    #[test]
+    fn test_new_token() {
+        let token: Token = Token::new("Hello World".to_string(), Type::BASE_NONE, Type::STRING, 0, 0);
+        assert_eq!(token.value, "Hello World".to_string());
+        assert_eq!(token.base_type, Type::BASE_NONE);
+        assert_eq!(token.typ, Type::STRING);
+        assert_eq!(token.ln, 0);
+        assert_eq!(token.id, 0);
+    }
+    
+    #[test]
+    fn test_get_set_token_value() {
+        let mut token: Token = Token::new('\''.to_string(), Type::BASE_NONE, Type::CHAR_VAL, 0, 0);
+        assert_eq!(token.get_token_value(), "\'");
+
+        token.set_token_value(&"\"");
+        assert_eq!(token.get_token_value(), "\"");
+    }
+    #[test]
+    fn test_get_set_token_type() {
+        let mut token: Token = Token::new("12abcd".to_string(), Type::BASE_NONE, Type::OTHER, 0, 0);
+        assert_eq!(token.get_token_type(), Type::OTHER);
+
+        token.set_token_type(Type::PRIMITIVE_TYPEDEF);
+        assert_eq!(token.get_token_type(), Type::PRIMITIVE_TYPEDEF);
+    }
+
+    #[test]
+    fn test_get_set_base_type() {
+        let mut token: Token = Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
+        assert_eq!(token.get_base_type(), Type::BASE_NONE);
+
+        token.set_base_type(Type::BASE_VALUE);
+        assert_eq!(token.get_base_type(), Type::BASE_VALUE);
+    }
+
+    #[test]
+    fn test_get_set_line_no() {
+        let mut token: Token = Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
+        assert_eq!(token.get_token_ln(), 0);
+
+        token.set_token_ln(6);
+        assert_eq!(token.get_token_ln(), 6);
+    }
+
+    #[test]
+    fn test_get_set_id() {
+        let mut token: Token = Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
+        assert_eq!(token.get_token_id(), 0);
+
+        token.set_token_id(4);
+        assert_eq!(token.get_token_id(), 4);
     }
 }

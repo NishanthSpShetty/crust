@@ -460,8 +460,8 @@ fn parse_type(c_type: i32) -> Option<String> {
  */
 fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
-    let mut lookahead = lexeme.len();
-    let mut head: usize = 0;
+    // let mut lookahead = lexeme.len();
+    let head: usize = 0;
     let mut thead: usize = 2;
     let mut lexeme1: Vec<Token> = Vec::new();
 
