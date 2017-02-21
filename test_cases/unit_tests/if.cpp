@@ -1,4 +1,7 @@
 int a(){
-    sum = a+b+c+12+ c-100;
-a=b=asd=ab=bc=a+10+100;
+    
+    a=x=y=z=we=some=100+b+c;
+    
+    c=a++;
+    f = ++b;
 }

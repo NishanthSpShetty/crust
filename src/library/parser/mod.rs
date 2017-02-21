@@ -142,6 +142,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 //identifier = expr
                 //identifier()
                 //identifier+expr
+                //identifier OP_INC|OP_DEC; =>postfix
 
                 
                 match lexeme[head + 1].get_type() {
@@ -154,7 +155,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                                 temp_lexeme.push(l);
                                 head += 1;
                             }
-                            println!("{:?}", stream);
+                           // println!("{:?}", stream);
                             stream.append(&mut parse_assignment(&temp_lexeme));
                             temp_lexeme.clear();
                         }
@@ -170,6 +171,15 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                             // parse assignment
                             stream.append(&mut parse_assignment(&temp_lexeme));
                         }
+                    },
+                    (BASE_UNOP,_) =>{
+                        stream.push(lexeme[head].get_token_value());
+                        stream.push( match lexeme[head+1].get_token_type(){
+                            OP_INC => "+=1".to_string(),
+                            OP_DEC => "-=1".to_string(),
+                            _ => " ;".to_string()
+                        });
+                        head+=2;
                     },
                     (BASE_BINOP,_)=>{
                             // move lookahead past statement
@@ -193,7 +203,16 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         lookahead = head;
                     }
                 };
-            }
+            },
+            (BASE_UNOP,_)=>{
+                 stream.push(lexeme[head+1].get_token_value());
+                        stream.push( match lexeme[head].get_token_type(){
+                            OP_INC => "+=1".to_string(),
+                            OP_DEC => "-=1".to_string(),
+                            _ => " ;".to_string()
+                        });
+                        head+=2;
+            },
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
@@ -506,7 +525,7 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let mut lexeme1: Vec<Token> = Vec::new();
 
     if lexeme[3].get_base_type() == BASE_BINOP{
-        println!("found bin BASE_BINOP");
+      //  println!("found bin BASE_BINOP");
         while lexeme[thead].get_token_type() != SEMICOLON {
             lexeme1.push(lexeme[thead].clone());
             thead += 1;
@@ -527,7 +546,9 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
         }
         stream.push(lexeme[0].get_token_value());
         stream.push(lexeme[1].get_token_value());
-        stream.push(lexeme[2].get_token_value());
+        if lexeme[2].get_base_type()==BASE_UNOP{ stream.push(lexeme[3].get_token_value()); } else {
+                stream.push(lexeme[2].get_token_value());
+        }
         stream.push(";".to_string());
     }
     stream

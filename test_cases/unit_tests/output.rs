@@ -1,8 +1,12 @@
 fn a() -> i32 {
-    sum = a + b + c + 12 + c - 100;
-    bc = a + 10 + 100;
-    ab = bc;
-    asd = ab;
-    b = asd;
-    a = b;
+    some = 100 + b + c;
+    we = some;
+    z = we;
+    y = z;
+    x = y;
+    a = x;
+    a += 1;
+    c = a;
+    b += 1;
+    f = b;
 }
