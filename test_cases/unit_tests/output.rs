@@ -1,12 +1,5 @@
 fn a() -> i32 {
-    some = 100 + b + c;
-    we = some;
-    z = we;
-    y = z;
-    x = y;
-    a = x;
-    a += 1;
-    c = a;
+    y += 1;
+    x = y;;    a = b;
     b += 1;
-    f = b;
 }
