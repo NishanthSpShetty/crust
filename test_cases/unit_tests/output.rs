@@ -1,12 +1,8 @@
-fn not_main(p: i32, q: char) -> i32 {
-    let a: i32;
-    let b: i32;
-    let c: i32;
-    c = 100;
-    b = c;
+fn a() -> i32 {
+    sum = a + b + c + 12 + c - 100;
+    bc = a + 10 + 100;
+    ab = bc;
+    asd = ab;
+    b = asd;
     a = b;
-}
-fn main() {
-    let mut argv = env::args();
-    let mut argc = argv.len();
 }

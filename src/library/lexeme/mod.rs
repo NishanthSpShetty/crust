@@ -189,17 +189,21 @@ impl Token {
 #[cfg(test)]
 mod test {
     use library::lexeme::*;
-    
+
     #[test]
     fn test_new_token() {
-        let token: Token = Token::new("Hello World".to_string(), Type::BASE_NONE, Type::STRING, 0, 0);
+        let token: Token = Token::new("Hello World".to_string(),
+                                      Type::BASE_NONE,
+                                      Type::STRING,
+                                      0,
+                                      0);
         assert_eq!(token.value, "Hello World".to_string());
         assert_eq!(token.base_type, Type::BASE_NONE);
         assert_eq!(token.typ, Type::STRING);
         assert_eq!(token.ln, 0);
         assert_eq!(token.id, 0);
     }
-    
+
     #[test]
     fn test_get_set_token_value() {
         let mut token: Token = Token::new('\''.to_string(), Type::BASE_NONE, Type::CHAR_VAL, 0, 0);
@@ -219,7 +223,8 @@ mod test {
 
     #[test]
     fn test_get_set_base_type() {
-        let mut token: Token = Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
+        let mut token: Token =
+            Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
         assert_eq!(token.get_base_type(), Type::BASE_NONE);
 
         token.set_base_type(Type::BASE_VALUE);
@@ -228,7 +233,8 @@ mod test {
 
     #[test]
     fn test_get_set_line_no() {
-        let mut token: Token = Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
+        let mut token: Token =
+            Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
         assert_eq!(token.get_token_ln(), 0);
 
         token.set_token_ln(6);
@@ -237,7 +243,8 @@ mod test {
 
     #[test]
     fn test_get_set_id() {
-        let mut token: Token = Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
+        let mut token: Token =
+            Token::new("12.03".to_string(), Type::BASE_NONE, Type::NUM_FLOAT, 0, 0);
         assert_eq!(token.get_token_id(), 0);
 
         token.set_token_id(4);

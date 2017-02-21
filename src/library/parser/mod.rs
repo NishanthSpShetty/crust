@@ -139,23 +139,52 @@ pub fn parse_program(lexeme: Vec<Token>) -> Vec<String> {
             // assignment statements
             (_, IDENTIFIER) => {
                 let mut temp_lexeme: Vec<Token> = Vec::new();
+                //identifier = expr
+                //identifier()
+                //identifier+expr
 
-                // move lookahead past statement
-                lookahead = skip_stmt(&lexeme, lookahead);
-                // collect statement
-                while head < lookahead {
-                    let l: Token = lexeme[head].clone();
-                    temp_lexeme.push(l);
-                    head += 1;
-                }
+                
+                match lexeme[head + 1].get_type() {
+                    (_,OP_ASSIGN) => {
+                        // move lookahead past statement
+                        lookahead = skip_stmt(&lexeme, lookahead);
+                        // collect statement
+                        while head < lookahead {
+                            let l: Token = lexeme[head].clone();
+                            temp_lexeme.push(l);
+                            head += 1;
+                        }
 
-                // parse assignment
-                stream.append(&mut parse_assignment(&temp_lexeme));
+                        // parse assignment
+                        stream.append(&mut parse_assignment(&temp_lexeme));
+                    },
+                    (BASE_BINOP,_)=>{
+                            // move lookahead past statement
+                        lookahead = skip_stmt(&lexeme, lookahead);
+                        // collect statement
+                        while head < lookahead {
+                            let l: Token = lexeme[head].clone();
+                            temp_lexeme.push(l);
+                            head += 1;
+                        }
+
+                        // parse assignment
+                        stream.append(&mut parse_expr(&temp_lexeme));
+                    
+                    },
+                    (_,_) => {
+                        if lexeme[head].get_token_type() != RIGHT_CBRACE {
+                            stream.push(lexeme[head].get_token_value());
+                        }
+                        head += 1;
+                        lookahead = head;
+                    }
+                };
             }
-
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
+
                     stream.push(lexeme[head].get_token_value());
                 }
                 head += 1;
@@ -163,7 +192,6 @@ pub fn parse_program(lexeme: Vec<Token>) -> Vec<String> {
             }
 
         };
-
     }
     //return the rust lexeme to main
     stream
@@ -465,26 +493,53 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let mut thead: usize = 2;
     let mut lexeme1: Vec<Token> = Vec::new();
 
+    if lexeme[head + 3].get_base_type() == BASE_BINOP{
+        println!("found bin BASE_BINOP");
+        while lexeme[thead].get_token_type() != SEMICOLON {
+            lexeme1.push(lexeme[thead].clone());
+            thead += 1;
+        }
+        lexeme1.push(lexeme[thead].clone());
+        stream.push(lexeme[0].get_token_value());
+        stream.push(lexeme[1].get_token_value());
+        stream.append(&mut parse_expr(&lexeme1));
+    }else{
     if lexeme[head + 3].get_token_type() != SEMICOLON {
         while lexeme[thead].get_token_type() != SEMICOLON {
             lexeme1.push(lexeme[thead].clone());
             thead += 1;
         }
         lexeme1.push(lexeme[thead].clone());
-        stream.append(&mut parse_program(lexeme1))
+        stream.append(&mut parse_program(lexeme1));
     }
     stream.push(lexeme[0].get_token_value());
     stream.push(lexeme[1].get_token_value());
     stream.push(lexeme[2].get_token_value());
     stream.push(";".to_string());
+    }
     stream
 }
 
-#[cfg(test)]
-mod test{
-use library::lexeme::Type::*;
-use library::lexeme::Token;
-use library::parser::*;
+
+/* parse_assignment:
+ * parse c/c++ expression statements into rust equivalent code
+ */
+fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
+    let mut stream: Vec<String> = Vec::new();
+    // let mut lookahead = lexeme.len();
+    
+    let mut thead: usize = 0;
+     while lexeme[thead].get_token_type() != SEMICOLON {
+                stream.push(lexeme[thead].get_token_value());
+                
+                thead+=1;
+      }
+      stream.push(";".to_string());
+    stream
+}
+
+
+
 #[test]
 fn test_parse_if() {
     let tok_vector = vec![Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 0, 0),
@@ -505,5 +560,4 @@ fn test_parse_if() {
     let stream = vec!["if", "a", "==", "a", "{", "/*Do something here*/\n", ";", "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
-}
 }

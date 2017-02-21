@@ -1,8 +1,4 @@
-int not_main(int p, char q){
-int a,b,c;
-
-a=b=c=100;
-}
-
-int main(int argc, char* argv){
+int a(){
+    sum = a+b+c+12+ c-100;
+a=b=asd=ab=bc=a+10+100;
 }
