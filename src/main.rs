@@ -54,7 +54,7 @@ fn main() {
     //    file.write_all(output.as_bytes()).expect("Unable to write to file");
 
     println!(" Tokenization completed....\n Invoking parser....");
-    let s = parser::parse_program(tokens);
+    let s = parser::parse_program(&tokens);
     let mut o: String = String::new();
     for i in s {
         o = o + " ";
