@@ -1,6 +1,8 @@
-
 int main() {
-    int a = 33, b = 73;
-    b = b + a++;
-    println("value of b is {}, value of a is {}", b, a);
+    for(i=0;i<23;i++) {
+        func();
+    }
+}
+void func() {
+    // empty
 }
