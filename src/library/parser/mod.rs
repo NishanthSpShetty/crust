@@ -78,7 +78,20 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
 
                         temp_lexeme.clear();
                     }
+                    //array declaration found
+                    LEFT_SBRACKET => {
+                         lookahead = skip_stmt(&lexeme, lookahead);
 
+                        // collect variable declaration
+                        while head != lookahead {
+                            let l: Token = lexeme[head].clone();
+                            temp_lexeme.push(l);
+                            head += 1;
+                        }
+                        // parse declaration
+                        stream.append(&mut parse_array_declaration(&temp_lexeme));
+                        temp_lexeme.clear();  
+                    },
                     // variable declaration or declaration + assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
                         lookahead = skip_stmt(&lexeme, lookahead);
@@ -93,6 +106,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         stream.append(&mut parse_declaration(&temp_lexeme));
                         temp_lexeme.clear();
                     }
+
 
                     _ => {}
                 };
@@ -387,6 +401,8 @@ fn parse_arguments(lexeme: &Vec<Token>) -> Vec<String> {
  * equivalent statements
  */
 fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
+       let mut stream: Vec<String> = Vec::new();
+ 
     let mut sym_tab: Vec<SymbolTable> = Vec::new();
     let mut sym: SymbolTable = SymbolTable {
         typ: -1,
@@ -413,13 +429,28 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
                 sym.typ = lexeme[0].get_token_type() as i32;
                 sym_tab.push(sym.clone());
             }
+            LEFT_SBRACKET =>{
+                let mut temp_lexeme : Vec<Token> = Vec::new();
+
+                temp_lexeme.push(lexeme[0].clone());
+               //move to next
+               let mut m = head-1;
+              while lexeme[m].get_token_type() != SEMICOLON{
+                temp_lexeme.push(lexeme[m].clone());
+                m+=1;
+            }
+              temp_lexeme.push(lexeme[m].clone());
+             stream.append(&mut parse_array_declaration(&temp_lexeme));
+            
+            while lexeme[head].get_token_type() != RIGHT_SBRACKET { head+=1;}
+            head=m;
+            }
             _ => {}
         };
         head += 1;
 
     }
 
-    let mut stream: Vec<String> = Vec::new();
     for i in &sym_tab {
 
         // get identifier
@@ -647,6 +678,52 @@ fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
     }
     stream
 }
+
+
+fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
+    let mut stream: Vec<String> = Vec::new();
+     let mut typ:String=" ".to_string();
+
+    //int a[10];
+    if let Some(t) = parse_type(lexeme[0].get_token_type() as i32) { typ = t ;}
+        stream.push("let mut ".to_string());
+    let mut head =0;
+    stream.push(lexeme[head+1].get_token_value());
+    stream.push(":[".to_string()+&typ[..]+";"+&lexeme[head+3].get_token_value()[..]+"]");
+    head = 5;
+    let mut lookahead=head;
+    while lexeme[lookahead].get_token_type() != SEMICOLON{
+     lookahead+=1;
+    }
+    let mut temp_lexeme:Vec<Token> = Vec::new();
+    if lexeme[head].get_token_type() == COMMA {
+            temp_lexeme.push(lexeme[0].clone());
+            //move to next
+            head+=1;
+            while lexeme[head].get_token_type() != SEMICOLON{
+                temp_lexeme.push(lexeme[head].clone());
+                head+=1;
+            }
+            stream.push("; ".to_string());
+             temp_lexeme.push(lexeme[head].clone());
+            stream.append(&mut parse_program(&temp_lexeme))
+    }else   if lexeme[head].get_token_type() ==OP_ASSIGN {
+        while lexeme[head].get_token_type() != SEMICOLON && lexeme[head].get_token_type() !=RIGHT_CBRACE {
+           stream.push( match lexeme[head].get_token_type(){
+                             LEFT_CBRACE => "[".to_string(),
+                            
+                            _ => lexeme[head].get_token_value(),
+           });
+           head+=1;
+   }
+   stream.push("]; ".to_string());
+   }else{
+       stream.push("; ".to_string());
+   }
+   
+    stream
+}
+
 
 #[test]
 fn test_parse_if_braces() {

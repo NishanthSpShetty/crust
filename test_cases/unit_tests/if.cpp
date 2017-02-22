@@ -1,6 +1,4 @@
 
 int main() {
-    int a = 33, b = 73;
-    b = b + a++;
-    println("value of b is {}, value of a is {}", b, a);
+    int a,l[10], v[1],m[2]={1,2},sd,num[10];
 }
