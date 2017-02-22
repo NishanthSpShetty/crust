@@ -145,22 +145,21 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 //identifier+expr
                 //identifier OP_INC|OP_DEC; =>postfix
 
-                
+
                 match lexeme[head + 1].get_type() {
-                    (_,OP_ASSIGN) => {
+                    (_, OP_ASSIGN) => {
                         // move lookahead past statement
                         if lexeme[head + 3].get_token_type() == COMMA {
                             lookahead = head + 3;
-                            while head < lookahead+1 {
+                            while head < lookahead + 1 {
                                 let l: Token = lexeme[head].clone();
                                 temp_lexeme.push(l);
                                 head += 1;
                             }
-                           // println!("{:?}", stream);
+                            // println!("{:?}", stream);
                             stream.append(&mut parse_assignment(&temp_lexeme));
                             temp_lexeme.clear();
-                        }
-                        else {
+                        } else {
                             lookahead = skip_stmt(&lexeme, lookahead);
                             // collect statement
                             while head < lookahead {
@@ -172,20 +171,22 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                             // parse assignment
                             stream.append(&mut parse_assignment(&temp_lexeme));
                         }
+                    }
+                    (BASE_UNOP, _) => unsafe {
+                        if IN_EXPR != true {
+                            stream.push(lexeme[head].get_token_value());
+                            stream.push(match lexeme[head + 1].get_token_type() {
+                                OP_INC => "+=1".to_string(),
+                                OP_DEC => "-=1".to_string(),
+                                _ => " ;".to_string(),
+                            });
+                            head += 2;
+                        } else {
+                            head += 2;
+                        }
                     },
-                    (BASE_UNOP,_) =>{
-                        unsafe { if IN_EXPR != true{
-                        stream.push(lexeme[head].get_token_value());
-                        stream.push( match lexeme[head+1].get_token_type(){
-                            OP_INC => "+=1".to_string(),
-                            OP_DEC => "-=1".to_string(),
-                            _ => " ;".to_string()
-                        });
-                        head+=2;
-                        } else { head+=2;}}
-                    },
-                    (BASE_BINOP,_)=>{
-                            // move lookahead past statement
+                    (BASE_BINOP, _) => {
+                        // move lookahead past statement
                         lookahead = skip_stmt(&lexeme, lookahead);
                         // collect statement
                         while head < lookahead {
@@ -196,9 +197,9 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
 
                         // parse assignment
                         stream.append(&mut parse_expr(&temp_lexeme));
-                    
-                    },
-                    (_,_) => {
+
+                    }
+                    (_, _) => {
                         if lexeme[head].get_token_type() != RIGHT_CBRACE {
                             stream.push(lexeme[head].get_token_value());
                         }
@@ -206,16 +207,16 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         lookahead = head;
                     }
                 };
-            },
-            (BASE_UNOP,_)=>{
-                 stream.push(lexeme[head+1].get_token_value());
-                        stream.push( match lexeme[head].get_token_type(){
-                            OP_INC => "+=1".to_string(),
-                            OP_DEC => "-=1".to_string(),
-                            _ => " ;".to_string()
-                        });
-                        head+=2;
-            },
+            }
+            (BASE_UNOP, _) => {
+                stream.push(lexeme[head + 1].get_token_value());
+                stream.push(match lexeme[head].get_token_type() {
+                    OP_INC => "+=1".to_string(),
+                    OP_DEC => "-=1".to_string(),
+                    _ => " ;".to_string(),
+                });
+                head += 2;
+            }
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
@@ -527,20 +528,14 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let mut thead: usize = 2;
     let mut lexeme1: Vec<Token> = Vec::new();
 
+    let n = 2;
+    let m = 3;
 
-    let mut tstream :Vec<String> = Vec::new();
+    let mut tstream: Vec<String> = Vec::new();
 
-    if lexeme[3].get_base_type() == BASE_UNOP {
-        unsafe { IN_EXPR = true;}
-         tstream.push(lexeme[2].get_token_value());
-                        tstream.push( match lexeme[3].get_token_type(){
-                            OP_INC => "+=1;".to_string(),
-                            OP_DEC => "-=1;".to_string(),
-                            _ => " ;".to_string()
-                        });
-    }
-     if lexeme[3].get_base_type() == BASE_BINOP{
-      //  println!("found bin BASE_BINOP");
+    if lexeme[n].get_base_type() == BASE_UNOP {
+
+
         while lexeme[thead].get_token_type() != SEMICOLON {
             lexeme1.push(lexeme[thead].clone());
             thead += 1;
@@ -549,25 +544,51 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push(lexeme[0].get_token_value());
         stream.push(lexeme[1].get_token_value());
         stream.append(&mut parse_expr(&lexeme1));
-    }
-     else{
-        if lexeme[3].get_token_type() != SEMICOLON && lexeme[3].get_token_type() != COMMA {
-            while lexeme[thead].get_token_type() != SEMICOLON && lexeme[thead].get_token_type() != COMMA {
+    } else if lexeme[m].get_base_type() == BASE_UNOP {
+
+        while lexeme[thead].get_token_type() != SEMICOLON {
+            lexeme1.push(lexeme[thead].clone());
+            thead += 1;
+        }
+        lexeme1.push(lexeme[thead].clone());
+        stream.push(lexeme[0].get_token_value());
+        stream.push(lexeme[1].get_token_value());
+        stream.append(&mut parse_expr(&lexeme1));
+    } else if lexeme[m].get_base_type() == BASE_BINOP {
+        //  println!("found bin BASE_BINOP");
+        while lexeme[thead].get_token_type() != SEMICOLON {
+            lexeme1.push(lexeme[thead].clone());
+            thead += 1;
+        }
+        lexeme1.push(lexeme[thead].clone());
+        stream.push(lexeme[0].get_token_value());
+        stream.push(lexeme[1].get_token_value());
+        stream.append(&mut parse_expr(&lexeme1));
+    } else {
+        if lexeme[m].get_token_type() != SEMICOLON && lexeme[m].get_token_type() != COMMA {
+            while lexeme[thead].get_token_type() != SEMICOLON &&
+                  lexeme[thead].get_token_type() != COMMA {
                 lexeme1.push(lexeme[thead].clone());
                 thead += 1;
             }
             lexeme1.push(lexeme[thead].clone());
+            print_lexemes(&lexeme1, 0, lexeme1.len());
             stream.append(&mut parse_program(&lexeme1));
+            println!("{:?}", stream);
         }
         stream.push(lexeme[0].get_token_value());
         stream.push(lexeme[1].get_token_value());
-        if lexeme[2].get_base_type()==BASE_UNOP{ stream.push(lexeme[3].get_token_value()); } else {
-                stream.push(lexeme[2].get_token_value());
+        if lexeme[n].get_base_type() == BASE_UNOP {
+            stream.push(lexeme[m].get_token_value());
+        } else {
+            stream.push(lexeme[n].get_token_value());
         }
         stream.push(";".to_string());
 
     }
-    if tstream.len() > 0 { stream.append(&mut tstream);}
+    if tstream.len() > 0 {
+        stream.append(&mut tstream);
+    }
     stream
 }
 
@@ -578,14 +599,59 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
 fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     // let mut lookahead = lexeme.len();
-    
+    let mut tstream: Vec<String> = Vec::new();
     let mut thead: usize = 0;
-     while lexeme[thead].get_token_type() != SEMICOLON {
+
+    let mut prev_id = " ".to_string();
+    let mut typ = OTHER;
+    //a=b+c++;
+
+    while lexeme[thead].get_token_type() != SEMICOLON {
+
+        if lexeme[thead].get_base_type() == BASE_UNOP {
+            //incase of post
+            if typ == IDENTIFIER {
+                tstream.push(prev_id.clone());
+                tstream.push(match lexeme[thead].get_token_type() {
+                    OP_INC => "+=1".to_string(),
+                    OP_DEC => "-=1".to_string(),
+                    _ => " ;".to_string(),
+                });
+                tstream.push(";".to_string());
+
+                thead + 1;
+                //continue;
+            }
+            // incase of pre
+            else {
+                stream.push("(".to_string());
+                stream.push(lexeme[thead + 1].get_token_value());
+                stream.push(match lexeme[thead].get_token_type() {
+                    OP_INC => "+=1".to_string(),
+                    OP_DEC => "-=1".to_string(),
+                    _ => " ;".to_string(),
+                });
+                stream.push(")".to_string());
+                thead += 1;
+            }
+
+
+        } else {
+
+            if lexeme[thead].get_base_type() != BASE_UNOP {
                 stream.push(lexeme[thead].get_token_value());
-                
-                thead+=1;
-      }
-      stream.push(";".to_string());
+            }
+        }
+
+        typ = lexeme[thead].get_token_type();
+        prev_id = lexeme[thead].get_token_value();
+
+        thead += 1;
+    }
+    stream.push(";".to_string());
+    if tstream.len() > 0 {
+        stream.append(&mut tstream);
+    }
     stream
 }
 
@@ -618,7 +684,11 @@ fn test_parse_if_braces_nesting() {
                           Token::new(String::from("2"), BASE_VALUE, NUM_INT, 0, 4),
                           Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
                           Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
-                          Token::new(String::from("/*Do something here*/"), BASE_COMMENT, COMMENT_MULTI, 1, 7),
+                          Token::new(String::from("/*Do something here*/"),
+                                     BASE_COMMENT,
+                                     COMMENT_MULTI,
+                                     1,
+                                     7),
                           Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 2, 8),
                           Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 2, 9),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 2, 10),
@@ -636,7 +706,27 @@ fn test_parse_if_braces_nesting() {
                           Token::new(String::from("72"), BASE_VALUE, NUM_INT, 5, 22),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 5, 23),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 6, 24)];
-    let stream = vec!["if", "a", ">", "2", "{", "/*Do something here*/\n", "if", "a", "<", "4", "{", "b", "=", "53", ";", "}", "b", "=", "72", ";", "}"];
+    let stream = vec!["if",
+                      "a",
+                      ">",
+                      "2",
+                      "{",
+                      "/*Do something here*/\n",
+                      "if",
+                      "a",
+                      "<",
+                      "4",
+                      "{",
+                      "b",
+                      "=",
+                      "53",
+                      ";",
+                      "}",
+                      "b",
+                      "=",
+                      "72",
+                      ";",
+                      "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
 }
@@ -662,8 +752,9 @@ fn test_parse_if_no_braces_nesting() {
                           Token::new(String::from("b"), BASE_NONE, IDENTIFIER, 3, 20),
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 3, 21),
                           Token::new(String::from("72"), BASE_VALUE, NUM_INT, 3, 22),
-                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 3, 23),];
-    let stream = vec!["if", "a", ">", "2", "{", "if", "a", "<", "4", "{", "b", "=", "53", ";", "b", "=", "72", ";", "}", "}"];
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 3, 23)];
+    let stream = vec!["if", "a", ">", "2", "{", "if", "a", "<", "4", "{", "b", "=", "53", ";",
+                      "b", "=", "72", ";", "}", "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
 }
