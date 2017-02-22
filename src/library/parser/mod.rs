@@ -22,6 +22,7 @@ impl Clone for SymbolTable {
 }
 
 static mut IN_BLOCK_STMNT: bool = false;
+static mut IN_EXPR: bool = false;
 
 /**
  * parse_program:
@@ -174,6 +175,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         }
                     },
                     (BASE_UNOP,_) =>{
+                        unsafe { if IN_EXPR != true{
                         stream.push(lexeme[head].get_token_value());
                         stream.push( match lexeme[head+1].get_token_type(){
                             OP_INC => "+=1".to_string(),
@@ -181,6 +183,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                             _ => " ;".to_string()
                         });
                         head+=2;
+                        } else { head+=2;}}
                     },
                     (BASE_BINOP,_)=>{
                             // move lookahead past statement
@@ -524,7 +527,18 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let mut thead: usize = 2;
     let mut lexeme1: Vec<Token> = Vec::new();
 
-    if lexeme[3].get_base_type() == BASE_BINOP {
+    let mut tstream :Vec<String> = Vec::new();
+
+    if lexeme[3].get_base_type() == BASE_UNOP {
+        unsafe { IN_EXPR = true;}
+         tstream.push(lexeme[2].get_token_value());
+                        tstream.push( match lexeme[3].get_token_type(){
+                            OP_INC => "+=1;".to_string(),
+                            OP_DEC => "-=1;".to_string(),
+                            _ => " ;".to_string()
+                        });
+    }
+     if lexeme[3].get_base_type() == BASE_BINOP{
       //  println!("found bin BASE_BINOP");
         while lexeme[thead].get_token_type() != SEMICOLON {
             lexeme1.push(lexeme[thead].clone());
@@ -535,7 +549,7 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push(lexeme[1].get_token_value());
         stream.append(&mut parse_expr(&lexeme1));
     }
-    else {
+     else{
         if lexeme[3].get_token_type() != SEMICOLON && lexeme[3].get_token_type() != COMMA {
             while lexeme[thead].get_token_type() != SEMICOLON && lexeme[thead].get_token_type() != COMMA {
                 lexeme1.push(lexeme[thead].clone());
@@ -550,7 +564,9 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
                 stream.push(lexeme[2].get_token_value());
         }
         stream.push(";".to_string());
+
     }
+    if tstream.len() > 0 { stream.append(&mut tstream);}
     stream
 }
 
