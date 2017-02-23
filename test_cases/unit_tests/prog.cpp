@@ -5,6 +5,8 @@ int main(){
 
 
 int print(int a){
-	println!(" a value {} ",a);
+	println(" a value {} {}",a,c,c);
+
+	if(a<10) a++,b++;
 	return 100;
 }
