@@ -277,7 +277,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     }
                     (_, _) => {
                         if lexeme[head].get_token_type() != RIGHT_CBRACE {
-                            stream.push(lexeme[head].get_token_value());
+                              stream.push(lexeme[head].get_token_value());
                         }
                         head += 1;
                         lookahead = head;
@@ -296,8 +296,9 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
-
+                    if lexeme[head].get_token_type() == COMMA {  stream.push(";".to_string()); }else{     
                     stream.push(lexeme[head].get_token_value());
+                    }
                 }
                 head += 1;
                 lookahead = head;
@@ -471,7 +472,7 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     let mut sym_tab: Vec<SymbolTable> = Vec::new();
     let mut sym: SymbolTable = SymbolTable {
         typ: -1,
-        id_name: "NONE".to_string(),
+        id_name: "undefined_var".to_string(),
         is_assigned: false,
         assigned_val: "NONE".to_string(),
     };
@@ -598,22 +599,22 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
 fn parse_while(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
-
-    stream.push("while".to_string());
+    let mut no_cond = false;
+   // stream.push("while".to_string());
     head += 1;
 
     //skip '('
     head += 1;
-
+    let lhead = head;
     // condition
+    let mut cond_stream : Vec<String> = Vec::new();
     while lexeme[head].get_token_type() != RIGHT_BRACKET {
-        stream.push(lexeme[head].get_token_value());
+        cond_stream.push(lexeme[head].get_token_value());
         head += 1;
     }
+     if head == lhead { no_cond = true; }
     head += 1;
-
-    stream.push("{".to_string());
-
+   
     if lexeme[head].get_token_type() == LEFT_CBRACE {
         head += 1;
     }
@@ -626,7 +627,14 @@ fn parse_while(lexeme: &Vec<Token>) -> Vec<String> {
         head += 1;
     }
     // parse while body
-    stream.append(&mut parse_program(&temp_lexeme));
+    let mut body_stream = &mut parse_program(&temp_lexeme);
+
+    if no_cond == true { stream.push("loop".to_string()); }else {
+        stream.push("while".to_string());
+        stream.append(&mut cond_stream);
+    }
+    stream.push("{".to_string());
+    stream.append(&mut body_stream);
 
     stream.push("}".to_string());
     stream
@@ -678,17 +686,18 @@ fn parse_dowhile(lexeme: &Vec<Token>) -> Vec<String> {
 
 
 /**
- * parse_dowhile:
+ * parse_for:
  * parse c/c++ do while statements into rust
  * equivalent statements
+ *
+ * Identify infinite loops and replace for with loop{} 
  */
 fn parse_for(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
     let mut lookahead: usize;
     let mut temp_lexeme: Vec<Token> = Vec::new();
-    let mut temp_stream: Vec<String> = Vec::new();
-
+  
     while lexeme[head].get_token_type() != LEFT_BRACKET {
         head += 1;
     }
@@ -696,39 +705,71 @@ fn parse_for(lexeme: &Vec<Token>) -> Vec<String> {
     lookahead = head;
     // stream.push("while 1 == 1 {}".to_string());
     
+    //for (int i =0; )
+    let decl:bool =  if lexeme[head].get_base_type() == BASE_DATATYPE { true } else {false };
+    let mut no_init:bool = false; //no initialization
+    let mut no_cond:bool = false; //if no condition to terminate
+    let mut no_updation:bool = false; //no inc/dec of loop counter
+
+
+
+    let mut body:Vec<String> = Vec::new();
+    let mut updation:Vec<String> = Vec::new();
+    let mut term_cond:Vec<String> = Vec::new();        
     // initial assignment
     lookahead = skip_stmt(&lexeme, lookahead);
+    
+    //incase of initialization expressio for (;i<10;i++) ; common case
+    if head+1 < lookahead {
     while head < lookahead {
         let l: Token = lexeme[head].clone();
         temp_lexeme.push(l);
         head += 1;
     }
-    stream.append(&mut parse_assignment(&temp_lexeme));
+    
+    if decl == true {
+            stream.append(&mut parse_declaration(&temp_lexeme));    
+    }else    {
+        stream.append(&mut parse_assignment(&temp_lexeme));
+    }
+    }
+    else {head+=1; no_init = true;}
     temp_lexeme.clear();
     
     // println!("Initial Assignment {:?}", stream);
-    stream.push("while".to_string());
+    //stream.push("while".to_string());
 
     // terminating condition
     lookahead = skip_stmt(&lexeme, lookahead);
-    while head < lookahead-1 {
-        stream.push(lexeme[head].get_token_value());
-        head += 1;
-    }
-    head += 1;
-    // println!("Terminating Condition {:?}", stream);
-    stream.push("{".to_string());
 
-    // update expression
-    while lexeme[head].get_token_type() != RIGHT_BRACKET {
-        let l: Token = lexeme[head].clone();
-        temp_lexeme.push(l);
-        head += 1;
-    }
-    temp_lexeme.push(Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0));
-    temp_stream.append(&mut parse_program(&temp_lexeme));
-
+  
+    if head+1 < lookahead {
+        while head < lookahead-1 {
+            term_cond.push(lexeme[head].get_token_value());
+         head += 1;
+         }
+    }else{ no_cond = true ;}
+    head+=1;
     temp_lexeme.clear();
+    // println!("Terminating Condition {:?}", stream);
+  
+    lookahead = head;
+    // update expression
+    while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
+        let l: Token = lexeme[lookahead].clone();
+        temp_lexeme.push(l);
+        lookahead += 1;
+    }
+    //no_updation
+    if head == lookahead{ 
+        no_updation = true;
+    }else{
+
+    temp_lexeme.push(Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0));
+    updation.append(&mut parse_program(&temp_lexeme));
+    temp_lexeme.clear();
+    }
+    head = lookahead;
     head += 1;
     if lexeme[head].get_token_type() == LEFT_CBRACE {
         head += 1;
@@ -745,10 +786,22 @@ fn parse_for(lexeme: &Vec<Token>) -> Vec<String> {
         temp_lexeme.push(l);
         head += 1;
     }
-    stream.append(&mut parse_program(&temp_lexeme));
+    body.append(&mut parse_program(&temp_lexeme));
 
-    stream.append(&mut temp_stream);
+    if no_cond == true {
+        stream.push("\nloop".to_string());
+    }else{
+        stream.push("\nwhile".to_string());
+        stream.append(&mut term_cond); //append termianating condition
+    }
+    stream.push("{".to_string());
+    stream.append(&mut body);
+    if no_updation != true {
+        stream.append(&mut updation);
+    }
+  
     stream.push("}".to_string());
+    
     stream
 }
 
@@ -892,6 +945,7 @@ fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
         } else {
 
             if lexeme[thead].get_base_type() != BASE_UNOP {
+                println!("IN_EXPR {:?}",lexeme[thead]);
                 stream.push(lexeme[thead].get_token_value());
             }
         }

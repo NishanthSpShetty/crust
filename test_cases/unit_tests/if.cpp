@@ -1,9 +1,32 @@
-int main() {
-    int a,l[10], v[1],m[2]={1,2},sd,num[10];
-    for(i=0;i<23;i++) {
-        func(l[i]);
+
+int main(){
+    int a,b,c;
+    a=b=c=100;
+    a++,b++,c++;
+
+    for(;;){
+        printf(" infinite loop");
     }
+
+    while(){
+        if(a==100) break;
+        a++;
+    }
+
+
+    for(int i =0;;i++){ l[i]=m[i]+n[i];}
+
+
+    for(int i =0;i<100;i++){ l[i]=m[i]+n[i];}
 }
+
+
+//some func
 void func() {
     // empty
+
+    while(a){
+        //someshit
+    }
+
 }
