@@ -11,11 +11,17 @@ fn main() {
     loop {
         printf(" infinite loop");
     }
-    loop {
-        if a == 100 {
-            break;
+    if 1 == 2 {
+        loop {
+            if a == 100 {
+                break;
+            }
+            a += 1;
         }
-        a += 1;
+    } else if 2 == 3 {
+        l[i] = m[i] + n[i];
+    } else {
+        func();
     }
     let mut i: i32 = 0;
     loop {

@@ -8,11 +8,19 @@ int main(){
         printf(" infinite loop");
     }
 
-    while(){
-        if(a==100) break;
-        a++;
+    if(1==2) {
+        while(){
+            if(a==100) break;
+            a++;
+        }
     }
+    else if(2==3) {
+        l[i]=m[i]+n[i];
+    }
+    else
+        func();
 
+    
 
     for(int i =0;;i++){ l[i]=m[i]+n[i];}
 

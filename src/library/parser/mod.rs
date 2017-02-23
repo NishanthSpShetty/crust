@@ -141,6 +141,40 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 stream.append(&mut parse_if(&temp_lexeme));
             }
 
+            (_, KEYWORD_ELSE) => {
+                let mut temp_lexeme: Vec<Token> = Vec::new();
+                let mut elseif: bool = false;
+
+                head += 1;
+                lookahead = head;
+                if lexeme[head].get_token_type() == KEYWORD_IF {
+                    elseif = true;
+                }
+                
+                if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
+                    lookahead = skip_block(&lexeme, lookahead + 1);
+                }
+
+                else {
+                    lookahead = skip_stmt(&lexeme, lookahead);
+                }
+
+                while head < lookahead {
+                    let l: Token = lexeme[head].clone();
+                    temp_lexeme.push(l);
+                    head += 1;
+                }
+                //** parse else body
+                stream.push("else".to_string());
+                if elseif == false {
+                    stream.push("{".to_string());
+                }
+                stream.append(&mut parse_program(&temp_lexeme));
+                if elseif == false {
+                    stream.push("}".to_string());
+                }
+            }
+
             (_, KEYWORD_WHILE) => {
                 let mut temp_lexeme: Vec<Token> = Vec::new();
 
@@ -707,7 +741,7 @@ fn parse_for(lexeme: &Vec<Token>) -> Vec<String> {
     
     //for (int i =0; )
     let decl:bool =  if lexeme[head].get_base_type() == BASE_DATATYPE { true } else {false };
-    let mut no_init:bool = false; //no initialization
+    // let mut no_init:bool; //no initialization
     let mut no_cond:bool = false; //if no condition to terminate
     let mut no_updation:bool = false; //no inc/dec of loop counter
 
@@ -721,19 +755,23 @@ fn parse_for(lexeme: &Vec<Token>) -> Vec<String> {
     
     //incase of initialization expressio for (;i<10;i++) ; common case
     if head+1 < lookahead {
-    while head < lookahead {
-        let l: Token = lexeme[head].clone();
-        temp_lexeme.push(l);
-        head += 1;
-    }
-    
-    if decl == true {
+        while head < lookahead {
+            let l: Token = lexeme[head].clone();
+            temp_lexeme.push(l);
+            head += 1;
+        }
+        
+        if decl == true {
             stream.append(&mut parse_declaration(&temp_lexeme));    
-    }else    {
-        stream.append(&mut parse_assignment(&temp_lexeme));
+        }
+        else {
+            stream.append(&mut parse_assignment(&temp_lexeme));
+        }
     }
+    else {
+        head+=1;
+        // no_init = true;
     }
-    else {head+=1; no_init = true;}
     temp_lexeme.clear();
     
     // println!("Initial Assignment {:?}", stream);
