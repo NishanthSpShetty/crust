@@ -309,6 +309,14 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         stream.append(&mut parse_expr(&temp_lexeme));
 
                     }
+                    (_,LEFT_BRACKET) =>{
+                        while lexeme [head].get_token_type()!= RIGHT_BRACKET {
+                            stream.push(lexeme[head].get_token_value());
+                            head+=1;
+                        }
+                        stream.push(lexeme[head].get_token_value());
+                        head+=1;
+                    },
                     (_, _) => {
                         if lexeme[head].get_token_type() != RIGHT_CBRACE {
                               stream.push(lexeme[head].get_token_value());
@@ -330,7 +338,9 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
-                    if lexeme[head].get_token_type() == COMMA {  stream.push(";".to_string()); }else{     
+                    if lexeme[head].get_token_type() == COMMA{ 
+                        println!("problem");
+                         stream.push(";".to_string()); }else{     
                     stream.push(lexeme[head].get_token_value());
                     }
                 }
@@ -983,7 +993,7 @@ fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
         } else {
 
             if lexeme[thead].get_base_type() != BASE_UNOP {
-                println!("IN_EXPR {:?}",lexeme[thead]);
+            //    println!("IN_EXPR {:?}",lexeme[thead]);
                 stream.push(lexeme[thead].get_token_value());
             }
         }
