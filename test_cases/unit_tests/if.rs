@@ -1,4 +1,22 @@
 fn main() {
+    match a {
+        1 => {
+            a += 1;
+            func();
+            b -= 1;
+            let mut a: i32 = 5;
+            break;
+        }
+        "2" => {
+            let mut b: i32 = 25;
+            break;
+        }
+        '5' => {
+            let mut b: i32 = 25;
+            break;
+        }
+        _ => {}
+    }
     let mut a: i32;
     let mut b: i32;
     let mut c: i32;
@@ -33,7 +51,7 @@ fn main() {
         l[i] = m[i] + n[i];
         i += 1;
     }
-} //some func
+} // //some func
 fn func() {
     // empty
     while a {

@@ -150,7 +150,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 if lexeme[head].get_token_type() == KEYWORD_IF {
                     elseif = true;
                 }
-                
+
                 if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
                     lookahead = skip_block(&lexeme, lookahead + 1);
                 }
@@ -173,6 +173,52 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 if elseif == false {
                     stream.push("}".to_string());
                 }
+            }
+
+            (_, KEYWORD_SWITCH) => {
+                let mut temp_lexeme: Vec<Token> = Vec::new();
+                head += 2;
+                lookahead = head;
+                stream.push("match".to_string());
+
+                // find starting of switch block
+                while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
+                    lookahead += 1;
+                }
+
+                // move back to find the variable/result to be matched
+                lookahead -= 1;
+                // single variable
+                if lookahead - head == 1 {
+                    stream.push(lexeme[lookahead-1].get_token_value());
+
+                }
+                // expression
+                else {
+                    while head < lookahead {
+                        let l: Token = lexeme[head].clone();
+                        temp_lexeme.push(l);
+                        head += 1;
+                    }
+                    stream.append(&mut parse_program(&temp_lexeme));
+                    temp_lexeme.clear();
+                }
+
+                // move forward to the starting of the block
+                head += 3;
+                stream.push("{".to_string());
+                
+
+                //head is at case
+                lookahead = skip_block(&lexeme, head);
+                while head < lookahead {
+                    let l: Token = lexeme[head].clone();
+                    temp_lexeme.push(l);
+                    head += 1;
+                }
+
+                stream.append(&mut parse_case(&temp_lexeme));
+                stream.push("}".to_string());
             }
 
             (_, KEYWORD_WHILE) => {
@@ -370,6 +416,7 @@ fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
     }
     lookahead + 1
 }
+
 
 
 /**
@@ -719,6 +766,66 @@ fn parse_dowhile(lexeme: &Vec<Token>) -> Vec<String> {
 }
 
 
+fn parse_case(lexeme: &Vec<Token>) -> Vec<String> {
+    let mut stream: Vec<String> = Vec::new();
+    //head is at case
+    let mut head: usize = 0;
+    let mut lookahead: usize;
+    let mut temp_lexeme: Vec<Token> = Vec::new();
+    let mut def: bool = false;
+
+    while head < lexeme.len() {
+        if lexeme[head].get_token_type() == KEYWORD_DEFAULT {
+            stream.push("_".to_string());
+            def = true;
+        }
+        else {
+            head += 1; //head is at matching value
+            stream.push(lexeme[head].get_token_value());
+        }
+
+        head += 1; // head is at :
+        stream.push("=>".to_string());
+
+        // either brace or no brace
+        head += 1;
+        if lexeme[head].get_token_type() == LEFT_CBRACE {
+            head += 1;
+            lookahead = skip_block(&lexeme, head) - 1;
+        }
+        else {
+            lookahead = head;
+            let mut tok_type = lexeme[lookahead].get_token_type();
+            while tok_type != KEYWORD_CASE && tok_type != KEYWORD_DEFAULT && tok_type != RIGHT_CBRACE {
+                lookahead += 1;
+                tok_type = lexeme[lookahead].get_token_type();
+            }
+        }
+        while head < lookahead {
+            let l: Token = lexeme[head].clone();
+            temp_lexeme.push(l);
+            head += 1;
+        }
+        stream.push("{".to_string());
+        stream.append(&mut parse_program(&temp_lexeme));
+        stream.push("}".to_string());
+
+        
+        if head < lexeme.len() && lexeme[head].get_token_type() == RIGHT_CBRACE {
+            head += 1;
+        }
+        temp_lexeme.clear();
+    }
+    if def == false {
+        stream.push("_".to_string());
+        stream.push("=>".to_string());
+        stream.push("{".to_string());
+        stream.push("}".to_string());
+    }
+    stream
+}
+
+
 /**
  * parse_for:
  * parse c/c++ do while statements into rust
@@ -983,7 +1090,6 @@ fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
         } else {
 
             if lexeme[thead].get_base_type() != BASE_UNOP {
-                println!("IN_EXPR {:?}",lexeme[thead]);
                 stream.push(lexeme[thead].get_token_value());
             }
         }

@@ -1,5 +1,20 @@
 
 int main(){
+    switch(a) {
+        case 1:
+            a++;
+            func();
+            b--;
+            int a = 5;
+            break;
+
+        case "2":
+            int b = 25;
+            break;
+        case '5':
+            int b = 25;
+            break;
+    }
     int a,b,c;
     a=b=c=100;
     a++,b++,c++;
@@ -29,7 +44,7 @@ int main(){
 }
 
 
-//some func
+// //some func
 void func() {
     // empty
 
