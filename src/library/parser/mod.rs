@@ -218,7 +218,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 }
 
                 stream.append(&mut parse_case(&temp_lexeme));
-                stream.push("}".to_string());
+                stream.push("};".to_string());
             }
 
             (_, KEYWORD_WHILE) => {
@@ -385,8 +385,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
                     if lexeme[head].get_token_type() == COMMA{ 
-                        println!("problem");
-                         stream.push(";".to_string()); }else{     
+                          stream.push(";".to_string()); }else{     
                     stream.push(lexeme[head].get_token_value());
                     }
                 }
@@ -784,6 +783,7 @@ fn parse_case(lexeme: &Vec<Token>) -> Vec<String> {
     let mut temp_lexeme: Vec<Token> = Vec::new();
     let mut def: bool = false;
 
+    //look whether default case is handled for exaustive search
     while head < lexeme.len() {
         if lexeme[head].get_token_type() == KEYWORD_DEFAULT {
             stream.push("_".to_string());
@@ -830,7 +830,7 @@ fn parse_case(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push("_".to_string());
         stream.push("=>".to_string());
         stream.push("{".to_string());
-        stream.push("}".to_string());
+        stream.push("},".to_string());
     }
     stream
 }
