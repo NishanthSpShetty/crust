@@ -51,7 +51,7 @@ fn main() {
     for _ in 0..7 {
        print!(".");
        io::stdout().flush().ok().expect("Buffer cleaning error");
-       std::thread::sleep(std::time::Duration::from_millis(500));
+    //    std::thread::sleep(std::time::Duration::from_millis(500));
        
     }
 
@@ -63,7 +63,7 @@ fn main() {
     for _ in 0..7 {
        print!(".");
        io::stdout().flush().ok().expect("Buffer cleaning error");
-       std::thread::sleep(std::time::Duration::from_millis(600));
+    //    std::thread::sleep(std::time::Duration::from_millis(600));
        
     }
     let s = parser::parse_program(&tokens);
