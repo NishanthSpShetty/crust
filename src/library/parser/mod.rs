@@ -1,5 +1,7 @@
+
 use library::lexeme::Type::*;
 use library::lexeme::Token;
+
 
 #[derive(Debug)]
 struct SymbolTable {
@@ -7,6 +9,12 @@ struct SymbolTable {
     id_name: String,
     is_assigned: bool,
     assigned_val: String,
+}
+#[derive(Debug)]
+struct StructMem{
+    name:String,
+    typ:i32,
+    identifier:String,
 }
 
 impl Clone for SymbolTable {
@@ -20,7 +28,6 @@ impl Clone for SymbolTable {
         }
     }
 }
-
 static mut IN_BLOCK_STMNT: bool = false;
 static mut IN_EXPR: bool = false;
 
@@ -36,7 +43,7 @@ static mut IN_EXPR: bool = false;
  * - comments
  */
 pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
-
+    let mut struct_mem:Vec<StructMem> = Vec::new();
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
     let mut lookahead: usize = 0;
@@ -391,19 +398,26 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 }
                 //push the right curly brace
                 temp_lexeme.push(lexeme[head].clone());
-                stream.append(&mut parse_struct(&temp_lexeme));
+                stream.append(&mut parse_struct(&temp_lexeme,&mut struct_mem));
                 temp_lexeme.clear();
-                head+=2; //skip semicolon
+                head+=1; //skip semicolon
                 }else{
                     //struct variable declaration
+                   
                     while lexeme[head].get_token_type()!=SEMICOLON{
                         temp_lexeme.push(lexeme[head].clone());
+                        head+=1;
                     }
                     temp_lexeme.push(lexeme[head].clone());
                     head+=1;
-                    stream.append(&mut parse_struct_decl(&temp_lexeme));
+                     stream.append(&mut parse_struct_decl(&temp_lexeme,&struct_mem));
                     temp_lexeme.clear();
                 }
+             // moved head till ; to skip but it causing wierd bug, o=pointing at head will inser semicolon at the end of strcut
+             //which is not valid in rust.
+           //  head-=1;
+           //  println!("{:?}",lexeme[head].get_token_type());
+               continue;
             }
             // if all fails
             (_, _) => {
@@ -1186,13 +1200,14 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
 }
 
 
-fn parse_struct(lexeme:&Vec<Token>) -> Vec<String>{
+fn parse_struct(lexeme:&Vec<Token>,mut structmem:&mut Vec<StructMem> ) -> Vec<String>{
     let mut stream:Vec<String> = Vec::new();
     let mut head:usize = 0;
     stream.push(lexeme[head].get_token_value()); //push the keyword parse_struct
     head+=1;
     //push the struct id_name
     stream.push(lexeme[head].get_token_value()); //push the keyword parse_struct
+    let name = lexeme[head].get_token_value();
     stream.push("{".to_string());
     head+=2;
     let mut temp_lexeme:Vec<Token> = Vec::new();
@@ -1203,34 +1218,73 @@ fn parse_struct(lexeme:&Vec<Token>) -> Vec<String>{
         }
         temp_lexeme.push(lexeme[head].clone());
         head+=1;
-        stream.append(&mut parse_struct_inbody_decl(&temp_lexeme));
+        stream.append(&mut parse_struct_inbody_decl(&temp_lexeme,&mut structmem,&name));
         temp_lexeme.clear();
     }
     stream.push(lexeme[head].get_token_value());
+     
+     
      stream
 }
 
-fn parse_struct_inbody_decl(lexeme:&Vec<Token>)->Vec<String> {
+fn parse_struct_inbody_decl(lexeme:&Vec<Token>,struct_mem:&mut Vec<StructMem>,name:&String)->Vec<String> {
     let mut stream:Vec<String> = Vec::new();
 
-    //push the identifer 
+    //push the identifier 
     stream.push(lexeme[1].get_token_value());
     stream.push(":".to_string());
+    let mut struct_memt=StructMem{identifier:"NONE".to_string(),typ:0,name:name.clone()};
 
     if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
             stream.push(rust_type);
+            struct_memt.typ = lexeme[0].get_token_type() as i32;
+            struct_memt.identifier = lexeme[1].get_token_value();
         }
+    struct_mem.push(struct_memt);
     stream.push(",".to_string());
-    stream
+     stream
 }
 
 
-fn parse_struct_decl(lexeme:&Vec<Token>)->Vec<String>{
+fn parse_struct_decl(lexeme:&Vec<Token>,struct_table:&Vec<StructMem>)->Vec<String>{
     let mut stream:Vec<String> = Vec::new();
-
-    stream.push(lexeme[0].get_token_value());
+    stream.push("let".to_string());
+    let mut head =1;
+    //struct FilePointer fp;
+    let struct_name = lexeme[head].get_token_value();
+    head+=1;
+    stream.push(lexeme[head].get_token_value()); //push the identifer => let a
+    stream.push("=".to_string());
+    stream.push(struct_name.clone());
+    stream.push("{".to_string());
+    
+    for row in struct_table{
+        if row.name == struct_name{
+            stream.push(row.identifier.clone());
+            stream.push(":".to_string());
+            stream.push(get_default_value_for(row.typ));
+            stream.push(",".to_string());
+        }
+    }
+    stream.push("};".to_string());
+    
     stream
 }
+
+fn get_default_value_for(c_type: i32) -> String {
+    match c_type {
+        0 => "0i32".to_string(),
+        1 => "0i16".to_string(),
+        2 => "0i64".to_string(),
+        3 => "0.0f32".to_string(),
+        4 => "0.0f64".to_string(),
+        5 => "'_'".to_string(),
+        6 => "false".to_string(),
+        _ => "_".to_string(),
+    }
+}
+
+
 
 #[test]
 fn test_parse_if_braces() {
