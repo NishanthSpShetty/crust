@@ -87,12 +87,13 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
 
                         //parse function block
                         stream.append(&mut parse_function(&temp_lexeme));
+                        temp_lexeme.clear();
+
                         unsafe {
                             IN_BLOCK_STMNT = false;
                         }
-
-                        temp_lexeme.clear();
                     }
+
                     //array declaration found
                     LEFT_SBRACKET => {
                         lookahead = skip_stmt(&lexeme, lookahead);
@@ -107,6 +108,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                         stream.append(&mut parse_array_declaration(&temp_lexeme));
                         temp_lexeme.clear();
                     }
+
                     // variable declaration or declaration + assignment
                     SEMICOLON | COMMA | OP_ASSIGN => {
                         lookahead = skip_stmt(&lexeme, lookahead);
@@ -128,7 +130,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
 
             // matches if statement
             (_, KEYWORD_IF) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
+                // let mut temp_lexeme: Vec<Token> = Vec::new();
 
                 // move lookahead past conditon
                 while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
@@ -153,47 +155,45 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
 
                 // parse if
                 stream.append(&mut parse_if(&temp_lexeme));
+                temp_lexeme.clear();
             }
 
             (_, KEYWORD_ELSE) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
-                let mut elseif: bool = false;
-
+                stream.push("else".to_string());
                 head += 1;
                 lookahead = head;
                 if lexeme[head].get_token_type() == KEYWORD_IF {
-                    elseif = true;
+                    continue;
                 }
+                else {
+                    if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
+                        head += 1;
+                        lookahead = skip_block(&lexeme, head) - 1;
+                    }
+                    else {
+                        lookahead = skip_stmt(&lexeme, lookahead);
+                    }
 
-                if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
-                    lookahead = skip_block(&lexeme, lookahead + 1);
-                } else {
-                    lookahead = skip_stmt(&lexeme, lookahead);
-                }
-
-                while head < lookahead {
-                    let l: Token = lexeme[head].clone();
-                    temp_lexeme.push(l);
-                    head += 1;
-                }
-                //** parse else body
-                stream.push("else".to_string());
-                if elseif == false {
+                    while head < lookahead {
+                        let l: Token = lexeme[head].clone();
+                        temp_lexeme.push(l);
+                        head += 1;
+                    }
+                    //** parse else body
                     stream.push("{".to_string());
-                }
-                stream.append(&mut parse_program(&temp_lexeme));
-                if elseif == false {
+                    stream.append(&mut parse_program(&temp_lexeme));
+                    temp_lexeme.clear();
                     stream.push("}".to_string());
                 }
             }
 
             (_, KEYWORD_SWITCH) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
 
                 while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                     lookahead += 1;
                 }
                 lookahead += 1;
+
                 lookahead = skip_block(&lexeme, lookahead);
                 while head < lookahead {
                     let l: Token = lexeme[head].clone();
@@ -204,14 +204,14 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                     IN_SWITCH = true;
                 }
                 stream.append(&mut parse_switch(&temp_lexeme));
+                temp_lexeme.clear();
                 unsafe {
                     IN_SWITCH = false;
                 }
-                temp_lexeme.clear();
             }
 
             (_, KEYWORD_WHILE) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
+                // let mut temp_lexeme: Vec<Token> = Vec::new();
 
                 // move lookahead past conditon
                 while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
@@ -237,22 +237,18 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 let was_in_switch: bool;
                 unsafe {
                     was_in_switch = IN_SWITCH;
-                    if IN_SWITCH {
-                        IN_SWITCH = false;
-                    }
+                    IN_SWITCH = false;
                 }
                 // parse if
                 stream.append(&mut parse_while(&temp_lexeme));
                 unsafe {
-                    if was_in_switch {
-                        IN_SWITCH = true;
-                    }
+                    IN_SWITCH = was_in_switch;
                 }
+                temp_lexeme.clear();
             }
 
             // matches do while statement
             (_, KEYWORD_DO) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
 
                 // move lookahead past block
                 lookahead = skip_block(&lexeme, lookahead + 2);
@@ -268,22 +264,17 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 let was_in_switch: bool;
                 unsafe {
                     was_in_switch = IN_SWITCH;
-                    if IN_SWITCH {
-                        IN_SWITCH = false;
-                    }
+                    IN_SWITCH = false;
                 }
                 stream.append(&mut parse_dowhile(&temp_lexeme));
+                temp_lexeme.clear();
                 unsafe {
-                    if was_in_switch {
-                        IN_SWITCH = true;
-                    }
+                        IN_SWITCH = was_in_switch;
                 }
             }
 
             // matches for statement
             (_, KEYWORD_FOR) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
-
                 while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                     lookahead += 1;
                 }
@@ -299,16 +290,12 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 let was_in_switch: bool;
                 unsafe {
                     was_in_switch = IN_SWITCH;
-                    if IN_SWITCH {
-                        IN_SWITCH = false;
-                    }
+                    IN_SWITCH = false;
                 }
                 stream.append(&mut parse_for(&temp_lexeme));
-
+                temp_lexeme.clear();
                 unsafe {
-                    if was_in_switch {
-                        IN_SWITCH = true;
-                    }
+                        IN_SWITCH = was_in_switch;
                 }
             }
 
@@ -321,7 +308,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
 
             // assignment statements
             (_, IDENTIFIER) => {
-                let mut temp_lexeme: Vec<Token> = Vec::new();
+                // let mut temp_lexeme: Vec<Token> = Vec::new();
                 //identifier = expr
                 //identifier()
                 //identifier+expr
@@ -351,6 +338,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
 
                             // parse assignment
                             stream.append(&mut parse_assignment(&temp_lexeme));
+                            temp_lexeme.clear();
                         }
                     }
                     (BASE_UNOP, _) => unsafe {
@@ -378,6 +366,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
 
                         // parse assignment
                         stream.append(&mut parse_expr(&temp_lexeme));
+                        temp_lexeme.clear();
 
                     }
                     (_, LEFT_BRACKET) => {
@@ -397,6 +386,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                     }
                 };
             }
+
             (BASE_UNOP, _) => {
                 stream.push(lexeme[head + 1].get_token_value());
                 stream.push(match lexeme[head].get_token_type() {
@@ -407,7 +397,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 head += 2;
             }
 
-            (BASE_NONE, KEYWORD_STRUCT) => {
+            (_, KEYWORD_STRUCT) => {
                 if lexeme[head + 2].get_token_type() == LEFT_CBRACE {
                     //struct A{};
                     while lexeme[head].get_token_type() != RIGHT_CBRACE {
@@ -437,7 +427,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 //  println!("{:?}",lexeme[head].get_token_type());
                 continue;
             }
-            (BASE_NONE, KEYWORD_CLASS) => {
+            (_, KEYWORD_CLASS) => {
 
                 if lexeme[head + 2].get_token_type() == LEFT_CBRACE {
                     //struct A{};
@@ -465,13 +455,14 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 }
 
             }
-            (BASE_NONE,KEYWORD_ENUM)=>{
+            (_,KEYWORD_ENUM)=>{
                 while lexeme[head].get_token_type() != SEMICOLON {
                         stream.push(lexeme[head].get_token_value());
                         head += 1;
                     }
                     head+=1;
             }
+
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
@@ -1862,6 +1853,86 @@ fn test_parse_if_no_braces_inside_braces() {
 }
 
 #[test]
+fn test_parse_if_else_ladder() {
+    let tok_vector = vec![Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("=="), BASE_BINOP, OP_EQU, 0, 3),
+                          Token::new(String::from("b"), BASE_NONE, IDENTIFIER, 0, 4),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("/*Do something here*/"),
+                                     BASE_COMMENT,
+                                     COMMENT_MULTI,
+                                     1,
+                                     1),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7),
+                          Token::new(String::from("else"), BASE_NONE, KEYWORD_ELSE, 0, 0),
+                          Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("=="), BASE_BINOP, OP_EQU, 0, 3),
+                          Token::new(String::from("c"), BASE_NONE, IDENTIFIER, 0, 4),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("c"), BASE_NONE, IDENTIFIER, 0, 4),
+                          Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 4),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
+                          Token::new(String::from("else"), BASE_NONE, KEYWORD_ELSE, 0, 0),
+                          Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("=="), BASE_BINOP, OP_EQU, 0, 3),
+                          Token::new(String::from("d"), BASE_NONE, IDENTIFIER, 0, 4),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("d"), BASE_NONE, IDENTIFIER, 0, 4),
+                          Token::new(String::from("--"), BASE_UNOP, OP_DEC, 0, 4),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 6),
+                          Token::new(String::from("else"), BASE_NONE, KEYWORD_ELSE, 0, 0),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("--"), BASE_UNOP, OP_DEC, 0, 4),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7)];
+    let stream = vec!["if",
+                      "a",
+                      "==",
+                      "b",
+                      "{",
+                      "/*Do something here*/\n",
+                      "}",
+                      "else",
+                      "if",
+                      "a",
+                      "==",
+                      "c",
+                      "{",
+                      "c",
+                      "+=1",
+                      ";",
+                      "}",
+                      "else",
+                      "if",
+                      "a",
+                      "==",
+                      "d",
+                      "{",
+                      "d",
+                      "-=1",
+                      ";",
+                      "}",
+                      "else",
+                      "{",
+                      "a",
+                      "-=1",
+                      ";",
+                      "}"];
+
+    assert_eq!(stream, parse_program(&tok_vector));
+}
+
+#[test]
 fn test_parse_assignment_single() {
     let tok_vector = vec![Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 1),
@@ -2036,6 +2107,38 @@ fn test_parse_assignment_pre_post_ops() {
 }
 
 #[test]
+fn test_parse_function() {
+    unsafe {
+        IN_BLOCK_STMNT = true;
+    }
+    let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 1),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 2),
+                          Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 1, 5),
+                          Token::new(String::from("a1"), BASE_NONE, IDENTIFIER, 1, 6),
+                          Token::new(String::from(","), BASE_NONE, COMMA, 1, 9),
+                          Token::new(String::from("char"), BASE_DATATYPE, PRIMITIVE_CHAR, 1, 5),
+                          Token::new(String::from("a2"), BASE_NONE, IDENTIFIER, 1, 6),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 3),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 4),
+                          Token::new(String::from("a1"), BASE_NONE, IDENTIFIER, 1, 6),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 7),
+                          Token::new(String::from("1"), BASE_VALUE, NUM_INT, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
+                          Token::new(String::from("a2"), BASE_NONE, IDENTIFIER, 1, 6),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 7),
+                          Token::new(String::from("'a'"), BASE_VALUE, CHAR_VAL, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 10)];
+    let stream = vec!["fn", "a", "(", "a1", ":", "i32", ",", "a2", ":", "char", ")", "->", "i32",
+                      "{", "a1", "=", "1", ";", "a2", "=", "'a'", ";", "}"];
+    assert_eq!(stream, parse_function(&tok_vector));
+    unsafe {
+        IN_BLOCK_STMNT = false;
+    }
+}
+
+#[test]
 fn test_parse_function_no_args() {
     unsafe {
         IN_BLOCK_STMNT = true;
@@ -2053,7 +2156,31 @@ fn test_parse_function_no_args() {
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 10)];
     let stream = vec!["fn", "a", "(", ")", "->", "i32", "{", "let mut", "a", ":", "i32", "=", "1",
                       ";", "}"];
-    assert_eq!(stream, parse_program(&tok_vector));
+    assert_eq!(stream, parse_function(&tok_vector));
+    unsafe {
+        IN_BLOCK_STMNT = false;
+    }
+}
+
+#[test]
+fn test_parse_function_no_ret() {
+    unsafe {
+        IN_BLOCK_STMNT = true;
+    }
+    let tok_vector = vec![Token::new(String::from("void"), BASE_DATATYPE, PRIMITIVE_VOID, 0, 0),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 1),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 2),
+                          Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+                          Token::new(String::from("a1"), BASE_NONE, IDENTIFIER, 0, 1),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 3),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 4),
+                          Token::new(String::from("a1"), BASE_NONE, IDENTIFIER, 1, 6),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 7),
+                          Token::new(String::from("1"), BASE_VALUE, NUM_INT, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 10)];
+    let stream = vec!["fn", "a", "(", "a1", ":", "i32", ")", "{", "a1", "=", "1", ";", "}"];
+    assert_eq!(stream, parse_function(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
     }
