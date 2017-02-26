@@ -27,6 +27,7 @@ pub enum Type {
     BASE_ASSIGNOP,
     BASE_COMMENT,
     BASE_VALUE,
+    BASE_MODIFIER,
     BASE_NONE,
 
     //---> Put operators here

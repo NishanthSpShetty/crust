@@ -5,18 +5,15 @@ fn main() {
             func();
             b -= 1;
             let mut a: i32 = 5;
-            break;
         }
         "2" => {
             let mut b: i32 = 25;
-            break;
         }
         '5' => {
             let mut b: i32 = 25;
-            break;
         }
         _ => {}
-    };
+    }
     let mut a: i32;
     let mut b: i32;
     let mut c: i32;
