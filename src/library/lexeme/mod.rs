@@ -107,6 +107,8 @@ pub enum Type {
     KEYWORD_CONST, //
     KEYWORD_DEFAULT, //
     KEYWORD_RETURN, //
+    KEYWORD_STRUCT,
+    KEYWORD_ENUM,
 
     //---> If all fails
     OTHER,

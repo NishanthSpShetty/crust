@@ -16,7 +16,7 @@ fn main() {
             break;
         }
         _ => {}
-    }
+    };
     let mut a: i32;
     let mut b: i32;
     let mut c: i32;

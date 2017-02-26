@@ -31,7 +31,7 @@ fn main() {
     println!("Input file size : {}bytes ", size);
 
     let mut tok = lexer::Tokenizer::new(&text);
-    println!("Tokenizing...");
+    print!("Tokenizing");
 
     let mut out: Vec<String> = Vec::new();
     let tokens = tok.tokenize();
@@ -47,34 +47,51 @@ fn main() {
         ln = i.get_token_ln();
         out.push(temp);
     }
-    //    file.write_all(output.as_bytes()).expect("Unable to write to file");
+    
+    for _ in 0..7 {
+       print!(".");
+       io::stdout().flush().ok().expect("Buffer cleaning error");
+    //    std::thread::sleep(std::time::Duration::from_millis(500));
+       
+    }
 
-    println!("Tokenization completed....\nInvoking parser....");
+    //    file.write_all(output.as_bytes()).expect("Unable to write to file");
+    
+    println!("\t:DONE");
+    print!("Invoking Parser .");
+
+    for _ in 0..7 {
+       print!(".");
+       io::stdout().flush().ok().expect("Buffer cleaning error");
+    //    std::thread::sleep(std::time::Duration::from_millis(600));
+       
+    }
     let s = parser::parse_program(&tokens);
     let mut o: String = String::new();
     for i in s {
         o = o + " ";
         o = o + &i[..];
     }
-    //write to a output file
 
-    let mut fname = String::new();
-    for c in input.chars() {
-        if c == '.' {
-            break;
-        }
-        fname.push(c);
-    }
-    let fname = "./test_cases/unit_tests/".to_string() + &fname[..] + ".rs";
-    let mut file = File::create(&fname[..]).expect("Unable to open file to write");
+    println!("\t:DONE");
+
+    //write to a output file
+   
+   let mut fname1 = String::new();
+   for c in input.chars() {
+        if c == '.' { break; }
+        fname1.push(c);
+   }
+   fname1=fname1+".rs";
+   let fname = "./test_cases/unit_tests/".to_string()+ &fname1[..];
+    let mut file = File::create(&fname[..])
+        .expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
 
     Command::new("rustfmt")
         .arg(&fname[..])
         .spawn()
         .expect("Failed to format the translated code");
-    println!("Rust equivalent of source : {} is generated successfully, View the rust code in \
-              file : {}",
-             input.trim(),
-             fname);
+    println!("Rust equivalent of source of `{}` is generated successfully, View the rust code in file : `{}`",
+             input.trim(),fname1);
 }
