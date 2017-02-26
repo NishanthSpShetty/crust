@@ -10,3 +10,7 @@ impl A {
         return a;
     }
 }
+enum SOME {
+    A,
+    B,
+}

@@ -423,6 +423,7 @@ impl<'a> Tokenizer<'a> {
             "unsigned" => (KEYWORD_UNSIGNED, BASE_NONE),
             "typedef" => (PRIMITIVE_TYPEDEF, BASE_NONE),
             "class" => (KEYWORD_CLASS, BASE_NONE),
+            "enum" => (KEYWORD_ENUM,BASE_NONE),
             "break" => (KEYWORD_BREAK, BASE_NONE),
             "continue" => (KEYWORD_CONTINUE, BASE_NONE),
             "for" => (KEYWORD_FOR, BASE_NONE),

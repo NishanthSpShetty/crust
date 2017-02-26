@@ -457,6 +457,13 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                 }
 
             }
+            (BASE_NONE,KEYWORD_ENUM)=>{
+                while lexeme[head].get_token_type() != SEMICOLON {
+                        stream.push(lexeme[head].get_token_value());
+                        head += 1;
+                    }
+                    head+=1;
+            }
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {
@@ -1446,8 +1453,7 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
             temp_lexeme.clear();
 
         } else {
-            println!("here");
-            while lexeme[head].get_token_type() != RIGHT_CBRACE &&
+           while lexeme[head].get_token_type() != RIGHT_CBRACE &&
                   lexeme[head].get_base_type() != BASE_MODIFIER {
                 while lexeme[head].get_token_type() != SEMICOLON {
                     temp_lexeme.push(lexeme[head].clone());

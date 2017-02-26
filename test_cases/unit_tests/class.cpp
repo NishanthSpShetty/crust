@@ -6,3 +6,8 @@ class A{
 
     public : int getInt(int a){ return a; }
 };
+
+
+enum SOME{
+    A,B,
+};
