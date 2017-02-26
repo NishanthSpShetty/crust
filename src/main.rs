@@ -32,7 +32,7 @@ fn main() {
 
     let mut tok = lexer::Tokenizer::new(&text);
     println!("Tokenizing...");
-         
+
     let mut out: Vec<String> = Vec::new();
     let tokens = tok.tokenize();
     // tok.tokenize();
@@ -57,21 +57,24 @@ fn main() {
         o = o + &i[..];
     }
     //write to a output file
-   
-   let mut fname = String::new();
-   for c in input.chars() {
-        if c == '.' { break; }
+
+    let mut fname = String::new();
+    for c in input.chars() {
+        if c == '.' {
+            break;
+        }
         fname.push(c);
-   }
-   let fname = "./test_cases/unit_tests/".to_string()+ &fname[..]+".rs";
-    let mut file = File::create(&fname[..])
-        .expect("Unable to open file to write");
+    }
+    let fname = "./test_cases/unit_tests/".to_string() + &fname[..] + ".rs";
+    let mut file = File::create(&fname[..]).expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
 
     Command::new("rustfmt")
         .arg(&fname[..])
         .spawn()
         .expect("Failed to format the translated code");
-    println!("Rust equivalent of source : {} is generated successfully, View the rust code in file : {}",
-             input.trim(),fname);
+    println!("Rust equivalent of source : {} is generated successfully, View the rust code in \
+              file : {}",
+             input.trim(),
+             fname);
 }
