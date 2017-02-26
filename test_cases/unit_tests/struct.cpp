@@ -3,5 +3,5 @@ struct FilePointer{
     int stdout;
     int stderr;
 };
-
-struct FilePointer fp;
+int main(){
+}

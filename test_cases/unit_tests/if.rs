@@ -4,19 +4,35 @@ fn main() {
             a += 1;
             func();
             b -= 1;
-            let mut a: i32 = 5;
+            /*crust in strict mod avoids declaring all variables as mutable.
+             * If you are mutating any values anywhere in program please change the declaration statement as
+             * let mut var_name:type=init_val;
+             **/
+            let a: i32 = 5;
         }
         "2" => {
-            let mut b: i32 = 25;
+            /*crust in strict mod avoids declaring all variables as mutable.
+             * If you are mutating any values anywhere in program please change the declaration statement as
+             * let mut var_name:type=init_val;
+             **/
+            let b: i32 = 25;
         }
         '5' => {
-            let mut b: i32 = 25;
+            /*crust in strict mod avoids declaring all variables as mutable.
+             * If you are mutating any values anywhere in program please change the declaration statement as
+             * let mut var_name:type=init_val;
+             **/
+            let b: i32 = 25;
         }
         _ => {}
     }
-    let mut a: i32;
-    let mut b: i32;
-    let mut c: i32;
+    /*crust in strict mod avoids declaring all variables as mutable.
+     * If you are mutating any values anywhere in program please change the declaration statement as
+     * let mut var_name:type=init_val;
+     **/
+    let a: i32;
+    let b: i32;
+    let c: i32;
     c = 100;
     b = c;
     a = b;
@@ -38,12 +54,20 @@ fn main() {
     } else {
         func();
     }
-    let mut i: i32 = 0;
+    /*crust in strict mod avoids declaring all variables as mutable.
+     * If you are mutating any values anywhere in program please change the declaration statement as
+     * let mut var_name:type=init_val;
+     **/
+    let i: i32 = 0;
     loop {
         l[i] = m[i] + n[i];
         i += 1;
     }
-    let mut i: i32 = 0;
+    /*crust in strict mod avoids declaring all variables as mutable.
+     * If you are mutating any values anywhere in program please change the declaration statement as
+     * let mut var_name:type=init_val;
+     **/
+    let i: i32 = 0;
     while i < 100 {
         l[i] = m[i] + n[i];
         i += 1;

@@ -31,6 +31,15 @@ impl Clone for SymbolTable {
 static mut IN_BLOCK_STMNT: bool = false;
 static mut IN_EXPR: bool = false;
 static mut IN_SWITCH: bool = false;
+static mut strict:bool = true;
+
+
+
+pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
+     unsafe{ strict = strict_parser;}
+   
+    parse_program(&lexeme)
+}
 /**
  * parse_program:
  * parse c program from Token Vector
@@ -42,13 +51,12 @@ static mut IN_SWITCH: bool = false;
  * - if
  * - comments
  */
-pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
+ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
     let mut struct_mem: Vec<StructMem> = Vec::new();
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
     let mut lookahead: usize = 0;
     let mut temp_lexeme: Vec<Token> = Vec::new();
-
     while head < lexeme.len() {
         // gets both base type and token type
         match lexeme[head].get_type() {
@@ -410,7 +418,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     temp_lexeme.push(lexeme[head].clone());
                     stream.append(&mut parse_struct(&temp_lexeme, &mut struct_mem));
                     temp_lexeme.clear();
-                    head += 2; //skip semicolon
+                    head += 1; //skip semicolon
                 } else {
                     //struct variable declaration
 
@@ -419,7 +427,7 @@ pub fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         head += 1;
                     }
                     temp_lexeme.push(lexeme[head].clone());
-                    head += 2;
+                    head += 1;
                     stream.append(&mut parse_struct_decl(&temp_lexeme, &struct_mem));
                     temp_lexeme.clear();
                 }
@@ -589,9 +597,23 @@ fn parse_function(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push(")".to_string());
         stream.push("{".to_string());
         if lexeme[head].get_token_type() != RIGHT_BRACKET {
-            stream.push("let mut argv = env::args();".to_string());
+            unsafe{
+            if strict == false{
+            stream.push("\n/*Avoid using mutable variables unless it is necessory to do so */\n".to_string());
+            stream.push("let mut argv:Vec<_> = env::args().collect();".to_string());
             stream.push("let mut argc = argv.len();".to_string());
+            }else{
+             stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
+                               * If you are mutating any values anywhere in program please change the declaration statement as
+                               * let mut var_name:type=init_val;
+                               **/\n".to_string());
+           
+             stream.push("let  argv = env::args();".to_string());
+            stream.push("let  argc = argv.len();".to_string());
+            }
+            }
         }
+
     }
 
     while lexeme[head].get_token_type() != LEFT_CBRACE {
@@ -698,7 +720,18 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
         head += 1;
 
     }
-
+     unsafe{
+                    if strict==false{
+                    stream.push("\n/* Avoid declaring mutable variables unless required.*/\n".to_string());
+                             }else{
+                               stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
+                               * If you are mutating any values anywhere in program please change the declaration statement as
+                               * let mut var_name:type=init_val;
+                               **/\n".to_string());
+                       
+                             }
+                
+                }
     for i in &sym_tab {
 
         // get identifier
@@ -707,7 +740,15 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             if IN_BLOCK_STMNT == false {
                 stream.push("static".to_string());
             } else {
-                stream.push("let mut".to_string());
+                    if strict==false{
+                    stream.push("let mut".to_string());
+                    }else{
+                    
+                    stream.push("let ".to_string());
+                    
+                    }
+                
+                
             }
         }
         stream.push(i.id_name.clone());
@@ -1283,7 +1324,18 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     if let Some(t) = parse_type(lexeme[0].get_token_type() as i32) {
         typ = t;
     }
-    stream.push("let mut ".to_string());
+    unsafe{
+        if strict==true{  stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
+                               * If you are mutating any values anywhere in program please change the declaration statement as
+                               * let mut var_name:type=init_val;
+                               **/\n".to_string());
+            stream.push("let  ".to_string());
+    }else{
+                stream.push("\n/*avoid declaring mutable array unless required to do so */\n".to_string());
+                  stream.push("let mut ".to_string());
+  
+    }
+    }
     let mut head = 0;
     stream.push(lexeme[head + 1].get_token_value());
     stream.push(":[".to_string() + &typ[..] + ";" + &lexeme[head + 3].get_token_value()[..] + "]");
@@ -1378,6 +1430,12 @@ fn parse_struct_inbody_decl(lexeme: &Vec<Token>,
 
 fn parse_struct_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
+    
+    stream.push("\n/* Declaration of structure should be completed with initialization of the field
+    * parser may miss the generation of initialization statements.
+    * It should be in the following format 
+    * let variable:struct_name = struct_name { member1:value1,member2:value2,..}
+    **/ ".to_string());
     stream.push("let".to_string());
     let mut head = 1;
     //struct FilePointer fp;
@@ -1577,6 +1635,12 @@ fn parse_class_inbody_decl(lexeme: &Vec<Token>,
 
 fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
+    
+    stream.push("\n/* Declaration of structure should be completed with initialization of the field
+    * parser may miss the generation of initialization statements.
+    * It should be in the following format 
+    * let variable:struct_name = struct_name { member1:value1,member2:value2,..}
+    **/ ".to_string());
     stream.push("let".to_string());
     let mut head = 1;
     //struct FilePointer fp;

@@ -8,6 +8,3 @@ class A{
 };
 
 
-enum SOME{
-    A,B,
-};

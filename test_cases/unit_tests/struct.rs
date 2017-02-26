@@ -1,1 +1,1 @@
- struct FilePointer { stdin : i32 , stdout : i32 , stderr : i32 , } let fp = FilePointer { stdin : 0i32 , stdout : 0i32 , stderr : 0i32 , };
+ struct FilePointer { stdin : i32 , stdout : i32 , stderr : i32 , } ; fn main ( ) { }

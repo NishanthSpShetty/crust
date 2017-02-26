@@ -14,12 +14,26 @@ use library::lexer;
 use library::parser;
 
 fn main() {
+
     let mut input = String::new();
     print!("Enter the C/C++ file to be converted to Rust : ");
     io::stdout().flush().ok().expect("Buffer cleaning error");
     io::stdin().read_line(&mut input).expect("Unable to read");
+     
+    let mut strict = String::new();
+   
+    print!("Enter the translation mode [(S/s)trict/(L/l)oose] : ");
+    io::stdout().flush().ok().expect("Buffer cleaning error");
+    io::stdin().read_line(&mut strict).expect("Unable to read");
+    let strict = strict.trim();
+    let strict:bool = match &strict[..]{
+        "S"|"Strict"|"s" => true,
+        _ => false,
+    };
 
-    let file = match File::open(String::from("./test_cases/unit_tests/") + input.trim()) {
+
+ 
+ let file = match File::open(String::from("./test_cases/unit_tests/") + input.trim()) {
         Ok(f) => f,
         Err(..) => panic!("Unable to open input source file."),
     };
@@ -38,9 +52,7 @@ fn main() {
     // tok.tokenize();
     let mut ln = 0;
     for i in &tokens {
-        // println!["[ {:?} ], ", i];
-        // out = out + &(i.get_token_value()) as &str;
-        let mut temp = i.get_token_value();
+         let mut temp = i.get_token_value();
         if i.get_token_ln() != ln {
             temp = "\n".to_string() + &temp[..];
         }
@@ -66,7 +78,7 @@ fn main() {
         //    std::thread::sleep(std::time::Duration::from_millis(600));
 
     }
-    let s = parser::parse_program(&tokens);
+    let s = parser::init_parser(&tokens,strict);
     let mut o: String = String::new();
     for i in s {
         o = o + " ";
@@ -74,10 +86,9 @@ fn main() {
     }
 
     println!("\t:DONE");
-
-    //write to a output file
-
+    let fname:String;
     let mut fname1 = String::new();
+    //write to a output file
     for c in input.chars() {
         if c == '.' {
             break;
@@ -85,13 +96,15 @@ fn main() {
         fname1.push(c);
     }
     fname1 = fname1 + ".rs";
-    let fname = "./test_cases/unit_tests/".to_string() + &fname1[..];
+    fname = "./test_cases/unit_tests/".to_string() + &fname1[..];
+    
+    
+
     let mut file = File::create(&fname[..]).expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
-
     Command::new("rustfmt")
         .arg(&fname[..])
-        .spawn()
+        .output()
         .expect("Failed to format the translated code");
     println!("Rust equivalent of source of `{}` is generated successfully, View the rust code in file : `{}`",
              input.trim(),
