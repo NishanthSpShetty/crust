@@ -9,10 +9,8 @@ fn main() {
      * let mut var_name:type=init_val;
      **/
     let b: i32 = 34;
-    a[2];
-    b = a;
-    func();
-    b = func;
+    b = a[2];
+    b = func() * a[1] + 234 + func();
 }
 fn func() -> i32 {
     return 0;

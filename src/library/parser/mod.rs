@@ -1172,7 +1172,7 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let mut thead: usize = 2;
     let mut lexeme1: Vec<Token> = Vec::new();
 
-    let n = 2;
+    let mut n = 2;
     let m = 3;
 
     let mut tstream: Vec<String> = Vec::new();
@@ -1208,27 +1208,30 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
         stream.append(&mut parse_expr(&lexeme1));
     } else {
 
-        // BUG--1: if function value is assigned to a variable, it comes here
-        if lexeme[m].get_token_type() != SEMICOLON && lexeme[m].get_token_type() != COMMA {
+        if lexeme[m].get_token_type() == OP_ASSIGN { 
             while lexeme[thead].get_token_type() != SEMICOLON &&
                   lexeme[thead].get_token_type() != COMMA {
                 lexeme1.push(lexeme[thead].clone());
                 thead += 1;
             }
             lexeme1.push(lexeme[thead].clone());
-            // BUG--2: it parses the function call here and appends to the stream
             stream.append(&mut parse_program(&lexeme1));
         }
-        // BUG--3: it pushes the variable to be assigned afterwards
         stream.push(lexeme[0].get_token_value());
         stream.push(lexeme[1].get_token_value());
         if lexeme[n].get_base_type() == BASE_UNOP {
             stream.push(lexeme[m].get_token_value());
         } else {
-            // BUG--4: then it pushes the function name
             stream.push(lexeme[n].get_token_value());
+            n += 1;
+            if lexeme[n].get_token_type() == LEFT_BRACKET || lexeme[n].get_token_type() == LEFT_SBRACKET {
+                while lexeme[n].get_token_type() != SEMICOLON {
+                    stream.push(lexeme[n].get_token_value());
+                    n += 1;
+                }
+            }
+            stream.push(";".to_string());
         }
-        stream.push(";".to_string());
 
     }
     if tstream.len() > 0 {
@@ -1282,10 +1285,7 @@ fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
 
 
         } else {
-
-            if lexeme[thead].get_base_type() != BASE_UNOP {
-                stream.push(lexeme[thead].get_token_value());
-            }
+            stream.push(lexeme[thead].get_token_value());
         }
 
         typ = lexeme[thead].get_token_type();
