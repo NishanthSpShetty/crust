@@ -1,7 +1,6 @@
-
+use library::doc::DocType::*;
 use library::lexeme::Type::*;
 use library::lexeme::Token;
-
 
 #[derive(Debug)]
 struct SymbolTable {
@@ -590,21 +589,11 @@ fn parse_function(lexeme: &Vec<Token>) -> Vec<String> {
         if lexeme[head].get_token_type() != RIGHT_BRACKET {
             unsafe {
                 if strict == false {
-                    stream.push("\n/*Avoid using mutable variables unless it is necessory to do so \
-                               */\n"
-                            .to_string());
+                    stream.push(NO_STRICT.get_doc().to_string());
                     stream.push("let mut argv:Vec<_> = env::args().collect();".to_string());
                     stream.push("let mut argc = argv.len();".to_string());
                 } else {
-                    stream.push("\n/*crust in strict mod avoids declaring all variables as \
-                                 mutable.
-                               * If you are mutating \
-                                 any values anywhere in program please change the declaration \
-                                 statement as
-                               * let mut \
-                                 var_name:type=init_val;
-                               **/\n"
-                        .to_string());
+                    stream.push(STRICT.get_doc().to_string());
 
                     stream.push("let  argv = env::args();".to_string());
                     stream.push("let  argc = argv.len();".to_string());
@@ -727,12 +716,9 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
 
     unsafe {
         if strict == false {
-            stream.push("\n/* Avoid declaring mutable variables unless required.*/\n".to_string());
+            stream.push(NO_STRICT.get_doc().to_string());
         } else {
-            stream.push("\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
-                         If you are mutating any values anywhere in program please change the \
-                         declaration statement as\n * let mut var_name:type=init_val;\n */\n"
-                .to_string());
+            stream.push(STRICT.get_doc().to_string());
         }
     }
 
@@ -1329,19 +1315,11 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     }
     unsafe {
         if strict == true {
-            stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
-                               \
-                         * If you are mutating any values anywhere in program please change the \
-                         declaration statement as
-                               * let mut \
-                         var_name:type=init_val;
-                               **/\n"
-                .to_string());
-            stream.push("let  ".to_string());
+            stream.push(STRICT.get_doc().to_string());
+            stream.push("let".to_string());
         } else {
-            stream.push("\n/*avoid declaring mutable array unless required to do so */\n"
-                .to_string());
-            stream.push("let mut ".to_string());
+            stream.push(NO_STRICT.get_doc().to_string());
+            stream.push("let mut".to_string());
 
         }
     }
@@ -1362,7 +1340,7 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             temp_lexeme.push(lexeme[head].clone());
             head += 1;
         }
-        stream.push("; ".to_string());
+        stream.push(";".to_string());
         temp_lexeme.push(lexeme[head].clone());
         stream.append(&mut parse_program(&temp_lexeme))
     } else if lexeme[head].get_token_type() == OP_ASSIGN {
@@ -1375,9 +1353,9 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             });
             head += 1;
         }
-        stream.push("]; ".to_string());
+        stream.push("];".to_string());
     } else {
-        stream.push("; ".to_string());
+        stream.push(";".to_string());
     }
 
     stream
@@ -1440,15 +1418,7 @@ fn parse_struct_inbody_decl(lexeme: &Vec<Token>,
 fn parse_struct_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
 
-    stream.push("\n/* Declaration of structure should be completed with initialization of the \
-                 field
-    * parser may miss the generation of initialization statements.
-    * \
-                 It should be in the following format 
-    * let variable:struct_name = \
-                 struct_name { member1:value1,member2:value2,..}
-    **/ "
-        .to_string());
+    stream.push(STRUCT_INIT.get_doc().to_string());
     stream.push("let".to_string());
     let mut head = 1;
     //struct FilePointer fp;
@@ -1649,15 +1619,7 @@ fn parse_class_inbody_decl(lexeme: &Vec<Token>,
 fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
 
-    stream.push("\n/* Declaration of structure should be completed with initialization of the \
-                 field
-    * parser may miss the generation of initialization statements.
-    * \
-                 It should be in the following format 
-    * let variable:struct_name = \
-                 struct_name { member1:value1,member2:value2,..}
-    **/ "
-        .to_string());
+    stream.push(STRUCT_INIT.get_doc().to_string());
     stream.push("let".to_string());
     let mut head = 1;
     //struct FilePointer fp;
@@ -1963,14 +1925,14 @@ fn test_parse_if_else_ladder() {
 // declaration
 #[test]
 fn test_parse_declaration_static() {
+    let doc = STRICT;
+    
     let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           //   Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 1),
                           //   Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 2),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
-    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
-                       If you are mutating any values anywhere in program please change the \
-                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
+    let stream = vec![doc.get_doc(),
                       "static",
                       "a",
                       ":",
@@ -1979,22 +1941,23 @@ fn test_parse_declaration_static() {
     assert_eq!(stream, parse_declaration(&tok_vector));
 }
 
+
+
 #[test]
 fn test_parse_declaration() {
-    unsafe {
-        IN_BLOCK_STMNT = true;
-    }
+    let doc = STRICT;
     let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
-    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
-                       If you are mutating any values anywhere in program please change the \
-                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
+    let stream = vec![doc.get_doc(),
                       "let",
                       "a",
                       ":",
                       "i32",
                       ";"];
+    unsafe {
+        IN_BLOCK_STMNT = true;
+    }
     assert_eq!(stream, parse_declaration(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
@@ -2003,6 +1966,7 @@ fn test_parse_declaration() {
 
 #[test]
 fn test_parse_declaration_expr() {
+    let doc = STRICT;
     let tok_vector = vec![Token::new(String::from("float"), BASE_DATATYPE, PRIMITIVE_FLOAT, 0, 0),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 1, 5),
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 6),
@@ -2018,37 +1982,46 @@ fn test_parse_declaration_expr() {
                           Token::new(String::from("%"), BASE_BINOP, OP_MOD, 1, 16),
                           Token::new(String::from("7"), BASE_VALUE, NUM_INT, 1, 17),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 18)];
-    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
-                       If you are mutating any values anywhere in program please change the \
-                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
-                      "static",
+    let stream = vec![doc.get_doc(),
+                      "let",
                       "a",
                       ":",
                       "f32",
                       "=",
                       "2+3-4/5*6.3%7",
                       ";"];
-    assert_eq!(stream, parse_program(&tok_vector));
+    unsafe {
+        IN_BLOCK_STMNT = true;
+    }
+    assert_eq!(stream, parse_declaration(&tok_vector));
+    unsafe {
+        IN_BLOCK_STMNT = false;
+    }
 }
 
 #[test]
 fn test_parse_declaration_assignment() {
+    let doc = STRICT;
     let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 1),
                           Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 2),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
-    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
-                       If you are mutating any values anywhere in program please change the \
-                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
-                      "static",
+    let stream = vec![doc.get_doc(),
+                      "let",
                       "a",
                       ":",
                       "i32",
                       "=",
                       "5",
                       ";"];
+    unsafe {
+        IN_BLOCK_STMNT = true;
+    }
     assert_eq!(stream, parse_declaration(&tok_vector));
+    unsafe {
+        IN_BLOCK_STMNT = false;
+    }
 }
 
 // assignment
