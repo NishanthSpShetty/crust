@@ -31,13 +31,15 @@ impl Clone for SymbolTable {
 static mut IN_BLOCK_STMNT: bool = false;
 static mut IN_EXPR: bool = false;
 static mut IN_SWITCH: bool = false;
-static mut strict:bool = true;
+static mut strict: bool = true;
 
 
 
-pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
-     unsafe{ strict = strict_parser;}
-   
+pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
+    unsafe {
+        strict = strict_parser;
+    }
+
     parse_program(&lexeme)
 }
 /**
@@ -51,7 +53,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
  * - if
  * - comments
  */
- fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
+fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
     let mut struct_mem: Vec<StructMem> = Vec::new();
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
@@ -72,7 +74,6 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                         unsafe {
                             IN_BLOCK_STMNT = true;
                         }
-
                         while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                             lookahead += 1;
                         }
@@ -90,6 +91,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                         temp_lexeme.clear();
 
                         unsafe {
+                            println!("{}", IN_BLOCK_STMNT);
                             IN_BLOCK_STMNT = false;
                         }
                     }
@@ -164,13 +166,11 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 lookahead = head;
                 if lexeme[head].get_token_type() == KEYWORD_IF {
                     continue;
-                }
-                else {
+                } else {
                     if lexeme[lookahead].get_token_type() == LEFT_CBRACE {
                         head += 1;
                         lookahead = skip_block(&lexeme, head) - 1;
-                    }
-                    else {
+                    } else {
                         lookahead = skip_stmt(&lexeme, lookahead);
                     }
 
@@ -269,7 +269,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 stream.append(&mut parse_dowhile(&temp_lexeme));
                 temp_lexeme.clear();
                 unsafe {
-                        IN_SWITCH = was_in_switch;
+                    IN_SWITCH = was_in_switch;
                 }
             }
 
@@ -295,7 +295,7 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 stream.append(&mut parse_for(&temp_lexeme));
                 temp_lexeme.clear();
                 unsafe {
-                        IN_SWITCH = was_in_switch;
+                    IN_SWITCH = was_in_switch;
                 }
             }
 
@@ -455,12 +455,12 @@ pub fn init_parser(lexeme: &Vec<Token>,strict_parser:bool) -> Vec<String> {
                 }
 
             }
-            (_,KEYWORD_ENUM)=>{
+            (_, KEYWORD_ENUM) => {
                 while lexeme[head].get_token_type() != SEMICOLON {
-                        stream.push(lexeme[head].get_token_value());
-                        head += 1;
-                    }
-                    head+=1;
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+                head += 1;
             }
 
             // if all fails
@@ -588,20 +588,27 @@ fn parse_function(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push(")".to_string());
         stream.push("{".to_string());
         if lexeme[head].get_token_type() != RIGHT_BRACKET {
-            unsafe{
-            if strict == false{
-            stream.push("\n/*Avoid using mutable variables unless it is necessory to do so */\n".to_string());
-            stream.push("let mut argv:Vec<_> = env::args().collect();".to_string());
-            stream.push("let mut argc = argv.len();".to_string());
-            }else{
-             stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
-                               * If you are mutating any values anywhere in program please change the declaration statement as
-                               * let mut var_name:type=init_val;
-                               **/\n".to_string());
-           
-             stream.push("let  argv = env::args();".to_string());
-            stream.push("let  argc = argv.len();".to_string());
-            }
+            unsafe {
+                if strict == false {
+                    stream.push("\n/*Avoid using mutable variables unless it is necessory to do so \
+                               */\n"
+                            .to_string());
+                    stream.push("let mut argv:Vec<_> = env::args().collect();".to_string());
+                    stream.push("let mut argc = argv.len();".to_string());
+                } else {
+                    stream.push("\n/*crust in strict mod avoids declaring all variables as \
+                                 mutable.
+                               * If you are mutating \
+                                 any values anywhere in program please change the declaration \
+                                 statement as
+                               * let mut \
+                                 var_name:type=init_val;
+                               **/\n"
+                        .to_string());
+
+                    stream.push("let  argv = env::args();".to_string());
+                    stream.push("let  argc = argv.len();".to_string());
+                }
             }
         }
 
@@ -678,9 +685,9 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             IDENTIFIER => sym.id_name = lexeme[head].get_token_value(),
 
             OP_ASSIGN => {
-                head += 1;
-                sym.assigned_val = lexeme[head].get_token_value();
+                // head += 1;
                 sym.is_assigned = true;
+                sym.assigned_val = String::from("");
             }
 
             SEMICOLON | COMMA => {
@@ -706,40 +713,46 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
                 }
                 head = m;
             }
-            _ => {}
+            _ => {
+                while lexeme[head].get_token_type() != SEMICOLON &&
+                      lexeme[head].get_token_type() != COMMA {
+                    sym.assigned_val.push_str(&lexeme[head].get_token_value());
+                    head += 1;
+                }
+                continue;
+            }
         };
         head += 1;
-
     }
-     unsafe{
-                    if strict==false{
-                    stream.push("\n/* Avoid declaring mutable variables unless required.*/\n".to_string());
-                             }else{
-                               stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
-                               * If you are mutating any values anywhere in program please change the declaration statement as
-                               * let mut var_name:type=init_val;
-                               **/\n".to_string());
-                       
-                             }
-                
-                }
+
+    unsafe {
+        if strict == false {
+            stream.push("\n/* Avoid declaring mutable variables unless required.*/\n".to_string());
+        } else {
+            stream.push("\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
+                         If you are mutating any values anywhere in program please change the \
+                         declaration statement as\n * let mut var_name:type=init_val;\n */\n"
+                .to_string());
+        }
+    }
+
     for i in &sym_tab {
 
         // get identifier
         //for declaration out of any blocks(global)
         unsafe {
-            if IN_BLOCK_STMNT == false {
-                stream.push("static".to_string());
-            } else {
-                    if strict==false{
+            if strict == false {
+                if IN_BLOCK_STMNT == true {
                     stream.push("let mut".to_string());
-                    }else{
-                    
-                    stream.push("let ".to_string());
-                    
-                    }
-                
-                
+                } else {
+                    stream.push("static mut".to_string());
+                }
+            } else {
+                if IN_BLOCK_STMNT == true {
+                    stream.push("let".to_string());
+                } else {
+                    stream.push("static".to_string());
+                }
             }
         }
         stream.push(i.id_name.clone());
@@ -819,14 +832,13 @@ fn parse_while(lexeme: &Vec<Token>) -> Vec<String> {
 
     //skip '('
     head += 1;
-    let lhead = head;
     // condition
     let mut cond_stream: Vec<String> = Vec::new();
     while lexeme[head].get_token_type() != RIGHT_BRACKET {
         cond_stream.push(lexeme[head].get_token_value());
         head += 1;
     }
-    if head == lhead {
+    if cond_stream.len() == 1 && cond_stream[0] == "1" {
         no_cond = true;
     }
     head += 1;
@@ -1315,17 +1327,23 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     if let Some(t) = parse_type(lexeme[0].get_token_type() as i32) {
         typ = t;
     }
-    unsafe{
-        if strict==true{  stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
-                               * If you are mutating any values anywhere in program please change the declaration statement as
-                               * let mut var_name:type=init_val;
-                               **/\n".to_string());
+    unsafe {
+        if strict == true {
+            stream.push("\n/*crust in strict mod avoids declaring all variables as mutable.
+                               \
+                         * If you are mutating any values anywhere in program please change the \
+                         declaration statement as
+                               * let mut \
+                         var_name:type=init_val;
+                               **/\n"
+                .to_string());
             stream.push("let  ".to_string());
-    }else{
-                stream.push("\n/*avoid declaring mutable array unless required to do so */\n".to_string());
-                  stream.push("let mut ".to_string());
-  
-    }
+        } else {
+            stream.push("\n/*avoid declaring mutable array unless required to do so */\n"
+                .to_string());
+            stream.push("let mut ".to_string());
+
+        }
     }
     let mut head = 0;
     stream.push(lexeme[head + 1].get_token_value());
@@ -1421,12 +1439,16 @@ fn parse_struct_inbody_decl(lexeme: &Vec<Token>,
 
 fn parse_struct_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
-    
-    stream.push("\n/* Declaration of structure should be completed with initialization of the field
+
+    stream.push("\n/* Declaration of structure should be completed with initialization of the \
+                 field
     * parser may miss the generation of initialization statements.
-    * It should be in the following format 
-    * let variable:struct_name = struct_name { member1:value1,member2:value2,..}
-    **/ ".to_string());
+    * \
+                 It should be in the following format 
+    * let variable:struct_name = \
+                 struct_name { member1:value1,member2:value2,..}
+    **/ "
+        .to_string());
     stream.push("let".to_string());
     let mut head = 1;
     //struct FilePointer fp;
@@ -1502,7 +1524,7 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
             temp_lexeme.clear();
 
         } else {
-           while lexeme[head].get_token_type() != RIGHT_CBRACE &&
+            while lexeme[head].get_token_type() != RIGHT_CBRACE &&
                   lexeme[head].get_base_type() != BASE_MODIFIER {
                 while lexeme[head].get_token_type() != SEMICOLON {
                     temp_lexeme.push(lexeme[head].clone());
@@ -1626,12 +1648,16 @@ fn parse_class_inbody_decl(lexeme: &Vec<Token>,
 
 fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
-    
-    stream.push("\n/* Declaration of structure should be completed with initialization of the field
+
+    stream.push("\n/* Declaration of structure should be completed with initialization of the \
+                 field
     * parser may miss the generation of initialization statements.
-    * It should be in the following format 
-    * let variable:struct_name = struct_name { member1:value1,member2:value2,..}
-    **/ ".to_string());
+    * \
+                 It should be in the following format 
+    * let variable:struct_name = \
+                 struct_name { member1:value1,member2:value2,..}
+    **/ "
+        .to_string());
     stream.push("let".to_string());
     let mut head = 1;
     //struct FilePointer fp;
@@ -1669,6 +1695,8 @@ fn get_default_value_for(c_type: i32) -> String {
     }
 }
 
+
+// if
 #[test]
 fn test_parse_if_braces() {
     let tok_vector = vec![Token::new(String::from("if"), BASE_NONE, KEYWORD_IF, 0, 0),
@@ -1849,7 +1877,7 @@ fn test_parse_if_no_braces_inside_braces() {
                       ";",
                       "}"];
 
-    assert_eq!(stream, parse_program(&tok_vector));
+    assert_eq!(stream, parse_if(&tok_vector));
 }
 
 #[test]
@@ -1932,6 +1960,98 @@ fn test_parse_if_else_ladder() {
     assert_eq!(stream, parse_program(&tok_vector));
 }
 
+// declaration
+#[test]
+fn test_parse_declaration_static() {
+    let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
+                          //   Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 1),
+                          //   Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 2),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
+    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
+                       If you are mutating any values anywhere in program please change the \
+                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
+                      "static",
+                      "a",
+                      ":",
+                      "i32",
+                      ";"];
+    assert_eq!(stream, parse_declaration(&tok_vector));
+}
+
+#[test]
+fn test_parse_declaration() {
+    unsafe {
+        IN_BLOCK_STMNT = true;
+    }
+    let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
+    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
+                       If you are mutating any values anywhere in program please change the \
+                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
+                      "let",
+                      "a",
+                      ":",
+                      "i32",
+                      ";"];
+    assert_eq!(stream, parse_declaration(&tok_vector));
+    unsafe {
+        IN_BLOCK_STMNT = false;
+    }
+}
+
+#[test]
+fn test_parse_declaration_expr() {
+    let tok_vector = vec![Token::new(String::from("float"), BASE_DATATYPE, PRIMITIVE_FLOAT, 0, 0),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 1, 5),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 6),
+                          Token::new(String::from("2"), BASE_VALUE, NUM_INT, 1, 7),
+                          Token::new(String::from("+"), BASE_BINOP, OP_PLUS, 1, 8),
+                          Token::new(String::from("3"), BASE_VALUE, NUM_INT, 1, 9),
+                          Token::new(String::from("-"), BASE_BINOP, OP_MINUS, 1, 10),
+                          Token::new(String::from("4"), BASE_VALUE, NUM_INT, 1, 11),
+                          Token::new(String::from("/"), BASE_BINOP, OP_DIV, 1, 12),
+                          Token::new(String::from("5"), BASE_VALUE, NUM_INT, 1, 13),
+                          Token::new(String::from("*"), BASE_BINOP, OP_MUL, 1, 14),
+                          Token::new(String::from("6.3"), BASE_VALUE, NUM_FLOAT, 1, 15),
+                          Token::new(String::from("%"), BASE_BINOP, OP_MOD, 1, 16),
+                          Token::new(String::from("7"), BASE_VALUE, NUM_INT, 1, 17),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 18)];
+    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
+                       If you are mutating any values anywhere in program please change the \
+                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
+                      "static",
+                      "a",
+                      ":",
+                      "f32",
+                      "=",
+                      "2+3-4/5*6.3%7",
+                      ";"];
+    assert_eq!(stream, parse_program(&tok_vector));
+}
+
+#[test]
+fn test_parse_declaration_assignment() {
+    let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+                          Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 1),
+                          Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 2),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
+    let stream = vec!["\n/* crust in strict mod avoids declaring all variables as mutable.\n * \
+                       If you are mutating any values anywhere in program please change the \
+                       declaration statement as\n * let mut var_name:type=init_val;\n */\n",
+                      "static",
+                      "a",
+                      ":",
+                      "i32",
+                      "=",
+                      "5",
+                      ";"];
+    assert_eq!(stream, parse_declaration(&tok_vector));
+}
+
+// assignment
 #[test]
 fn test_parse_assignment_single() {
     let tok_vector = vec![Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
@@ -1939,7 +2059,7 @@ fn test_parse_assignment_single() {
                           Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 2),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 3)];
     let stream = vec!["a", "=", "5", ";"];
-    assert_eq!(stream, parse_program(&tok_vector));
+    assert_eq!(stream, parse_assignment(&tok_vector));
 }
 
 #[test]
@@ -1956,7 +2076,7 @@ fn test_parse_assignment_multiple() {
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 9)];
     let stream = vec!["d", "=", "5", ";", "c", "=", "d", ";", "b", "=", "c", ";", "a", "=", "b",
                       ";"];
-    assert_eq!(stream, parse_program(&tok_vector));
+    assert_eq!(stream, parse_assignment(&tok_vector));
 }
 
 #[test]
@@ -1994,7 +2114,7 @@ fn test_parse_assignment_binops() {
                           Token::new(String::from("7"), BASE_VALUE, NUM_INT, 1, 17),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 18)];
     let stream = vec!["a", "=", "2", "+", "3", "-", "4", "/", "5", "*", "6.3", "%", "7", ";"];
-    assert_eq!(stream, parse_program(&tok_vector));
+    assert_eq!(stream, parse_assignment(&tok_vector));
 }
 
 #[test]
@@ -2015,6 +2135,13 @@ fn test_parse_assignment_preops() {
     stream = vec!["a", "=", "(", "b", "-=1", ")", ";"];
 
     assert_eq!(stream, parse_assignment(&tok_vector));
+
+    tok_vector = vec![Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 7),
+                      Token::new(String::from("b"), BASE_NONE, IDENTIFIER, 1, 8),
+                      Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9)];
+    stream = vec!["b", "-=1", ";"];
+
+    assert_eq!(stream, parse_program(&tok_vector));
 }
 
 #[test]
@@ -2033,8 +2160,13 @@ fn test_parse_assignment_postops() {
                       Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 7),
                       Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9)];
     stream = vec!["a", "=", "b", ";", "b", "-=1", ";"];
-
     assert_eq!(stream, parse_assignment(&tok_vector));
+
+    tok_vector = vec![Token::new(String::from("b"), BASE_NONE, IDENTIFIER, 1, 8),
+                      Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 7),
+                      Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9)];
+    stream = vec!["b", "-=1", ";"];
+    assert_eq!(stream, parse_program(&tok_vector));
 }
 
 #[test]
@@ -2106,6 +2238,7 @@ fn test_parse_assignment_pre_post_ops() {
 
 }
 
+// function
 #[test]
 fn test_parse_function() {
     unsafe {
@@ -2148,15 +2281,13 @@ fn test_parse_function_no_args() {
                           Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 2),
                           Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 3),
                           Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 4),
-                          Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 1, 5),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 1, 6),
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 7),
                           Token::new(String::from("1"), BASE_VALUE, NUM_INT, 1, 8),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 9),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 10)];
-    let stream = vec!["fn", "a", "(", ")", "->", "i32", "{", "let mut", "a", ":", "i32", "=", "1",
-                      ";", "}"];
-    assert_eq!(stream, parse_function(&tok_vector));
+    let stream = vec!["fn", "a", "(", ")", "->", "i32", "{", "a", "=", "1", ";", "}"];
+    assert_eq!(stream, parse_program(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
     }
@@ -2186,6 +2317,7 @@ fn test_parse_function_no_ret() {
     }
 }
 
+// while loop
 #[test]
 fn test_parse_while_braces() {
     let tok_vector = vec![Token::new(String::from("while"), BASE_NONE, KEYWORD_WHILE, 0, 0),
@@ -2224,6 +2356,25 @@ fn test_parse_while_no_braces() {
 }
 
 #[test]
+fn test_parse_while_infinite() {
+    let tok_vector = vec![Token::new(String::from("while"), BASE_NONE, KEYWORD_WHILE, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from("1"), BASE_VALUE, NUM_INT, 0, 2),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("/*Do something here*/"),
+                                     BASE_COMMENT,
+                                     COMMENT_MULTI,
+                                     1,
+                                     1),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7)];
+    let stream = vec!["loop", "{", "/*Do something here*/\n", "}"];
+
+    assert_eq!(stream, parse_while(&tok_vector));
+}
+
+// do-while
+#[test]
 fn test_parse_dowhile_braces() {
     let tok_vector = vec![Token::new(String::from("do"), BASE_NONE, KEYWORD_DO, 0, 1),
                           Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
@@ -2245,6 +2396,7 @@ fn test_parse_dowhile_braces() {
     assert_eq!(stream, parse_dowhile(&tok_vector));
 }
 
+// for loop
 #[test]
 fn test_parse_for_braces() {
     let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
@@ -2273,6 +2425,94 @@ fn test_parse_for_braces() {
 }
 
 #[test]
+fn test_parse_for_no_init() {
+    let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("<"), BASE_NONE, OP_LT, 1, 7),
+                          Token::new(String::from("23"), BASE_VALUE, NUM_INT, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 3),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("func"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7)];
+    let stream = vec!["while", "i", "<", "23", "{", "func", "(", ")", ";", "i", "+=1", ";", "}"];
+
+    assert_eq!(stream, parse_for(&tok_vector));
+}
+
+#[test]
+fn test_parse_for_no_cond() {
+    let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 7),
+                          Token::new(String::from("0"), BASE_VALUE, NUM_INT, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 3),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("func"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7)];
+    let stream = vec!["i", "=", "0", ";", "loop", "{", "func", "(", ")", ";", "i", "+=1", ";", "}"];
+
+    assert_eq!(stream, parse_for(&tok_vector));
+}
+
+#[test]
+fn test_parse_for_no_update() {
+    let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 1, 7),
+                          Token::new(String::from("0"), BASE_VALUE, NUM_INT, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("<"), BASE_NONE, OP_LT, 1, 7),
+                          Token::new(String::from("23"), BASE_VALUE, NUM_INT, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("func"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7)];
+    let stream = vec!["i", "=", "0", ";", "while", "i", "<", "23", "{", "func", "(", ")", ";", "}"];
+
+    assert_eq!(stream, parse_for(&tok_vector));
+}
+
+#[test]
+fn test_parse_for_infinite() {
+    let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
+                          Token::new(String::from("func"), BASE_NONE, IDENTIFIER, 0, 2),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7)];
+    let stream = vec!["loop", "{", "func", "(", ")", ";", "}"];
+
+    assert_eq!(stream, parse_for(&tok_vector));
+}
+
+#[test]
 fn test_parse_for_no_braces() {
     let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
                           Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
@@ -2287,12 +2527,10 @@ fn test_parse_for_no_braces() {
                           Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 2),
                           Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 3),
                           Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
-                          //   Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 6),
                           Token::new(String::from("func"), BASE_NONE, IDENTIFIER, 0, 2),
                           Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 1),
                           Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 5),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 1, 8)];
-    //   Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 2, 7),];
     let stream = vec!["i", "=", "0", ";", "while", "i", "<", "23", "{", "func", "(", ")", ";",
                       "i", "+=1", ";", "}"];
 
