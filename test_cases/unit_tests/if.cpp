@@ -1,10 +1,8 @@
 int main() {
-    int a[3] = {5,4,65};
-    int b = 34;
-    b = a[2];
-    b = func() * a[1] + 234 + func();
+    int a = 3;
+    int b = func(32, a);
 }
 
-int func() {
+int func(int a, int b) {
     return 0;
 }
