@@ -56,10 +56,11 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
     let mut struct_mem: Vec<StructMem> = Vec::new();
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
-    let mut lookahead: usize = 0;
+    let mut lookahead: usize;
     let mut temp_lexeme: Vec<Token> = Vec::new();
     while head < lexeme.len() {
         // gets both base type and token type
+        lookahead = head;
         match lexeme[head].get_type() {
 
             // matches any datatype
@@ -302,7 +303,6 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
             (BASE_COMMENT, _) => {
                 stream.push(lexeme[head].get_token_value() + "\n");
                 head += 1;
-                lookahead = head;
             }
 
             // assignment statements
@@ -381,7 +381,6 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                             stream.push(lexeme[head].get_token_value());
                         }
                         head += 1;
-                        lookahead = head;
                     }
                 };
             }
@@ -420,12 +419,9 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     stream.append(&mut parse_struct_decl(&temp_lexeme, &struct_mem));
                     temp_lexeme.clear();
                 }
-                // moved head till ; to skip but it causing wierd bug, o=pointing at head will inser semicolon at the end of strcut
-                //which is not valid in rust.
-                //  head-=1;
-                //  println!("{:?}",lexeme[head].get_token_type());
                 continue;
             }
+
             (_, KEYWORD_CLASS) => {
 
                 if lexeme[head + 2].get_token_type() == LEFT_CBRACE {
@@ -435,9 +431,11 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         temp_lexeme.push(lexeme[head].clone());
                         head += 1;
                     }
+
                     //push the right curly brace
                     temp_lexeme.push(lexeme[head].clone());
                     stream.append(&mut parse_class(&temp_lexeme, &mut struct_mem));
+                    println!("{:?}", stream);
                     temp_lexeme.clear();
                     head += 2; //skip semicolon
                 } else {
@@ -452,8 +450,8 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     stream.append(&mut parse_class_decl(&temp_lexeme, &struct_mem));
                     temp_lexeme.clear();
                 }
-
             }
+
             (_, KEYWORD_ENUM) => {
                 while lexeme[head].get_token_type() != SEMICOLON {
                     stream.push(lexeme[head].get_token_value());
@@ -478,7 +476,6 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     }
                 }
                 head += 1;
-                lookahead = head;
             }
 
         };
