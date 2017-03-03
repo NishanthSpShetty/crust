@@ -45,12 +45,6 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
  * parse_program:
  * parse c program from Token Vector
  * return String Vector of Rust equivalent code
- * supports:
- * - method
- * - variable declaration
- * - variable assignment
- * - if
- * - comments
  */
 fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
     let mut struct_mem: Vec<StructMem> = Vec::new();
@@ -1136,7 +1130,6 @@ fn parse_for(lexeme: &Vec<Token>) -> Vec<String> {
     stream
 }
 
-
 /**
  * fn parse_type:
  * takes the integer value of type Type
@@ -1239,7 +1232,7 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
 }
 
 
-/* parse_assignment:
+/* parse_expr:
  * parse c/c++ expression statements into rust equivalent code
  */
 fn parse_expr(lexeme: &Vec<Token>) -> Vec<String> {
@@ -1357,7 +1350,7 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     stream
 }
 
-
+// not tested
 fn parse_struct(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
@@ -1385,6 +1378,7 @@ fn parse_struct(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<
     stream
 }
 
+// not tested
 fn parse_struct_inbody_decl(lexeme: &Vec<Token>,
                             struct_mem: &mut Vec<StructMem>,
                             name: &String)
@@ -1410,7 +1404,7 @@ fn parse_struct_inbody_decl(lexeme: &Vec<Token>,
     stream
 }
 
-
+// not tested
 fn parse_struct_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
 
@@ -1438,7 +1432,7 @@ fn parse_struct_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<
     stream
 }
 
-
+// not tested
 fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     let mut head: usize = 0;
@@ -1513,9 +1507,7 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
     stream
 }
 
-
-
-
+// not tested
 fn parse_method_decl(lexeme: &Vec<Token>, modifier: &String) -> Vec<String> {
     let mut temp_lexeme: Vec<Token> = Vec::new();
     let mut head: usize = 3;
@@ -1575,8 +1567,7 @@ fn parse_method_decl(lexeme: &Vec<Token>, modifier: &String) -> Vec<String> {
     stream
 }
 
-
-
+// not tested
 fn parse_class_inbody_decl(lexeme: &Vec<Token>,
                            struct_mem: &mut Vec<StructMem>,
                            name: &String,
@@ -1606,7 +1597,7 @@ fn parse_class_inbody_decl(lexeme: &Vec<Token>,
     stream
 }
 
-
+// not tested
 fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
 
@@ -1634,7 +1625,7 @@ fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<S
     stream
 }
 
-
+// not tested
 fn get_default_value_for(c_type: i32) -> String {
     match c_type {
         0 => "0i32".to_string(),
@@ -3117,4 +3108,25 @@ fn test_parse_switch_no_default() {
     let stream = vec!["match", "i", "{", "23", "=>", "{", "i", "+=1", ";", "func", "(", ")", ";",
                       "}", "_", "=>", "{", "}", "}"];
     assert_eq!(stream, parse_switch(&tok_vector));
+}
+
+#[test]
+fn test_parse_type() {
+    assert_eq!(parse_type(PRIMITIVE_INT as i32).unwrap_or(String::from("")),
+               "i32");
+    assert_eq!(parse_type(PRIMITIVE_CHAR as i32).unwrap_or(String::from("")),
+               "char");
+    assert_eq!(parse_type(PRIMITIVE_FLOAT as i32).unwrap_or(String::from("")),
+               "f32");
+    assert_eq!(parse_type(PRIMITIVE_DOUBLE as i32).unwrap_or(String::from("")),
+               "f64");
+    assert_eq!(parse_type(PRIMITIVE_SHORT as i32).unwrap_or(String::from("")),
+               "i16");
+    assert_eq!(parse_type(PRIMITIVE_LONG as i32).unwrap_or(String::from("")),
+               "i64");
+    assert_eq!(parse_type(PRIMITIVE_VOID as i32).unwrap_or(String::from("")),
+               "void");
+    assert_eq!(parse_type(PRIMITIVE_BOOL as i32).unwrap_or(String::from("")),
+               "bool");
+    assert_eq!(parse_type(OTHER as i32).unwrap_or(String::from("")), "");
 }
