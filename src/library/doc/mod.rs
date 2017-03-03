@@ -8,8 +8,8 @@ pub enum DocType {
 }
 
 impl DocType {
-    pub fn get_doc(&self) -> &str {
-        match *self {
+    pub fn get_doc(self) -> &'static str {
+        match self {
             DocType::STRICT => {
                 "\n/*Crust with Strict Mode enabled, declares all variables as immutable.\n * If \
                  you are mutating the below variable anywhere in program, please change the \
