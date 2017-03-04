@@ -427,7 +427,6 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     stream.append(&mut parse_struct_decl(&temp_lexeme, &struct_mem));
                     temp_lexeme.clear();
                 }
-                continue;
             }
 
             (_, KEYWORD_CLASS) => {
@@ -468,13 +467,13 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
             }
             (_, KEYWORD_RETURN) => {
                 let mut t = head;
-                 stream.push(NO_RETURN.get_doc().to_string());
-                  
+                stream.push(NO_RETURN.get_doc().to_string());
+
                 while lexeme[t].get_token_type() != SEMICOLON {
                     t += 1;
                 }
-         
-                if t != lexeme.len()-1 {
+
+                if t != lexeme.len() - 1 {
                     while lexeme[head].get_token_type() != SEMICOLON {
                         println!("{:?}", lexeme[head]);
 
@@ -485,7 +484,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     head += 1;
                 } else {
                     head += 1;
-                   
+
                     while lexeme[head].get_token_type() != SEMICOLON {
                         stream.push(lexeme[head].get_token_value());
                         head += 1;
@@ -1969,16 +1968,17 @@ fn test_parse_declaration_static() {
 #[test]
 fn test_parse_declaration() {
     let mut doc = STRICT;
-    let mut tok_vector = vec![Token::new(String::from("float"), BASE_DATATYPE, PRIMITIVE_FLOAT, 0, 0),
-                              Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
-                              Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
+    let mut tok_vector =
+        vec![Token::new(String::from("float"), BASE_DATATYPE, PRIMITIVE_FLOAT, 0, 0),
+             Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
+             Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
     let mut stream = vec![doc.get_doc(), "let", "a", ":", "f32", ";"];
     unsafe {
         strict = true;
         IN_BLOCK_STMNT = true;
     }
     assert_eq!(stream, parse_declaration(&tok_vector));
-   
+
     doc = NO_STRICT;
     tok_vector = vec![Token::new(String::from("short"), BASE_DATATYPE, PRIMITIVE_SHORT, 0, 0),
                       Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
@@ -2040,11 +2040,15 @@ fn test_parse_declaration_expr() {
                           "=",
                           "2+arr[5]+3-4/5*6.3%7+func(5,arg)",
                           ";"];
-    
+
     assert_eq!(stream, parse_program(&tok_vector));
 
     doc = NO_STRICT;
-    tok_vector = vec![Token::new(String::from("double"), BASE_DATATYPE, PRIMITIVE_DOUBLE, 0, 0),
+    tok_vector = vec![Token::new(String::from("double"),
+                                 BASE_DATATYPE,
+                                 PRIMITIVE_DOUBLE,
+                                 0,
+                                 0),
                       Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                       Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 0),
                       Token::new(String::from("2"), BASE_VALUE, NUM_INT, 0, 0),
@@ -2092,7 +2096,7 @@ fn test_parse_declaration_expr() {
 #[test]
 fn test_parse_array_declaration() {
     let mut doc = STRICT;
-      unsafe {
+    unsafe {
         IN_BLOCK_STMNT = true;
         strict = true;
     }
@@ -2103,7 +2107,7 @@ fn test_parse_array_declaration() {
                               Token::new(String::from("]"), BASE_NONE, RIGHT_SBRACKET, 0, 0),
                               Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
     let mut stream = vec![doc.get_doc(), "let", "a", ":", "[i32;5]", ";"];
-  
+
     assert_eq!(stream, parse_array_declaration(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
@@ -2131,8 +2135,8 @@ fn test_parse_array_declaration() {
 #[test]
 fn test_parse_array_declaration_assignment() {
     let mut doc = STRICT;
-    
-     unsafe {
+
+    unsafe {
         IN_BLOCK_STMNT = true;
         strict = true;
     }
@@ -2173,7 +2177,7 @@ fn test_parse_array_declaration_assignment() {
                           "'u'",
                           "]",
                           ";"];
-   
+
     assert_eq!(stream, parse_array_declaration(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
@@ -2231,7 +2235,7 @@ fn test_parse_array_declaration_assignment() {
 #[test]
 fn test_parse_declaration_assignment() {
     let mut doc = STRICT;
-     unsafe {
+    unsafe {
         IN_BLOCK_STMNT = true;
         strict = true;
     }
@@ -2241,9 +2245,9 @@ fn test_parse_declaration_assignment() {
                               Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 0),
                               Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
     let mut stream = vec![doc.get_doc(), "let", "a", ":", "i32", "=", "5", ";"];
-   
+
     assert_eq!(stream, parse_declaration(&tok_vector));
-    
+
 
     doc = NO_STRICT;
     tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
@@ -2716,10 +2720,22 @@ fn test_parse_function_no_args() {
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
-    let stream = vec!["fn", "a", "(", ")", "->", "i32", "{", "a", "=", "1", ";", 
-     "\n/* Crust tries to identify return statement and replace with rust equivalent\n * shorthand notation. \
-      If error found in this line, Please replace shorthand notation \n * with return statement \n **/\n","a",
-                       "}"];
+    let stream = vec!["fn",
+                      "a",
+                      "(",
+                      ")",
+                      "->",
+                      "i32",
+                      "{",
+                      "a",
+                      "=",
+                      "1",
+                      ";",
+                      "\n/* Crust tries to identify return statement and replace with rust \
+                       equivalent\n * shorthand notation. If error found in this line, Please \
+                       replace shorthand notation \n * with return statement \n **/\n",
+                      "a",
+                      "}"];
     assert_eq!(stream, parse_program(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
@@ -2873,6 +2889,54 @@ fn test_parse_for_braces() {
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
     let stream = vec!["i", "=", "0", ";", "while", "i", "<", "23", "{", "func", "(", ")", ";",
                       "i", "+=1", ";", "}"];
+
+    assert_eq!(stream, parse_for(&tok_vector));
+}
+
+#[test]
+fn test_parse_for_init_decl() {
+    let doc = STRICT;
+    let tok_vector = vec![Token::new(String::from("for"), BASE_NONE, KEYWORD_FOR, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 0),
+                          Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 0),
+                          Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 0),
+                          Token::new(String::from("0"), BASE_VALUE, NUM_INT, 0, 0),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 0),
+                          Token::new(String::from("<"), BASE_NONE, OP_LT, 0, 0),
+                          Token::new(String::from("23"), BASE_VALUE, NUM_INT, 0, 0),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
+                          Token::new(String::from("i"), BASE_NONE, IDENTIFIER, 0, 0),
+                          Token::new(String::from("++"), BASE_UNOP, OP_INC, 0, 0),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 0),
+                          Token::new(String::from("{"), BASE_NONE, LEFT_CBRACE, 0, 0),
+                          Token::new(String::from("func"), BASE_NONE, IDENTIFIER, 0, 0),
+                          Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 0),
+                          Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 0),
+                          Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
+                          Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
+    let stream = vec![doc.get_doc(),
+                      "static",
+                      "i",
+                      ":",
+                      "i32",
+                      "=",
+                      "0",
+                      ";",
+                      "while",
+                      "i",
+                      "<",
+                      "23",
+                      "{",
+                      "func",
+                      "(",
+                      ")",
+                      ";",
+                      "i",
+                      "+=1",
+                      ";",
+                      "}"];
 
     assert_eq!(stream, parse_for(&tok_vector));
 }
