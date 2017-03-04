@@ -17,13 +17,13 @@ fn main() {
 
     let mut input = String::new();
     print!("Enter the C/C++ file to be converted to Rust : ");
-    io::stdout().flush().ok().expect("Buffer cleaning error");
+    io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
     io::stdin().read_line(&mut input).expect("Unable to read");
 
     let mut strict = String::new();
 
     print!("Enter the translation mode [(S/s)trict/(L/l)oose] : ");
-    io::stdout().flush().ok().expect("Buffer cleaning error");
+    io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
     io::stdin().read_line(&mut strict).expect("Unable to read");
     let strict = strict.trim();
     let strict: bool = match &strict[..] {
@@ -31,6 +31,24 @@ fn main() {
         _ => false,
     };
 
+    let mut cargo = String::new();
+    print!("Do you want to create a cargo project :[Y/N]");
+    io::stdout().flush().ok().expect("FATAL : Buffer flush failed.");
+    io::stdin().read_line(&mut cargo).expect("Unable to read input");
+    let cargo = cargo.trim();
+    let cargo: bool = match &cargo[..] {
+        "Y" | "y" => true,
+        _ => false,
+    };
+
+    let mut project_name = String::new();
+    if cargo == true {
+        let mut project = String::new();
+        print!("Enter cargo project name : ");
+        io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
+        io::stdin().read_line(&mut project).expect("Unable to read input");
+        project_name = String::from(project.trim());
+    }
 
 
     let file = match File::open(String::from("./test_cases/unit_tests/") + input.trim()) {
@@ -78,15 +96,16 @@ fn main() {
         //    std::thread::sleep(std::time::Duration::from_millis(600));
 
     }
-    let s = parser::init_parser(&tokens, strict);
+    let rust_lexeme = parser::init_parser(&tokens, strict);
+    //regenerate the code from lexemes
     let mut o: String = String::new();
-    for i in s {
+    for i in rust_lexeme {
         o = o + " ";
         o = o + &i[..];
     }
 
     println!("\t:DONE");
-    let fname: String;
+    let mut fname: String;
     let mut fname1 = String::new();
     //write to a output file
     for c in input.chars() {
@@ -95,10 +114,27 @@ fn main() {
         }
         fname1.push(c);
     }
+
     fname1 = fname1 + ".rs";
     fname = "./test_cases/unit_tests/".to_string() + &fname1[..];
 
+    if cargo == true {
+        let child = Command::new("cargo")
+            .args(&["new", "--bin"])
+            .arg(&project_name[..])
+            .status()
+            .expect("Failed to create project");
+        if child.code().unwrap() == 101 {
+            println!("Project already exist with the name : {}, it will be overwritten by the `crust`.",
+                     project_name);
 
+            fname = project_name.clone() + "/src/main.rs";
+        }
+        if child.success() {
+            fname = project_name.clone() + "/src/main.rs";
+        }
+        println!("child code {} ", child.code().unwrap());
+    }
 
     let mut file = File::create(&fname[..]).expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
@@ -109,5 +145,5 @@ fn main() {
     println!("Rust equivalent of source of `{}` is generated successfully, View the rust code in \
               file : `{}`",
              input.trim(),
-             fname1);
+             fname);
 }

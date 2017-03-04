@@ -1,14 +1,10 @@
 fn main() {
-    /*Crust with Strict Mode enabled, declares all variables as immutable.
-     * If you are mutating the below variable anywhere in program, please change the declaration statement as
-     * let mut var_name:type=init_val;
-     **/
-    let a: i32 = 3;
-    /*Crust with Strict Mode enabled, declares all variables as immutable.
-     * If you are mutating the below variable anywhere in program, please change the declaration statement as
-     * let mut var_name:type=init_val;
-     **/
-    let b: i32;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut a: i32 = 3;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut b: i32;
     if a == b {
         /* Crust tries to identify return statement and replace with rust equivalent
          * shorthand notation. If error found in this line, Please replace shorthand notation
