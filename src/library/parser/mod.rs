@@ -414,7 +414,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     temp_lexeme.push(lexeme[head].clone());
                     stream.append(&mut parse_struct(&temp_lexeme, &mut struct_mem));
                     temp_lexeme.clear();
-                    head += 1; //skip semicolon
+                    head += 2; //skip semicolon
                 } else {
                     //struct variable declaration
 
