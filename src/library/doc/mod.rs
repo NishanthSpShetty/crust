@@ -5,6 +5,7 @@ pub enum DocType {
     STRICT,
     STRUCT_INIT,
     NO_RETURN,
+    INCLUDE_STMT,
     DEFAULT,
 }
 
@@ -27,6 +28,11 @@ impl DocType {
                 "\n/* Crust tries to identify return statement and replace with rust equivalent\n * \
                 shorthand notation. If error found in this line, Please replace shorthand notation \n * \
                 with return statement \n **/\n"
+            }
+            DocType::INCLUDE_STMT => {
+                "\n/* Crust doesn't resolve C/C++ dependencies or included header.\
+                 \n* You may have to define your own module and implement those functionality in Rust \
+                 \n* Or you can translate header file with Crust to produce Rust code. * \n* >>>>>>>>"
             }
             _ => "//Doc Not Found. Please Report bug",
         }

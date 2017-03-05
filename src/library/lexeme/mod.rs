@@ -53,8 +53,8 @@ pub enum Type {
     OP_LOGNOT, //
     OP_INC, //
     OP_DEC, //
-    OP_GT, //
-    OP_LT, //
+    OP_GT, //>
+    OP_LT, //<
     OP_LE, //
     OP_GE, //
     OP_ADDROF, // differentiate b/w this and OP_MUL during parsing?
@@ -110,7 +110,7 @@ pub enum Type {
     KEYWORD_RETURN, //
     KEYWORD_STRUCT,
     KEYWORD_ENUM,
-
+    INCLUDE,
     //---> If all fails
     OTHER,
 }

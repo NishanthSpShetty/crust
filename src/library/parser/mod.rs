@@ -27,6 +27,7 @@ impl Clone for SymbolTable {
         }
     }
 }
+static mut ONCE_WARNED: bool = false;
 static mut IN_BLOCK_STMNT: bool = false;
 static mut IN_EXPR: bool = false;
 static mut IN_SWITCH: bool = false;
@@ -492,7 +493,27 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     head += 1;
                 }
             }
+            (_, INCLUDE) => {
+                unsafe {
+                    if ONCE_WARNED == false {
+                        stream.push(INCLUDE_STMT.get_doc().to_string());
+                    } else {
+                        stream.pop();
+                        stream.push("* >>>>>>>>".to_string());
+                    }
+                }
+                while lexeme[head].get_token_type() != OP_GT {
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+                stream.push(lexeme[head].get_token_value() + "\n");
+                stream.push("**/".to_string());
+                head += 1;
+                unsafe {
+                    ONCE_WARNED = true;
+                }
 
+            }
             // if all fails
             (_, _) => {
                 if lexeme[head].get_token_type() != RIGHT_CBRACE {

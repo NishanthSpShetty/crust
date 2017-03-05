@@ -379,6 +379,10 @@ impl<'a> Tokenizer<'a> {
                     self.push_advance();
                     self.push_to_tok_buffer(COMMA, BASE_NONE);
                 }
+                '#' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(INCLUDE, BASE_NONE);
+                }
 
                 _ => {
                     self.push_advance();
