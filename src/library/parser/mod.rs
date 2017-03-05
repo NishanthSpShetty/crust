@@ -1398,7 +1398,7 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             });
             head += 1;
         }
-        stream.push("]".to_string());
+       // stream.push("]".to_string());
         stream.push(";".to_string());
     } else {
         stream.push(";".to_string());
