@@ -414,7 +414,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     temp_lexeme.push(lexeme[head].clone());
                     stream.append(&mut parse_struct(&temp_lexeme, &mut struct_mem));
                     temp_lexeme.clear();
-                    head += 1; //skip semicolon
+                    head += 2; //skip semicolon
                 } else {
                     //struct variable declaration
 
@@ -2707,6 +2707,7 @@ fn test_parse_function_no_args() {
     unsafe {
         IN_BLOCK_STMNT = true;
     }
+    let doc = NO_RETURN;
     let tok_vector = vec![Token::new(String::from("int"), BASE_DATATYPE, PRIMITIVE_INT, 0, 0),
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from("("), BASE_NONE, LEFT_BRACKET, 0, 0),
@@ -2720,22 +2721,8 @@ fn test_parse_function_no_args() {
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
-    let stream = vec!["fn",
-                      "a",
-                      "(",
-                      ")",
-                      "->",
-                      "i32",
-                      "{",
-                      "a",
-                      "=",
-                      "1",
-                      ";",
-                      "\n/* Crust tries to identify return statement and replace with rust \
-                       equivalent\n * shorthand notation. If error found in this line, Please \
-                       replace shorthand notation \n * with return statement \n **/\n",
-                      "a",
-                      "}"];
+    let stream =
+        vec!["fn", "a", "(", ")", "->", "i32", "{", "a", "=", "1", ";", doc.get_doc(), "a", "}"];
     assert_eq!(stream, parse_program(&tok_vector));
     unsafe {
         IN_BLOCK_STMNT = false;
