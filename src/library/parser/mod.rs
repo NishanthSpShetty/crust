@@ -327,18 +327,17 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
 
 
                 match lexeme[head + 1].get_type() {
-                   (_,IDENTIFIER) =>{
+                    (_, IDENTIFIER) => {
                         while lexeme[head].get_token_type() != SEMICOLON {
+                            temp_lexeme.push(lexeme[head].clone());
+                            head += 1;
+                        }
                         temp_lexeme.push(lexeme[head].clone());
-                        head += 1;
+                        head += 2;
+                        stream.append(&mut parse_class_decl(&temp_lexeme, &struct_mem));
+                        temp_lexeme.clear();
                     }
-                    temp_lexeme.push(lexeme[head].clone());
-                    head += 2;
-                    stream.append(&mut parse_class_decl(&temp_lexeme, &struct_mem));
-                    temp_lexeme.clear();
-                   }
-                   
-                   
+
                     (_, OP_ASSIGN) => {
                         // move lookahead past statement
                         if lexeme[head + 3].get_token_type() == COMMA {
@@ -467,7 +466,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     stream.append(&mut parse_class(&temp_lexeme, &mut struct_mem));
                     temp_lexeme.clear();
                     head += 2; //skip semicolon
-                } 
+                }
             }
 
             (_, KEYWORD_ENUM) => {
@@ -1504,7 +1503,8 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
     stream.push("struct".to_string()); //push the keyword struct
     head += 1;
     //push the struct id_name
-    stream.push(lexeme[head].get_token_value()); //push the class name
+    let class_name = lexeme[head].get_token_value();
+    stream.push(class_name.clone()); //push the class name
     let name = lexeme[head].get_token_value();
     stream.push("{".to_string());
     head += 2;
@@ -1512,8 +1512,8 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
     let mut temp_lexeme: Vec<Token> = Vec::new();
     while lexeme[head].get_token_type() != RIGHT_CBRACE &&
           lexeme[head + 1].get_token_type() != SEMICOLON {
-        match lexeme[head].get_base_type() {
-            BASE_MODIFIER => {
+        match lexeme[head].get_type() {
+            (BASE_MODIFIER, _) => {
                 match lexeme[head].get_token_type() {
                     KEYWORD_PUBLIC => {
                         head += 2;
@@ -1527,11 +1527,29 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
                     _ => {}
                 };
             }
+            (_, IDENTIFIER) => {
+                if lexeme[head].get_token_value() == class_name {
+                    stream.push(CONSTRUCTOR.get_doc().to_string());
+                    let mut lookahead = head;
+                    while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
+                        lookahead += 1;
+                    }
+                    lookahead += 1;
+                    lookahead = skip_block(lexeme, lookahead);
+                    while head < lookahead {
+                        stream.push(lexeme[head].get_token_value());
+                        head += 1;
+                    }
+                    stream.push("\n**/".to_string());
+                    continue;
+                }
+            }
 
             _ => {}
         }
 
         if lexeme[head + 2].get_token_type() == LEFT_BRACKET {
+
             while lexeme[head].get_token_type() != RIGHT_CBRACE {
 
                 temp_lexeme.push(lexeme[head].clone());

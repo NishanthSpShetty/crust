@@ -1,6 +1,9 @@
 struct A {
     a: i32,
-    b: i32,
+    b: i32, 
+/* Rust structures do not support constructors
+ * Please handle them with static builder functions
+>>>>>>>> A ( ) { a = 5 ; b = 6 ; } */
 }
 impl A {
     fn getfloat(&self) -> f32 {

@@ -7,6 +7,7 @@ pub enum DocType {
     NO_RETURN,
     INCLUDE_STMT,
     NO_POINTER,
+    CONSTRUCTOR,
     DEFAULT,
 }
 
@@ -18,7 +19,9 @@ impl DocType {
                  you are mutating the below variable anywhere in program, please change the \
                  declaration statement as\n * let mut var_name:type=init_val;\n **/\n"
             }
-            DocType::NO_STRICT => "\n/*Avoid using mutable variables unless it is necessary to do so\n */\n",
+            DocType::NO_STRICT => {
+                "\n/*Avoid using mutable variables unless it is necessary to do so\n */\n"
+            }
             DocType::STRUCT_INIT => {
                 "\n/* Declaration of a structure should be completed with initialization of it's \
                  fields\n * Parser may miss the generation of initialization statements.\n * It \
@@ -26,19 +29,23 @@ impl DocType {
                  member1:value1, member2:value2,..}\n */"
             }
             DocType::NO_RETURN => {
-                "\n/* Crust tries to identify return statement and replace with rust equivalent\n * \
-                shorthand notation. If error found in this line, Please replace shorthand notation \n * \
-                with return statement \n **/\n"
+                "\n/* Crust tries to identify return statement and replace with rust equivalent\n \
+                 * shorthand notation. If error found in this line, Please replace shorthand \
+                 notation \n * with return statement \n **/\n"
             }
             DocType::INCLUDE_STMT => {
-                "\n/* Crust doesn't resolve C/C++ dependencies or included header.\
-                 \n* You may have to define your own module and implement those functionality in Rust \
-                 \n* Or you can translate header file with Crust to produce Rust code. * \n* >>>>>>>>"
+                "\n/* Crust doesn't resolve C/C++ dependencies or included header.\n* You may have \
+                 to define your own module and implement those functionality in Rust \n* Or you \
+                 can translate header file with Crust to produce Rust code. * \n* >>>>>>>>"
             }
             DocType::NO_POINTER => {
                 "\n/* Crust doesn't support pointers yet,\
                 \n * Please handle the pointers manual with rust refernce, Rc or raw pointers\
                 \n * ======> "
+            }
+            DocType::CONSTRUCTOR => {
+                "\n/** Rust structures do not support constructors\
+                \n * Please handle them with static builder functions\n>>>>>>>>"
             }
             _ => "//Doc Not Found. Please Report bug",
         }
