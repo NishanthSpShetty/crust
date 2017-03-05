@@ -4,9 +4,25 @@ struct A {
 }
 impl A {
     fn getfloat(&self) -> f32 {
-        return 1.23;
+        /* Crust tries to identify return statement and replace with rust equivalent
+         * shorthand notation. If error found in this line, Please replace shorthand notation
+         * with return statement
+         **/
+        1.23
     }
     pub fn getInt(&self, a: i32) -> i32 {
-        return a;
+        /* Crust tries to identify return statement and replace with rust equivalent
+         * shorthand notation. If error found in this line, Please replace shorthand notation
+         * with return statement
+         **/
+        a
     }
+}
+fn main() {
+    /* Declaration of a structure should be completed with initialization of it's fields
+     * Parser may miss the generation of initialization statements.
+     * It should be in the following format
+     * let variable:struct_name = struct_name { member1:value1, member2:value2,..}
+     */
+    let a = A {};
 }
