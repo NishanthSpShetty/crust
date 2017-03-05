@@ -7,4 +7,7 @@ class A{
     public : int getInt(int a){ return a; }
 };
 
+int main(){
+  A a = A();
+}
 

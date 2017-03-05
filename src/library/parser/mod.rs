@@ -327,6 +327,18 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
 
 
                 match lexeme[head + 1].get_type() {
+                   (_,IDENTIFIER) =>{
+                        while lexeme[head].get_token_type() != SEMICOLON {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    temp_lexeme.push(lexeme[head].clone());
+                    head += 2;
+                    stream.append(&mut parse_class_decl(&temp_lexeme, &struct_mem));
+                    temp_lexeme.clear();
+                   }
+                   
+                   
                     (_, OP_ASSIGN) => {
                         // move lookahead past statement
                         if lexeme[head + 3].get_token_type() == COMMA {
@@ -455,18 +467,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     stream.append(&mut parse_class(&temp_lexeme, &mut struct_mem));
                     temp_lexeme.clear();
                     head += 2; //skip semicolon
-                } else {
-                    //struct variable declaration
-
-                    while lexeme[head].get_token_type() != SEMICOLON {
-                        temp_lexeme.push(lexeme[head].clone());
-                        head += 1;
-                    }
-                    temp_lexeme.push(lexeme[head].clone());
-                    head += 2;
-                    stream.append(&mut parse_class_decl(&temp_lexeme, &struct_mem));
-                    temp_lexeme.clear();
-                }
+                } 
             }
 
             (_, KEYWORD_ENUM) => {
@@ -1404,7 +1405,7 @@ fn parse_array_declaration(lexeme: &Vec<Token>) -> Vec<String> {
             });
             head += 1;
         }
-        stream.push("]".to_string());
+       // stream.push("]".to_string());
         stream.push(";".to_string());
     } else {
         stream.push(";".to_string());
@@ -1666,7 +1667,7 @@ fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<S
 
     stream.push(STRUCT_INIT.get_doc().to_string());
     stream.push("let".to_string());
-    let mut head = 1;
+    let mut head = 0;
     //struct FilePointer fp;
     let struct_name = lexeme[head].get_token_value();
     head += 1;
