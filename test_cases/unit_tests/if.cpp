@@ -3,7 +3,7 @@
 #include<math.h>
 int main() {
     int a = 3;
-    int b;
+    int *b;
     if(a==b) return 100;
     b = func(32, a);
 }

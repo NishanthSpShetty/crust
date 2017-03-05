@@ -10,9 +10,10 @@ fn main() {
     /*Avoid using mutable variables unless it is necessary to do so
      */
     let mut a: i32 = 3;
-    /*Avoid using mutable variables unless it is necessary to do so
-     */
-    let mut b: i32;
+    /* Crust doesn't support pointers yet,
+     * Please handle the pointers manual with rust refernce, Rc or raw pointers
+     * ======>  int * b
+     **/
     if a == b {
         /* Crust tries to identify return statement and replace with rust equivalent
          * shorthand notation. If error found in this line, Please replace shorthand notation

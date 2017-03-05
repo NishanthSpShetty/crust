@@ -127,7 +127,17 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         stream.append(&mut parse_declaration(&temp_lexeme));
                         temp_lexeme.clear();
                     }
+                    IDENTIFIER => {
+                        //in case of pointer declaration
+                        stream.push(NO_POINTER.get_doc().to_string());
+                        while lexeme[head].get_token_type() != SEMICOLON {
+                            stream.push(lexeme[head].get_token_value());
+                            head += 1;
+                        }
+                        stream.push("\n **/\n".to_string());
+                        head += 1;
 
+                    }
                     _ => {}
                 };
             }
