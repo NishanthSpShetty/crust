@@ -822,6 +822,7 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
     let mut head: usize = 0;
 
     stream.push("if".to_string());
+    stream.push("(".to_string());
     head += 1;
 
     //skip '('
@@ -833,7 +834,8 @@ fn parse_if(lexeme: &Vec<Token>) -> Vec<String> {
         head += 1;
     }
     head += 1;
-
+    stream.push(")".to_string());
+    stream.push("== true".to_string());
     stream.push("{".to_string());
 
     if lexeme[head].get_token_type() == LEFT_CBRACE {
@@ -897,7 +899,10 @@ fn parse_while(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push("loop".to_string());
     } else {
         stream.push("while".to_string());
+        stream.push("(".to_string());
         stream.append(&mut cond_stream);
+        stream.push(")".to_string());
+        stream.push("== true".to_string());
     }
     stream.push("{".to_string());
     stream.append(&mut body_stream);
@@ -946,12 +951,13 @@ fn parse_dowhile(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push("while".to_string());
         stream.push("{".to_string());
         stream.append(&mut temp_stream);
-
+        stream.push("(".to_string());
         while lexeme[head].get_token_type() != RIGHT_BRACKET {
             stream.push(lexeme[head].get_token_value());
             head += 1;
         }
-
+        stream.push(")".to_string());
+        stream.push("== true".to_string());
         stream.push("}".to_string());
         stream.push("{".to_string());
         stream.push("}".to_string());
@@ -1714,7 +1720,8 @@ fn test_parse_if_braces() {
                                      0,
                                      0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
-    let stream = vec!["if", "a", "==", "a", "{", "/*Do something here*/\n", "}"];
+    let stream =
+        vec!["if", "(", "a", "==", "a", ")", "== true", "{", "/*Do something here*/\n", "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
 }
@@ -1751,15 +1758,21 @@ fn test_parse_if_braces_nesting() {
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
     let stream = vec!["if",
+                      "(",
                       "a",
                       ">",
                       "2",
+                      ")",
+                      "== true",
                       "{",
                       "/*Do something here*/\n",
                       "if",
+                      "(",
                       "a",
                       "<",
                       "4",
+                      ")",
+                      "== true",
                       "{",
                       "b",
                       "=",
@@ -1787,7 +1800,7 @@ fn test_parse_if_no_braces() {
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 0),
                           Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
-    let stream = vec!["if", "a", "==", "a", "{", "a", "=", "5", ";", "}"];
+    let stream = vec!["if", "(", "a", "==", "a", ")", "== true", "{", "a", "=", "5", ";", "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
 }
@@ -1814,8 +1827,8 @@ fn test_parse_if_no_braces_nesting() {
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 0),
                           Token::new(String::from("72"), BASE_VALUE, NUM_INT, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
-    let stream = vec!["if", "a", ">", "2", "{", "if", "a", "<", "4", "{", "b", "=", "53", ";",
-                      "b", "=", "72", ";", "}", "}"];
+    let stream = vec!["if", "(", "a", ">", "2", ")", "== true", "{", "if", "(", "a", "<", "4",
+                      ")", "== true", "{", "b", "=", "53", ";", "b", "=", "72", ";", "}", "}"];
 
     assert_eq!(stream, parse_if(&tok_vector));
 }
@@ -1854,15 +1867,21 @@ fn test_parse_if_no_braces_inside_braces() {
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
     let stream = vec!["if",
+                      "(",
                       "a",
                       ">",
                       "2",
+                      ")",
+                      "== true",
                       "{",
                       "/*Do something here*/\n",
                       "if",
+                      "(",
                       "a",
                       "<",
                       "4",
+                      ")",
+                      "== true",
                       "{",
                       "b",
                       "=",
@@ -1926,17 +1945,23 @@ fn test_parse_if_else_ladder() {
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
     let stream = vec!["if",
+                      "(",
                       "a",
                       "==",
                       "b",
+                      ")",
+                      "== true",
                       "{",
                       "/*Do something here*/\n",
                       "}",
                       "else",
                       "if",
+                      "(",
                       "a",
                       "==",
                       "c",
+                      ")",
+                      "== true",
                       "{",
                       "c",
                       "+=1",
@@ -1944,9 +1969,12 @@ fn test_parse_if_else_ladder() {
                       "}",
                       "else",
                       "if",
+                      "(",
                       "a",
                       "==",
                       "d",
+                      ")",
+                      "== true",
                       "{",
                       "d",
                       "-=1",
@@ -2801,7 +2829,8 @@ fn test_parse_while_braces() {
                                      0,
                                      0),
                           Token::new(String::from("}"), BASE_NONE, RIGHT_CBRACE, 0, 0)];
-    let stream = vec!["while", "a", "==", "a", "{", "/*Do something here*/\n", "}"];
+    let stream =
+        vec!["while", "(", "a", "==", "a", ")", "== true", "{", "/*Do something here*/\n", "}"];
 
     assert_eq!(stream, parse_while(&tok_vector));
 }
@@ -2818,7 +2847,7 @@ fn test_parse_while_no_braces() {
                           Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 0, 0),
                           Token::new(String::from("5"), BASE_VALUE, NUM_INT, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
-    let stream = vec!["while", "a", "==", "a", "{", "a", "=", "5", ";", "}"];
+    let stream = vec!["while", "(", "a", "==", "a", ")", "== true", "{", "a", "=", "5", ";", "}"];
 
     assert_eq!(stream, parse_while(&tok_vector));
 }
@@ -2859,7 +2888,19 @@ fn test_parse_dowhile() {
                           Token::new(String::from("a"), BASE_NONE, IDENTIFIER, 0, 0),
                           Token::new(String::from(")"), BASE_NONE, RIGHT_BRACKET, 0, 0),
                           Token::new(String::from(";"), BASE_NONE, SEMICOLON, 0, 0)];
-    let stream = vec!["while", "{", "/*Do something here*/\n", "a", "==", "a", "}", "{", "}", ";"];
+    let stream = vec!["while",
+                      "{",
+                      "/*Do something here*/\n",
+                      "(",
+                      "a",
+                      "==",
+                      "a",
+                      ")",
+                      "== true",
+                      "}",
+                      "{",
+                      "}",
+                      ";"];
 
     assert_eq!(stream, parse_dowhile(&tok_vector));
 }
