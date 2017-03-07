@@ -51,7 +51,7 @@ fn main() {
     }
 
 
-    let file = match File::open(String::from("./test_cases/unit_tests/") + input.trim()) {
+    let file = match File::open(String::from("./") + input.trim()) {
         Ok(f) => f,
         Err(..) => panic!("Unable to open input source file."),
     };
@@ -116,7 +116,7 @@ fn main() {
     }
 
     fname1 = fname1 + ".rs";
-    fname = "./test_cases/unit_tests/".to_string() + &fname1[..];
+    fname = "./".to_string() + &fname1[..];
 
     if cargo == true {
         let child = Command::new("cargo")

@@ -1,4 +1,4 @@
 [package]
-name = "cpp_to_rust"
+name = "crust"
 version = "0.1.0"
 authors = ["NishanthSpShetty <nishanthspshetty@gmail.com>"]

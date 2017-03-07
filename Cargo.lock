@@ -1,4 +1,4 @@
 [root]
-name = "cpp_to_rust"
+name = "crust"
 version = "0.1.0"
 

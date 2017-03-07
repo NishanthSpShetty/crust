@@ -1435,7 +1435,7 @@ fn parse_struct(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<
         stream.append(&mut parse_struct_inbody_decl(&temp_lexeme, &mut structmem, &name));
         temp_lexeme.clear();
     }
-    stream.push(lexeme[head].get_token_value());
+    stream.push(lexeme[head].get_token_value() + "\n");
 
 
     stream
@@ -1510,6 +1510,8 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
     head += 2;
     let mut modifier: String = " ".to_string();
     let mut temp_lexeme: Vec<Token> = Vec::new();
+    let mut tstream: Vec<String> = Vec::new();
+
     while lexeme[head].get_token_type() != RIGHT_CBRACE &&
           lexeme[head + 1].get_token_type() != SEMICOLON {
         match lexeme[head].get_type() {
@@ -1529,7 +1531,7 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
             }
             (_, IDENTIFIER) => {
                 if lexeme[head].get_token_value() == class_name {
-                    stream.push(CONSTRUCTOR.get_doc().to_string());
+                    tstream.push(CONSTRUCTOR.get_doc().to_string());
                     let mut lookahead = head;
                     while lexeme[lookahead].get_token_type() != LEFT_CBRACE {
                         lookahead += 1;
@@ -1537,10 +1539,10 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
                     lookahead += 1;
                     lookahead = skip_block(lexeme, lookahead);
                     while head < lookahead {
-                        stream.push(lexeme[head].get_token_value());
+                        tstream.push(lexeme[head].get_token_value());
                         head += 1;
                     }
-                    stream.push("\n**/".to_string());
+                    tstream.push("\n **/".to_string());
                     continue;
                 }
             }
@@ -1579,13 +1581,18 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
 
     }
     stream.push(lexeme[head].get_token_value());
-
+    stream.push("\n\nn/**Method declarations are wrapped inside the impl block \
+    \n * Which implements the corresponding structure\
+    \n **/\n".to_string());
     stream.push("impl".to_string());
     stream.push(name.clone());
-    stream.push("{".to_string());
+    stream.push("{\n".to_string());
+    if tstream.len() > 0 {
+        stream.append(&mut tstream);
+    }
     stream.append(&mut method_stream);
 
-    stream.push("}".to_string());
+    stream.push("}\n".to_string());
     stream
 }
 
