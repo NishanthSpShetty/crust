@@ -39,8 +39,10 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
     unsafe {
         strict = strict_parser;
     }
-
-    parse_program(&lexeme)
+    let mut stream: Vec<String> = Vec::new();
+    stream.push(CRUST.get_doc().to_string());
+    stream.append(&mut parse_program(&lexeme));
+    stream
 }
 /**
  * parse_program:
