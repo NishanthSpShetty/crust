@@ -1583,7 +1583,7 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
 
     }
     stream.push(lexeme[head].get_token_value());
-    stream.push("\n\nn/**Method declarations are wrapped inside the impl block \
+    stream.push("\n\n/**Method declarations are wrapped inside the impl block \
     \n * Which implements the corresponding structure\
     \n **/\n".to_string());
     stream.push("impl".to_string());

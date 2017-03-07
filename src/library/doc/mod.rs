@@ -52,7 +52,7 @@ impl DocType {
                 \n * translation from C/C++ to Rust\
                 \n * CRUST isn't perfect and may require manual editing\
                 \n * Check warnings and errors and refer to the official Rust Documentation\
-                \n ************************************************************************/"
+                \n ************************************************************************/\n"
             }
             _ => "//Doc Not Found. Please Report bug",
         }
