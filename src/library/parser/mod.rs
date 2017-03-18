@@ -136,7 +136,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                             stream.push(lexeme[head].get_token_value());
                             head += 1;
                         }
-                        stream.push("\n **/\n".to_string());
+                        stream.push("\n * */\n".to_string());
                         head += 1;
 
                     }
@@ -379,19 +379,32 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                         }
                     },
                     (BASE_BINOP, _) => {
-                        // move lookahead past statement
                         lookahead = skip_stmt(&lexeme, lookahead);
-                        // collect statement
-                        while head < lookahead {
-                            let l: Token = lexeme[head].clone();
-                            temp_lexeme.push(l);
-                            head += 1;
+
+                        //check if overloaded operators is in effect like << >>
+                        if lexeme[head + 2].get_token_type() == STRING ||
+                           lexeme[head + 2].get_token_type() == CHAR_VAL {
+                            stream.push("\n//This statement need to be handled manually \n"
+                                .to_string());
+                            while head < lookahead {
+                                stream.push(lexeme[head].get_token_value());
+                                head += 1;
+                            }
+                        } else {
+
+                            // move lookahead past statement
+                            // collect statement
+                            while head < lookahead {
+                                let l: Token = lexeme[head].clone();
+                                temp_lexeme.push(l);
+                                head += 1;
+                            }
+
+                            // parse assignment
+                            stream.append(&mut parse_expr(&temp_lexeme));
+                            temp_lexeme.clear();
+
                         }
-
-                        // parse assignment
-                        stream.append(&mut parse_expr(&temp_lexeme));
-                        temp_lexeme.clear();
-
                     }
                     (_, LEFT_BRACKET) => {
                         while lexeme[head].get_token_type() != RIGHT_BRACKET {
@@ -519,7 +532,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     head += 1;
                 }
                 stream.push(lexeme[head].get_token_value() + "\n");
-                stream.push("**/".to_string());
+                stream.push("**/\n".to_string());
                 head += 1;
                 unsafe {
                     ONCE_WARNED = true;
@@ -1544,7 +1557,7 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
                         tstream.push(lexeme[head].get_token_value());
                         head += 1;
                     }
-                    tstream.push("\n **/".to_string());
+                    tstream.push("\n **/\n".to_string());
                     continue;
                 }
             }
@@ -1585,7 +1598,8 @@ fn parse_class(lexeme: &Vec<Token>, mut structmem: &mut Vec<StructMem>) -> Vec<S
     stream.push(lexeme[head].get_token_value());
     stream.push("\n\n/**Method declarations are wrapped inside the impl block \
     \n * Which implements the corresponding structure\
-    \n **/\n".to_string());
+    \n **/\n"
+        .to_string());
     stream.push("impl".to_string());
     stream.push(name.clone());
     stream.push("{\n".to_string());
