@@ -7,6 +7,7 @@ struct SymbolTable {
     typ: i32,
     id_name: String,
     is_assigned: bool,
+    is_ptr: bool,
     assigned_val: String,
 }
 #[derive(Debug)]
@@ -131,13 +132,16 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                     }
                     IDENTIFIER => {
                         //in case of pointer declaration
-                        stream.push(NO_POINTER.get_doc().to_string());
                         while lexeme[head].get_token_type() != SEMICOLON {
-                            stream.push(lexeme[head].get_token_value());
+                            temp_lexeme.push(lexeme[head].clone());
                             head += 1;
                         }
-                        stream.push("\n * */\n".to_string());
+                        temp_lexeme.push(lexeme[head].clone());
+                        stream.append(&mut parse_declaration(&temp_lexeme));
                         head += 1;
+                        println!("{}", lexeme[head].get_token_value());
+                        temp_lexeme.clear();
+
 
                     }
                     _ => {}
@@ -734,10 +738,12 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
 
     let mut sym_tab: Vec<SymbolTable> = Vec::new();
+    sym_tab.clear();
     let mut sym: SymbolTable = SymbolTable {
         typ: -1,
         id_name: "undefined_var".to_string(),
         is_assigned: false,
+        is_ptr: false,
         assigned_val: "NONE".to_string(),
     };
     let mut head: usize = 1;
@@ -753,6 +759,19 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
                 sym.assigned_val = String::from("");
                 head += 1;
                 let mut br = 0;
+
+
+                if sym.is_ptr == true {
+                    if lexeme[head].get_token_type() == NULL {
+                        while lexeme[head].get_token_type() != SEMICOLON &&
+                              lexeme[head].get_token_type() != COMMA {
+                            head += 1;
+                        }
+                        sym.is_assigned = false;
+                    } else {
+                        head += 1;
+                    }
+                }
                 while lexeme[head].get_token_type() != SEMICOLON &&
                       !(br == 0 && lexeme[head].get_token_type() == COMMA) {
                     if lexeme[head].get_token_type() == LEFT_BRACKET {
@@ -772,9 +791,13 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
                 sym.typ = lexeme[0].get_token_type() as i32;
                 sym_tab.push(sym.clone());
             }
+            OP_MUL => {
+                sym.is_ptr = true;
+            }
             _ => {
                 sym.assigned_val.push_str(&lexeme[head].get_token_value());
             }
+
         };
         head += 1;
     }
@@ -788,7 +811,6 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
     }
 
     for i in &sym_tab {
-
         // get identifier
         //for declaration out of any blocks(global)
         unsafe {
@@ -808,6 +830,17 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
         }
         stream.push(i.id_name.clone());
         stream.push(":".to_string());
+
+        if i.is_ptr == true {
+            stream.push("&".to_string());
+
+            unsafe {
+                if strict == false {
+                    stream.push("mut".to_string());
+                }
+
+            }
+        }
         // get the rust type
         if let Some(rust_type) = parse_type(i.typ) {
             stream.push(rust_type);
@@ -818,7 +851,16 @@ fn parse_declaration(lexeme: &Vec<Token>) -> Vec<String> {
         // take care of assignment
         if i.is_assigned {
             stream.push("=".to_string());
+            if i.is_ptr == true {
+                stream.push("&".to_string());
+            }
+            unsafe {
+                if strict == false && i.is_ptr == true {
+                    stream.push("mut".to_string());
+                }
+            }
             stream.push((&i.assigned_val).to_string());
+
         }
         stream.push(";".to_string());
     }
@@ -1244,7 +1286,7 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
     let m = 3;
 
     let mut tstream: Vec<String> = Vec::new();
-
+    // if lexeme[0].get_token_type() == OP_MUL {println!("tasdbvjhbhsb "); m+=1; n+=1;thead+=1;}
     if lexeme[n].get_base_type() == BASE_UNOP {
 
         while lexeme[thead].get_token_type() != SEMICOLON {
@@ -1274,6 +1316,14 @@ fn parse_assignment(lexeme: &Vec<Token>) -> Vec<String> {
         stream.push(lexeme[0].get_token_value());
         stream.push(lexeme[1].get_token_value());
         stream.append(&mut parse_expr(&lexeme1));
+    } else if lexeme[n].get_token_type() == OP_BITAND {
+        stream.push(lexeme[0].get_token_value());
+        stream.push(lexeme[1].get_token_value());
+
+        while lexeme[thead].get_token_type() != SEMICOLON {
+            stream.push(lexeme[thead].get_token_value());
+            thead += 1;
+        }
     } else {
 
         if lexeme[m].get_token_type() == OP_ASSIGN {

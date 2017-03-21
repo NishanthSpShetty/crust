@@ -111,6 +111,7 @@ pub enum Type {
     KEYWORD_STRUCT,
     KEYWORD_ENUM,
     INCLUDE,
+    NULL,
     //---> If all fails
     OTHER,
 }

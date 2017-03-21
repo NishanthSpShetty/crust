@@ -4,39 +4,12 @@
  * CRUST isn't perfect and may require manual editing
  * Check warnings and errors and refer to the official Rust Documentation
  ************************************************************************/
-
-/** Crust doesn't resolve C/C++ dependencies or included header.
-* You may have to define your own module and implement those functionality in Rust 
-* Or you can translate header file with Crust to produce Rust code. * 
-* >>>>>>>> # include < stdio . h >
- * >>>>>>>> # include < stdlib . h >
- * >>>>>>>> # include < math . h >
- **/
 fn main() {
-    /** Crust doesn't support pointers yet,
-     * Please handle the pointers manual with rust refernce, Rc or raw pointers
-     * ======>  int * b
-     * */
-
     /*Avoid using mutable variables unless it is necessary to do so
      */
-    let mut a: i32 = 3;
-    if (a == b) == true {
-        /** Crust tries to identify return statement and replace with rust equivalent
-         * shorthand notation. If error found in this line, Please replace shorthand notation
-         * with return statement
-         **/
-        100
-    }
-    b = func(32, a);
-    cout << b;
-    //This statement need to be handled manually
-    cout << "hello world";
-}
-fn func(a: i32, b: i32) -> i32 {
-    /** Crust tries to identify return statement and replace with rust equivalent
-     * shorthand notation. If error found in this line, Please replace shorthand notation
-     * with return statement
-     **/
-    a + b
+    let mut a: i32 = 100;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut b: &mut i32;
+    b = &a
 }
