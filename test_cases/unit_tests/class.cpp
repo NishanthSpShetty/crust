@@ -14,5 +14,8 @@ class A{
 
 int main(){
   A a = A();
+  a.getInt();
+  a.getfloat();
+  //do some thing else
 }
 

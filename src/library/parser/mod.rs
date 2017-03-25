@@ -339,7 +339,7 @@ fn parse_program(lexeme: &Vec<Token>) -> Vec<String> {
                             head += 1;
                         }
                         temp_lexeme.push(lexeme[head].clone());
-                        head += 2;
+                        head += 1;
                         stream.append(&mut parse_class_decl(&temp_lexeme, &struct_mem));
                         temp_lexeme.clear();
                     }
@@ -1780,7 +1780,6 @@ fn parse_class_decl(lexeme: &Vec<Token>, struct_table: &Vec<StructMem>) -> Vec<S
     stream
 }
 
-// not tested
 fn get_default_value_for(c_type: i32) -> String {
     match c_type {
         0 => "0i32".to_string(),
