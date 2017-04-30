@@ -1,5 +1,3 @@
-#[warn(non_snake_case)]
-
 use library::doc::DocType::*;
 use library::lexeme::Type::*;
 use library::lexeme::Token;
@@ -34,11 +32,11 @@ impl Clone for SymbolTable {
 
 
 struct Parser {
-    ONCE_WARNED: bool, //default false
-    IN_BLOCK_STMNT: bool, //default false
-    IN_EXPR: bool, //default false
-    IN_SWITCH: bool, //defalt false
-    STRICT: bool, //default true
+    once_warned: bool, //default false
+    in_block_stmnt: bool, //default false
+    in_expr: bool, //default false
+    in_switch: bool, //defalt false
+    strict: bool, //default true
     sym_tab: Vec<SymbolTable>,
     struct_mem: Vec<StructMem>,
 }
@@ -51,11 +49,11 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
     stream.push(CRUST.get_doc().to_string());
 
     let mut parser = Parser {
-        ONCE_WARNED: false,
-        IN_BLOCK_STMNT: false,
-        IN_EXPR: false,
-        IN_SWITCH: false,
-        STRICT: strict_parser,
+        once_warned: false,
+        in_block_stmnt: false,
+        in_expr: false,
+        in_switch: false,
+        strict: strict_parser,
         sym_tab: Vec::new(),
         struct_mem: Vec::new(),
     };
@@ -144,7 +142,7 @@ impl Parser {
                         // function
                         LEFT_BRACKET => {
                             //inside the function
-                            self.IN_BLOCK_STMNT = true;
+                            self.in_block_stmnt = true;
 
                             while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
                                 lookahead += 1;
@@ -170,7 +168,7 @@ impl Parser {
                             stream.append(&mut self.parse_function(&temp_lexeme));
                             temp_lexeme.clear();
 
-                            self.IN_BLOCK_STMNT = false;
+                            self.in_block_stmnt = false;
 
                         }
 
@@ -291,11 +289,11 @@ impl Parser {
                         temp_lexeme.push(l);
                         head += 1;
                     }
-                    self.IN_SWITCH = true;
+                    self.in_switch = true;
 
                     stream.append(&mut self.parse_switch(&temp_lexeme));
                     temp_lexeme.clear();
-                    self.IN_SWITCH = false;
+                    self.in_switch = false;
 
                 }
 
@@ -324,12 +322,12 @@ impl Parser {
                     }
 
                     let was_in_switch: bool;
-                    was_in_switch = self.IN_SWITCH;
-                    self.IN_SWITCH = false;
+                    was_in_switch = self.in_switch;
+                    self.in_switch = false;
 
                     // parse if
                     stream.append(&mut self.parse_while(&temp_lexeme));
-                    self.IN_SWITCH = was_in_switch;
+                    self.in_switch = was_in_switch;
                     temp_lexeme.clear();
                 }
 
@@ -348,13 +346,13 @@ impl Parser {
                     }
                     // parse while
                     let was_in_switch: bool;
-                    was_in_switch = self.IN_SWITCH;
-                    self.IN_SWITCH = false;
+                    was_in_switch = self.in_switch;
+                    self.in_switch = false;
 
                     stream.append(&mut self.parse_dowhile(&temp_lexeme));
                     temp_lexeme.clear();
 
-                    self.IN_SWITCH = was_in_switch;
+                    self.in_switch = was_in_switch;
 
                 }
 
@@ -373,12 +371,12 @@ impl Parser {
                     }
 
                     let was_in_switch: bool;
-                    was_in_switch = self.IN_SWITCH;
-                    self.IN_SWITCH = false;
+                    was_in_switch = self.in_switch;
+                    self.in_switch = false;
 
                     stream.append(&mut self.parse_for(&temp_lexeme));
                     temp_lexeme.clear();
-                    self.IN_SWITCH = was_in_switch;
+                    self.in_switch = was_in_switch;
 
                 }
 
@@ -435,7 +433,7 @@ impl Parser {
                             }
                         }
                         (BASE_UNOP, _) => {
-                            if self.IN_EXPR != true {
+                            if self.in_expr != true {
                                 stream.push(lexeme[head].get_token_value());
                                 stream.push(match lexeme[head + 1].get_token_type() {
                                     OP_INC => "+=1".to_string(),
@@ -588,7 +586,7 @@ impl Parser {
                     }
                 }
                 (_, INCLUDE) => {
-                    if self.ONCE_WARNED == false {
+                    if self.once_warned == false {
                         stream.push(INCLUDE_STMT.get_doc().to_string());
                     } else {
                         stream.pop();
@@ -603,7 +601,7 @@ impl Parser {
                     stream.push("**/\n".to_string());
                     head += 1;
 
-                    self.ONCE_WARNED = true;
+                    self.once_warned = true;
 
 
                 }
@@ -613,7 +611,7 @@ impl Parser {
                         if lexeme[head].get_token_type() == COMMA {
                             stream.push(";".to_string());
                         } else if lexeme[head].get_token_type() == KEYWORD_BREAK {
-                            if !self.IN_SWITCH {
+                            if !self.in_switch {
                                 stream.push(lexeme[head].get_token_value());
                             }
 
@@ -695,7 +693,7 @@ impl Parser {
             stream.push("{".to_string());
             if lexeme[head].get_token_type() != RIGHT_BRACKET {
 
-                if self.STRICT == false {
+                if self.strict == false {
                     stream.push(NO_STRICT.get_doc().to_string());
                     stream.push("let mut argv: Vec<_> = std::env::args().collect();".to_string());
                     stream.push("let mut argc = argv.len();".to_string());
@@ -830,7 +828,7 @@ impl Parser {
             head += 1;
         }
 
-        if self.STRICT == false {
+        if self.strict == false {
             stream.push(NO_STRICT.get_doc().to_string());
         } else {
             stream.push(STRICT.get_doc().to_string());
@@ -841,14 +839,14 @@ impl Parser {
             // get identifier
             //for declaration out of any blocks(global)
 
-            if self.STRICT == false {
-                if self.IN_BLOCK_STMNT == true {
+            if self.strict == false {
+                if self.in_block_stmnt == true {
                     stream.push("let mut".to_string());
                 } else {
                     stream.push("static mut".to_string());
                 }
             } else {
-                if self.IN_BLOCK_STMNT == true {
+                if self.in_block_stmnt == true {
                     stream.push("let".to_string());
                 } else {
                     stream.push("static".to_string());
@@ -862,7 +860,7 @@ impl Parser {
                 stream.push("&".to_string());
 
 
-                if self.STRICT == false {
+                if self.strict == false {
                     stream.push("mut".to_string());
                 }
             }
@@ -879,7 +877,7 @@ impl Parser {
                 if i.is_ptr == true {
                     stream.push("&".to_string());
                 }
-                if self.STRICT == false && i.is_ptr == true {
+                if self.strict == false && i.is_ptr == true {
                     stream.push("mut".to_string());
                 }
 
@@ -1435,7 +1433,7 @@ impl Parser {
         if let Some(t) = parse_type(lexeme[0].get_token_type() as i32) {
             typ = t;
         }
-        if self.STRICT == true {
+        if self.strict == true {
             stream.push(STRICT.get_doc().to_string());
             stream.push("let".to_string());
         } else {

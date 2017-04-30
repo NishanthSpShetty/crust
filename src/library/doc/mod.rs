@@ -23,8 +23,7 @@ impl DocType {
             DocType::NO_STRICT => "\n/*Avoid using mutable variables unless it is necessary to do so\n */\n",
             DocType::STRUCT_INIT => {
                 "\n/** Declaration of a structure should be completed with initialization of it's \
-                 fields\n * Parser may miss the generation of initialization statements.\n * It \
-                 should be in the following format\n * let variable:struct_name = struct_name { \
+                 fields\n * It should be in the following format\n * let variable:struct_name = struct_name { \
                  member1:value1, member2:value2,..}\n */"
             }
             DocType::NO_RETURN => {
