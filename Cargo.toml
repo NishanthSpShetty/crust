@@ -1,4 +1,10 @@
 [package]
 name = "crust"
 version = "0.1.0"
-authors = ["NishanthSpShetty <nishanthspshetty@gmail.com>"]
+authors = [
+    "NishanthSpShetty <nishanthspshetty@gmail.com>",
+    "nikhilsaldanha <nikhilsaldanha@bitbucket.org>"
+]
+
+[dependencies]
+rustfmt = "0.8.1"
