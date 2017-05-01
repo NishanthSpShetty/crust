@@ -1,12 +1,16 @@
-# CRUST
-# A C++ to Rust transpiler written in Rust
+## CRUST
+### C/C++ to Rust Transpiler
+C++ is a system programming language widely used in development of operating system,  firmwares, device drivers and in some application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer. The new programming language *Rust* is system programming language provides the safe and secure programming with highly enforced compiler restrictions with zero cost abstraction.
 
-C++ is a system programming language widely used in development of operating system,  firmwares, device drivers and in some application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer.  
-The new programming language *Rust* is system programming language provides the safe and secure programming with highly enforced compiler restrictions with zero cost abstraction.
-------------------------------------------------------------------------  
+
+
+
+------------------------------------------------------------------------
 This tool is intended to translate existing C++ code base into Rust with less effort.
 May require manual lookup or minute edit to the translated code.
 ------------------------------------------------------------------------
+
+
 
 ## Usage
 First, make sure you are setup for Rust development. Check out [http://www.rust-lang.org](http://www.rust-lang.org) for more information. The installation sets up the Rust compiler and Cargo package management system. Also, it adds `rustc` and `cargo` commands to your PATH variable.
