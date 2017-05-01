@@ -10,7 +10,7 @@ May require manual lookup or minute edit to the translated code.
 
 ------------------------------------------------------------------------
 
-##Usage
+## Usage
 
 First, make sure you are setup for Rust development. Check out [http://www.rust-lang.org](http://www.rust-lang.org) for more information. The installation sets up the Rust compiler and Cargo package management system. Also, it adds `rustc` and `cargo` commands to your PATH variable.
 
