@@ -30,6 +30,17 @@ impl Clone for SymbolTable {
     }
 }
 
+impl Clone for StructMem{
+	fn clone(&self) ->StructMem{
+		StructMem{
+		name:self.name.clone(),
+		typ:self.typ,
+		identifier : self.identifier.clone()
+		}
+	}
+}
+
+
 
 struct Parser {
     once_warned: bool, //default false
@@ -37,8 +48,8 @@ struct Parser {
     in_expr: bool, //default false
     in_switch: bool, //defalt false
     strict: bool, //default true
-    sym_tab: Vec<SymbolTable>,
-    struct_mem: Vec<StructMem>,
+    sym_tab: Vec<SymbolTable>, //symbol table
+    struct_mem: Vec<StructMem>, // structure book keeping
 }
 
 
@@ -764,7 +775,7 @@ impl Parser {
         let mut stream: Vec<String> = Vec::new();
 
         //  let mut sym_tab: Vec<SymbolTable> = Vec::new();
-        self.sym_tab.clear();
+        //self.sym_tab.clear();
         let mut sym: SymbolTable = SymbolTable {
             typ: -1,
             id_name: "undefined_var".to_string(),
@@ -1514,9 +1525,10 @@ impl Parser {
     // not tested
     fn parse_struct_inbody_decl(&mut self, lexeme: &Vec<Token>, name: &String) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
-
-        //push the identifier
-        stream.push(lexeme[1].get_token_value());
+	let mut head = 0;
+        let mut rust_type:String = "RUST_TYPE".to_string(); 
+	//push the identifier
+        stream.push(lexeme[head+1].get_token_value());
         stream.push(":".to_string());
         let mut struct_memt = StructMem {
             identifier: "NONE".to_string(),
@@ -1524,15 +1536,34 @@ impl Parser {
             name: name.clone(),
         };
 
-        if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
-            stream.push(rust_type);
-            struct_memt.typ = lexeme[0].get_token_type() as i32;
-            struct_memt.identifier = lexeme[1].get_token_value();
+        if let Some(rust_typ) = parse_type(lexeme[head].get_token_type() as i32) {
+            rust_type = rust_typ.clone();
+	    stream.push(rust_typ);
+            struct_memt.typ = lexeme[head].get_token_type() as i32;
+            struct_memt.identifier = lexeme[head+1].get_token_value();
         }
-        self.struct_mem.push(struct_memt);
-        stream.push(",".to_string());
+        head+=2;
+        	stream.push(",".to_string());
+		self.struct_mem.push(struct_memt.clone());
+	while lexeme[head].get_token_type()!= SEMICOLON{
+		if lexeme[head].get_token_type() == COMMA{
+			head+=1;
+		}
+		struct_memt.identifier = lexeme[head].get_token_value();
+		stream.push(lexeme[head].get_token_value());
+		stream.push(":".to_string());
+		stream.push(rust_type.clone());
+		head+=1;
+        	stream.push(",".to_string());
+		self.struct_mem.push(struct_memt.clone());
+
+	}
+	
         stream
     }
+
+
+
 
     // not tested
     fn parse_struct_decl(&mut self, lexeme: &Vec<Token>) -> Vec<String> {

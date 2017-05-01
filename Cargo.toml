@@ -6,5 +6,3 @@ authors = [
     "nikhilsaldanha <nikhilsaldanha@bitbucket.org>"
 ]
 
-[dependencies]
-rustfmt = "0.8.1"
