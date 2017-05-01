@@ -1761,12 +1761,12 @@ impl Parser {
                                modifier: &String)
                                -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
-
+	let mut head =0 ;
         //push the identifier
         if modifier.len() > 1 {
             stream.push(modifier.clone());
         }
-        stream.push(lexeme[1].get_token_value());
+        stream.push(lexeme[head+1].get_token_value());
         stream.push(":".to_string());
         let mut struct_memt = StructMem {
             identifier: "NONE".to_string(),
@@ -1774,15 +1774,33 @@ impl Parser {
             name: name.clone(),
         };
 
-        if let Some(rust_type) = parse_type(lexeme[0].get_token_type() as i32) {
-            stream.push(rust_type);
+	let mut rust_type :String = " ".to_string();
+        if let Some(rust_typ) = parse_type(lexeme[0].get_token_type() as i32) {
+            stream.push(rust_typ.clone());
+	    rust_type = rust_typ.clone();
             struct_memt.typ = lexeme[0].get_token_type() as i32;
             struct_memt.identifier = lexeme[1].get_token_value();
         }
-        self.struct_mem.push(struct_memt);
+	
         stream.push(",".to_string());
-        stream
+        self.struct_mem.push(struct_memt.clone());
+	head+=2;	
+	while lexeme[head].get_token_type() !=SEMICOLON
+	{
+		if lexeme[head].get_token_type() == COMMA{
+		head+=1;
+	}
+	stream.push(lexeme[head].get_token_value());
+	stream.push(":".to_string());
+            stream.push(rust_type.clone());
+
+        struct_memt.identifier = lexeme[head].get_token_value();
+        self.struct_mem.push(struct_memt.clone());
+       	head+=1;
+       }
+	stream
     }
+
 
     // not tested
     fn parse_class_decl(&mut self, lexeme: &Vec<Token>) -> Vec<String> {

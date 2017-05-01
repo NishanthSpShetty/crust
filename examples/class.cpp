@@ -12,10 +12,25 @@ class A{
     }
 };
 
+class B {
+int aa,bb;
+};
+
+class Address {
+	int id;
+char name;
+	char postal;
+	int pin;
+};
+
 int main(){
-  A a = A();
+  B b = B();
+	A a = A();
   a.getInt();
   a.getfloat();
+ 
+ Address add = Address();
+  
   //do some thing else
 }
 
