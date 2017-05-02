@@ -1,11 +1,7 @@
 int main(){
-    int a,b;
-    a=100;
-    b=10;
+unsigned short a=0,b=9;
 
-    if(a==b){
-        //do something
-    }else{
-        //do something else
+if (a==b){
+    //i dont care if a is equal to be :P
     }
 }
