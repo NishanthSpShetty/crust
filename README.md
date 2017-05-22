@@ -70,7 +70,7 @@ Lastly, we have provided the user with two different translation schemes, which 
 ## The Nano Parser Methodology
 The Nano-Parser Methodology used in the design of CRUST makes the parser elegant and simple. We define the method simply as follows: “A parser composed of several tiny, self-contained and well-defined parsers, capable of recognizing a single construct, all controlled by one main parser (GCI)”.
 
-    The GCI will identify a construct (through its grammar) from a given valid input and determine which Nano-Parser to call. As an example, if the GCI recognizes a “for” construct, it immediately calls the “for nano-parser”, which can parse only a “for” construct. Taking this one level deeper, if the “for” nano-parser finds a “if” construct during its parsing, it calls the “if nano-parser” and so on.
+The GCI will identify a construct (through its grammar) from a given valid input and determine which Nano-Parser to call. As an example, if the GCI recognizes a “for” construct, it immediately calls the “for nano-parser”, which can parse only a “for” construct. Taking this one level deeper, if the “for” nano-parser finds a “if” construct during its parsing, it calls the “if nano-parser” and so on.
 
 In CRUST, and indeed any parser, this recursion is an elegant definition, leading to recursive translation based on the given input. Counter intuitively, this is a far more efficient method than an iterative one.
 There are several advantages that accompany the use of the Nano-Parser Methodology.
