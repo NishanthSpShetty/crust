@@ -48,6 +48,7 @@ struct Parser {
     in_expr: bool, //default false
     in_switch: bool, //defalt false
     strict: bool, //default true
+    in_main:bool,
     sym_tab: Vec<SymbolTable>, //symbol table
     struct_mem: Vec<StructMem>, // structure book keeping
 }
@@ -65,6 +66,7 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
         in_expr: false,
         in_switch: false,
         strict: strict_parser,
+        in_main:false,
         sym_tab: Vec::new(),
         struct_mem: Vec::new(),
     };
@@ -596,11 +598,20 @@ impl Parser {
                         stream.push(lexeme[head].get_token_value());
                         head += 1;
                     } else {
+                        //convert to shorthand notation
                         head += 1;
-
+                        if self.in_main {
+                            stream.push("std::process::exit(".to_string());
+                            while lexeme[head].get_token_type() != SEMICOLON {
+                            stream.push(lexeme[head].get_token_value());
+                            head += 1;
+                            }
+                            stream.push(");".to_string());
+                        }else{
                         while lexeme[head].get_token_type() != SEMICOLON {
                             stream.push(lexeme[head].get_token_value());
                             head += 1;
+                        }
                         }
                         head += 1;
                     }
@@ -681,7 +692,7 @@ impl Parser {
         // parse arguments differenly for functions that are not main
         // since rust does not have arguments or return type for main
         if lexeme[1].get_token_type() != MAIN {
-
+           
             // collect arguments
             while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
                 lookahead += 1;
@@ -709,6 +720,8 @@ impl Parser {
         }
         // declare argc and argv inside main, if required
         else {
+            //parsing main function
+            self.in_main = true;
             stream.push(")".to_string());
             stream.push("{".to_string());
             if lexeme[head].get_token_type() != RIGHT_BRACKET {
@@ -743,11 +756,12 @@ impl Parser {
         // parse function body
         stream.append(&mut self.parse_program(&temp_lexeme));
         stream.push("}".to_string());
+        self.in_main = false;
         stream
     }
 
 
-    /**
+/**
  * parse-arguments:
  * parse c/c++ formal arguments in the function signature
  * into rust equivalent arguments
