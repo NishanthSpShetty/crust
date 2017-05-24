@@ -16,9 +16,18 @@ use library::parser;
 fn main() {
 
     let mut input = String::new();
+
     print!("Enter the C/C++ file to be converted to Rust : ");
     io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
     io::stdin().read_line(&mut input).expect("Unable to read");
+
+    let file = match File::open(String::from("./") + input.trim()) {
+        Ok(f) => f,
+        Err(..) => {
+            println!("Error: No such file or directory!");
+            std::process::exit(1);
+        }
+    };
 
     let mut strict = String::new();
 
@@ -50,11 +59,6 @@ fn main() {
         project_name = String::from(project.trim());
     }
 
-
-    let file = match File::open(String::from("./") + input.trim()) {
-        Ok(f) => f,
-        Err(..) => panic!("Unable to open input source file."),
-    };
     // get the reader
     let mut reader = BufReader::new(&file);
     let mut text: String = String::new();
