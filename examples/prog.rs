@@ -7,12 +7,9 @@
 fn main() {
     /*Avoid using mutable variables unless it is necessary to do so
      */
-    let mut a: u16 = 0;
-    let mut b: u16 = 9;
+    let mut i = 0;
+    let mut b = 0;
     /*Avoid using mutable variables unless it is necessary to do so
      */
-    let mut ah: i32;
-    if (a == b) == true {
-        //i dont care if a is equal to be :P
-    }
+    let mut a: i32 = 10;
 }

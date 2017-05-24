@@ -416,6 +416,7 @@ impl<'a> Tokenizer<'a> {
     fn identify_token_type(&self) -> (Type, Type) {
         let tok: String = self.token.iter().cloned().collect();
         match tok.as_ref() {
+            "auto"=> (KEYWORD_AUTO,BASE_DATATYPE),
             "int" => (PRIMITIVE_INT, BASE_DATATYPE),
             "long" => (PRIMITIVE_LONG, BASE_DATATYPE),
             "char" => (PRIMITIVE_CHAR, BASE_DATATYPE),

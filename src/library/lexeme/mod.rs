@@ -19,6 +19,7 @@ pub enum Type {
     PRIMITIVE_TYPEDEF, // typdef => Type
     KEYWORD_UNSIGNED, // u16, u32, u64
     KEYWORD_SIGNED, //
+    KEYWORD_AUTO,
 
     //---> Put Base Types for tokens here for recognizing different token categories
     BASE_DATATYPE,

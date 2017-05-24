@@ -43,6 +43,7 @@ impl Clone for StructMem {
 
 
 struct Parser {
+    from:usize, //for symbol table 
     once_warned: bool, //default false
     in_block_stmnt: bool, //default false
     in_expr: bool, //default false
@@ -61,6 +62,7 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
     stream.push(CRUST.get_doc().to_string());
 
     let mut parser = Parser {
+        from:0,
         once_warned: false,
         in_block_stmnt: false,
         in_expr: false,
@@ -132,6 +134,7 @@ fn parse_type(c_type: i32) -> Option<String> {
         8 => Some("u32".to_string()),
         9 => Some("u16".to_string()),
         10 => Some("u64".to_string()),
+        11 => Some("_".to_string()),
         13 => Some("u8".to_string()),
         _ => None,
     }
@@ -860,7 +863,8 @@ impl Parser {
 
                 SEMICOLON | COMMA => {
                     // used enum value in the symbol table
-                     sym.typ = (lexeme[type_].get_token_type() as i32) + type_mod;
+                    sym.typ = (lexeme[type_].get_token_type() as i32) + type_mod;
+                    println!("SYM TYPE {}",sym.typ);
                     self.sym_tab.push(sym.clone());
                 }
                 OP_MUL => {
@@ -880,11 +884,12 @@ impl Parser {
             stream.push(STRICT.get_doc().to_string());
         }
 
-
-        for i in &self.sym_tab {
+        //from `from` start declaration statement generation
+        let (_,sym_table_right) = self.sym_tab.split_at(self.from);
+        for i in sym_table_right {
             // get identifier
             //for declaration out of any blocks(global)
-
+            self.from+=1;
             if self.strict == false {
                 if self.in_block_stmnt == true {
                     stream.push("let mut".to_string());
@@ -912,7 +917,11 @@ impl Parser {
             }
             // get !the rust type
             if let Some(rust_type) = parse_type(i.typ) {
+                if rust_type == "_"{
+                   stream.pop();
+                }else{
                 stream.push(rust_type);
+                }
             } else {
                 stream.push("UNKNOWN_TYPE".to_string());
             }
