@@ -4,6 +4,7 @@ mod library;
 
 use std::process::Command;
 use std::io;
+use std::path::PathBuf;
 use std::fs::File;
 use std::io::Read;
 use std::io::Write;
@@ -109,18 +110,8 @@ fn main() {
     }
 
     println!("\t:DONE");
-    let mut fname: String;
-    let mut fname1 = String::new();
-    //write to a output file
-    for c in input.chars() {
-        if c == '.' {
-            break;
-        }
-        fname1.push(c);
-    }
-
-    fname1 = fname1 + ".rs";
-    fname = "./".to_string() + &fname1[..];
+    let mut fname = PathBuf::from(input);
+    fname.set_extension("rs");
 
     if cargo == true {
         let child = Command::new("cargo")
@@ -132,22 +123,23 @@ fn main() {
             println!("Project already exist with the name : {}, it will be overwritten by the `crust`.",
                      project_name);
 
-            fname = project_name.clone() + "/src/main.rs";
+            fname = PathBuf::from(project_name.clone() + "/src/main.rs");
         }
         if child.success() {
-            fname = project_name.clone() + "/src/main.rs";
+            fname = PathBuf::from(project_name.clone() + "/src/main.rs");
         }
         println!("child code {} ", child.code().unwrap());
     }
 
-    let mut file = File::create(&fname[..]).expect("Unable to open file to write");
+    let mut file = File::create(&fname).expect("Unable to open file to write");
     file.write_all(o.as_bytes()).expect("Unable to write to file");
     Command::new("rustfmt")
-        .arg(&fname[..])
+        .arg("--")
+        .arg(&fname)
         .output()
         .expect("Failed to format the translated code");
     println!("Rust equivalent of source of `{}` is generated successfully, View the rust code in \
               file : `{}`",
              input.trim(),
-             fname);
+             fname.display());
 }
