@@ -1,5 +1,9 @@
 #[allow(dead_code)]
 
+extern crate getopts;
+use getopts::Options;
+use std::env;
+
 mod library;
 
 use std::process::Command;
@@ -10,25 +14,47 @@ use std::io::Read;
 use std::io::Write;
 use std::io::BufReader;
 
+struct Settings {
+    strict: bool,
+    project_name: Option<String>,
+    files: Vec<String>,
+}
 
 use library::lexer;
 use library::parser;
 
 fn main() {
+    let args: Vec<String> = env::args().collect();
+    let program = args[0].clone();
 
+    let mut opts = Options::new();
+    opts.optflag("s", "strict", "Strict mode (immutable)");
+    opts.optopt("p", "project-name", "Cargo project name", "NAME");
+
+    let matches = match opts.parse(&args[1..]) {
+        Ok(m) => m,
+        Err(f) => panic!("{}", f),
+    };
+
+    let settings = if matches.free.is_empty() {
+        get_settings_interactively()
+    } else {
+        Settings {
+            strict: matches.opt_present("s"),
+            project_name: matches.opt_str("p"),
+            files: matches.free,
+        }
+    };
+
+    invoke(&settings);
+}
+
+fn get_settings_interactively() -> Settings {
     let mut input = String::new();
 
     print!("Enter the C/C++ file to be converted to Rust : ");
     io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
     io::stdin().read_line(&mut input).expect("Unable to read");
-
-    let file = match File::open(String::from("./") + input.trim()) {
-        Ok(f) => f,
-        Err(..) => {
-            println!("Error: No such file or directory!");
-            std::process::exit(1);
-        }
-    };
 
     let mut strict = String::new();
 
@@ -51,15 +77,28 @@ fn main() {
         _ => false,
     };
 
-    let mut project_name = String::new();
+    let mut project_name = None;
     if cargo == true {
         let mut project = String::new();
         print!("Enter cargo project name : ");
         io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
         io::stdin().read_line(&mut project).expect("Unable to read input");
-        project_name = String::from(project.trim());
+        project_name = Some(String::from(project.trim()));
     }
 
+    Settings {strict, project_name, files: vec![input.trim().to_owned()]}
+}
+
+fn invoke(settings: &Settings) {
+    for input in settings.files.iter() {
+
+    let file = match File::open(input) {
+        Ok(f) => f,
+        Err(err) => {
+            println!("Unable to open input source file '{}': {}.", input, err);
+            std::process::exit(1);
+        }
+    };
     // get the reader
     let mut reader = BufReader::new(&file);
     let mut text: String = String::new();
@@ -101,7 +140,7 @@ fn main() {
         //    std::thread::sleep(std::time::Duration::from_millis(600));
 
     }
-    let rust_lexeme = parser::init_parser(&tokens, strict);
+    let rust_lexeme = parser::init_parser(&tokens, settings.strict);
     //regenerate the code from lexemes
     let mut o: String = String::new();
     for i in rust_lexeme {
@@ -113,7 +152,7 @@ fn main() {
     let mut fname = PathBuf::from(input);
     fname.set_extension("rs");
 
-    if cargo == true {
+    if let Some(ref project_name) = settings.project_name {
         let child = Command::new("cargo")
             .args(&["new", "--bin"])
             .arg(&project_name[..])
@@ -142,4 +181,5 @@ fn main() {
               file : `{}`",
              input.trim(),
              fname.display());
+}
 }
