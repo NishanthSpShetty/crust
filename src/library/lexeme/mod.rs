@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 #[derive(Debug)]
 #[derive(Clone,Copy)]
 #[derive(PartialEq, Eq)]

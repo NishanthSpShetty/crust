@@ -7,9 +7,6 @@
 fn main() {
     /*Avoid using mutable variables unless it is necessary to do so
      */
-    let mut i = 0;
-    let mut b = 0;
-    /*Avoid using mutable variables unless it is necessary to do so
-     */
-    let mut a: i32 = 10;
+    const a: i32 = 10;
+    const b: i32 = 12;
 }

@@ -1,4 +1,4 @@
-#[allow(dead_code)]
+#![allow(dead_code)]
 
 use library::lexeme::Token;
 use library::lexeme::Type;
@@ -416,7 +416,7 @@ impl<'a> Tokenizer<'a> {
     fn identify_token_type(&self) -> (Type, Type) {
         let tok: String = self.token.iter().cloned().collect();
         match tok.as_ref() {
-            "auto"=> (KEYWORD_AUTO,BASE_DATATYPE),
+            "auto" => (KEYWORD_AUTO, BASE_DATATYPE),
             "int" => (PRIMITIVE_INT, BASE_DATATYPE),
             "long" => (PRIMITIVE_LONG, BASE_DATATYPE),
             "char" => (PRIMITIVE_CHAR, BASE_DATATYPE),
@@ -442,7 +442,7 @@ impl<'a> Tokenizer<'a> {
             "protected" => (KEYWORD_PROTECTED, BASE_MODIFIER),
             "case" => (KEYWORD_CASE, BASE_NONE),
             "static" => (KEYWORD_STATIC, BASE_NONE),
-            "const" => (KEYWORD_CONST, BASE_NONE),
+            "const" => (KEYWORD_CONST, BASE_DATATYPE),
             "default" => (KEYWORD_DEFAULT, BASE_NONE),
             "return" => (KEYWORD_RETURN, BASE_NONE),
             "true" => (TRUE_VAL, BASE_VALUE),
