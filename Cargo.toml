@@ -6,3 +6,5 @@ authors = [
     "nikhilsaldanha <nikhilsaldanha@bitbucket.org>"
 ]
 
+[dependencies]
+getopts = "0.2.14"
