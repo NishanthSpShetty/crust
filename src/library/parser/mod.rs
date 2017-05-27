@@ -10,6 +10,7 @@ struct SymbolTable {
     is_assigned: bool,
     is_ptr: bool,
     assigned_val: String,
+    its_constant: bool,
 }
 #[derive(Debug)]
 struct StructMem {
@@ -43,13 +44,13 @@ impl Clone for StructMem {
 
 
 struct Parser {
-    from:usize, //for symbol table 
+    from: usize, //for symbol table
     once_warned: bool, //default false
     in_block_stmnt: bool, //default false
     in_expr: bool, //default false
     in_switch: bool, //defalt false
     strict: bool, //default true
-    in_main:bool,
+    in_main: bool,
     sym_tab: Vec<SymbolTable>, //symbol table
     struct_mem: Vec<StructMem>, // structure book keeping
 }
@@ -62,13 +63,13 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
     stream.push(CRUST.get_doc().to_string());
 
     let mut parser = Parser {
-        from:0,
+        from: 0,
         once_warned: false,
         in_block_stmnt: false,
         in_expr: false,
         in_switch: false,
         strict: strict_parser,
-        in_main:false,
+        in_main: false,
         sym_tab: Vec::new(),
         struct_mem: Vec::new(),
     };
@@ -221,7 +222,7 @@ impl Parser {
                                 temp_lexeme.push(l);
                                 head += 1;
                             }
-                          //  println!(" {:?}", temp_lexeme);
+                            //  println!(" {:?}", temp_lexeme);
                             // parse declaration
                             stream.append(&mut self.parse_declaration(&temp_lexeme));
                             temp_lexeme.clear();
@@ -235,7 +236,7 @@ impl Parser {
                             temp_lexeme.push(lexeme[head].clone());
                             stream.append(&mut self.parse_declaration(&temp_lexeme));
                             head += 1;
-                           // println!("{}", lexeme[head].get_token_value());
+                            // println!("{}", lexeme[head].get_token_value());
                             temp_lexeme.clear();
 
 
@@ -593,7 +594,7 @@ impl Parser {
 
                     if t != lexeme.len() - 1 {
                         while lexeme[head].get_token_type() != SEMICOLON {
-                           // println!("{:?}", lexeme[head]);
+                            // println!("{:?}", lexeme[head]);
 
                             stream.push(lexeme[head].get_token_value());
                             head += 1;
@@ -606,15 +607,15 @@ impl Parser {
                         if self.in_main {
                             stream.push("std::process::exit(".to_string());
                             while lexeme[head].get_token_type() != SEMICOLON {
-                            stream.push(lexeme[head].get_token_value());
-                            head += 1;
+                                stream.push(lexeme[head].get_token_value());
+                                head += 1;
                             }
                             stream.push(");".to_string());
-                        }else{
-                        while lexeme[head].get_token_type() != SEMICOLON {
-                            stream.push(lexeme[head].get_token_value());
-                            head += 1;
-                        }
+                        } else {
+                            while lexeme[head].get_token_type() != SEMICOLON {
+                                stream.push(lexeme[head].get_token_value());
+                                head += 1;
+                            }
                         }
                         head += 1;
                     }
@@ -695,7 +696,7 @@ impl Parser {
         // parse arguments differenly for functions that are not main
         // since rust does not have arguments or return type for main
         if lexeme[1].get_token_type() != MAIN {
-           
+
             // collect arguments
             while lexeme[lookahead].get_token_type() != RIGHT_BRACKET {
                 lookahead += 1;
@@ -764,7 +765,7 @@ impl Parser {
     }
 
 
-/**
+    /**
  * parse-arguments:
  * parse c/c++ formal arguments in the function signature
  * into rust equivalent arguments
@@ -808,8 +809,8 @@ impl Parser {
             is_assigned: false,
             is_ptr: false,
             assigned_val: "NONE".to_string(),
+            its_constant: false,
         };
-
         let mut type_: usize = 0;
         let type_mod = match lexeme[0].get_token_type() {
 
@@ -821,7 +822,12 @@ impl Parser {
                 type_ = 1;
                 0
             }
-            _ => 0, 
+            KEYWORD_CONST => {
+                type_ = 1;
+                sym.its_constant = true;
+                0
+            } 
+            _ => 0,
         };
         let mut head: usize = type_ + 1;
         //let sym_idx:usize=0;
@@ -864,7 +870,7 @@ impl Parser {
                 SEMICOLON | COMMA => {
                     // used enum value in the symbol table
                     sym.typ = (lexeme[type_].get_token_type() as i32) + type_mod;
-                    println!("SYM TYPE {}",sym.typ);
+                    //       println!("SYM TYPE {}",sym.typ);
                     self.sym_tab.push(sym.clone());
                 }
                 OP_MUL => {
@@ -885,25 +891,30 @@ impl Parser {
         }
 
         //from `from` start declaration statement generation
-        let (_,sym_table_right) = self.sym_tab.split_at(self.from);
+        let (_, sym_table_right) = self.sym_tab.split_at(self.from);
         for i in sym_table_right {
             // get identifier
             //for declaration out of any blocks(global)
-            self.from+=1;
-            if self.strict == false {
-                if self.in_block_stmnt == true {
-                    stream.push("let mut".to_string());
-                } else {
-                    stream.push("static mut".to_string());
-                }
+            self.from += 1;
+            if i.its_constant {
+                stream.push("const".to_string());
+
             } else {
-                if self.in_block_stmnt == true {
-                    stream.push("let".to_string());
+
+                if self.strict == false {
+                    if self.in_block_stmnt == true {
+                        stream.push("let mut".to_string());
+                    } else {
+                        stream.push("static mut".to_string());
+                    }
                 } else {
-                    stream.push("static".to_string());
+                    if self.in_block_stmnt == true {
+                        stream.push("let".to_string());
+                    } else {
+                        stream.push("static".to_string());
+                    }
                 }
             }
-
             stream.push(i.id_name.clone());
             stream.push(":".to_string());
 
@@ -917,14 +928,15 @@ impl Parser {
             }
             // get !the rust type
             if let Some(rust_type) = parse_type(i.typ) {
-                if rust_type == "_"{
-                   stream.pop();
-                }else{
-                stream.push(rust_type);
+                if rust_type == "_" {
+                    stream.pop();
+                } else {
+                    stream.push(rust_type);
                 }
             } else {
                 stream.push("UNKNOWN_TYPE".to_string());
             }
+
 
             // take care of assignment
             if i.is_assigned {
@@ -941,7 +953,7 @@ impl Parser {
             }
             stream.push(";".to_string());
         }
-       // println!("{:?}",stream);
+        // println!("{:?}",stream);
         stream
     }
 

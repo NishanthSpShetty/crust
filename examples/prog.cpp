@@ -1,4 +1,3 @@
 int main(){
-    auto i=0,b;
-    int a=10;
+    const int a=10,b=12;
 }
