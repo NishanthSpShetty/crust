@@ -54,15 +54,16 @@ This generates an executable, `/target/release/crust` which can be moved anywher
 
 While executing this binary, the following options are available:
 
-1. Cargo Project: `./crust -p <cargo-project> <c-or-cpp-file>` : This allows creation of cargo project around the translated file
-
-2. Strict Mode: `./crust -s <c-or-cpp-file>` : Translates in strict mode (all variables are immutable)
-
-3. No Cargo Project and Loose Mode: `./crust -- <c-or-cpp-file>` : Translates in loose mode (all variables are mutable) and no cargo project is created.
-
-4. Interactive mode: `./crust` : Interactive usage. Same as described in Usage above.
+```
+Options:
+    -s, --strict        Strict mode (immutable)
+    -p, --project-name  Cargo project name
+    -h, --help          show this help message
+```
 
 Note that if the strict options are not applied, it implies loose mode.
+
+Same options are available using the `cargo build --` command. Options to CRUST must be entered after the `--`, while options to cargo must be entered before the `--`. It's just easier to use the executable.
 
 ---
 
