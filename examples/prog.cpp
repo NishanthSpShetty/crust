@@ -1,5 +1,6 @@
 int main(){
-    string s="Nishanth ";
-    signed long a = 12;
-    const int a=10,b=12;
+    typedef int INTEGER;
+    INTEGER a=0;
+    int i=19;
+    char c = 'a';
 }

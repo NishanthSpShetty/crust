@@ -14,16 +14,14 @@ pub enum Type {
     PRIMITIVE_BOOL, // bool
     PRIMITIVE_VOID,
 
-    
-    
     //---> Put Types before this and make changes in parser while inserting into symbol table
 
 //---> Unimplemented Types
     PRIMITIVE_TYPEDEF, // typdef => Type
     KEYWORD_UNSIGNED, // u16, u32, u64
     KEYWORD_SIGNED, //
-    KEYWORD_AUTO,//13
-    TYPE_STRING, //14 
+    KEYWORD_AUTO, //13
+    TYPE_STRING, //14
 
     //---> Put Base Types for tokens here for recognizing different token categories
     BASE_DATATYPE,
@@ -118,6 +116,7 @@ pub enum Type {
     KEYWORD_ENUM,
     INCLUDE,
     NULL,
+    BASE_TYPEDEF,
     //---> If all fails
     OTHER,
 }

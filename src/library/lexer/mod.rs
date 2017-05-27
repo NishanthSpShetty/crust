@@ -426,7 +426,7 @@ impl<'a> Tokenizer<'a> {
             "bool" => (PRIMITIVE_BOOL, BASE_DATATYPE),
             "signed" => (KEYWORD_SIGNED, BASE_DATATYPE),
             "unsigned" => (KEYWORD_UNSIGNED, BASE_DATATYPE),
-            "typedef" => (PRIMITIVE_TYPEDEF, BASE_NONE),
+            "typedef" => (PRIMITIVE_TYPEDEF, BASE_TYPEDEF),
             "class" => (KEYWORD_CLASS, BASE_NONE),
             "enum" => (KEYWORD_ENUM, BASE_NONE),
             "break" => (KEYWORD_BREAK, BASE_NONE),
@@ -451,7 +451,7 @@ impl<'a> Tokenizer<'a> {
             "main" => (MAIN, BASE_NONE),
             "void" => (PRIMITIVE_VOID, BASE_DATATYPE),
             "struct" => (KEYWORD_STRUCT, BASE_NONE),
-            "string" => (TYPE_STRING,BASE_DATATYPE),
+            "string" => (TYPE_STRING, BASE_DATATYPE),
             "NULL" => (NULL, BASE_NONE),
             _ => (IDENTIFIER, BASE_NONE),
         }

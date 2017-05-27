@@ -5,20 +5,14 @@
  * Check warnings and errors and refer to the official Rust Documentation
  ************************************************************************/
 fn main() {
-    /*Crust with Strict Mode enabled, declares all variables as immutable.
-     * If you are mutating the below variable anywhere in program, please change the declaration statement as
-     * let mut var_name:type=init_val;
-     **/
-    let s: String = "Nishanth ";
-    /*Crust with Strict Mode enabled, declares all variables as immutable.
-     * If you are mutating the below variable anywhere in program, please change the declaration statement as
-     * let mut var_name:type=init_val;
-     **/
-    let a: i64 = 12;
-    /*Crust with Strict Mode enabled, declares all variables as immutable.
-     * If you are mutating the below variable anywhere in program, please change the declaration statement as
-     * let mut var_name:type=init_val;
-     **/
-    const a: i32 = 10;
-    const b: i32 = 12;
+    type INTEGER = i32;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut a: INTEGER = 0;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut i: i32 = 19;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut c: char = 'a';
 }

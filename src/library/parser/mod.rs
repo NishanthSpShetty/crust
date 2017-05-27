@@ -21,6 +21,7 @@ struct StructMem {
     identifier: String,
 }
 
+
 impl Clone for SymbolTable {
     fn clone(&self) -> SymbolTable {
         let id = self.id_name.clone();
@@ -55,6 +56,7 @@ struct Parser {
     in_main: bool,
     sym_tab: Vec<SymbolTable>, //symbol table
     struct_mem: Vec<StructMem>, // structure book keeping
+    typde_def_table: Vec<String>,
 }
 
 
@@ -74,6 +76,7 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
         in_main: false,
         sym_tab: Vec::new(),
         struct_mem: Vec::new(),
+        typde_def_table: Vec::new(),
     };
 
     stream.append(&mut parser.parse_program(&lexeme));
@@ -244,8 +247,22 @@ impl Parser {
 
 
                         }
+
                         _ => {}
                     };
+                }
+                (BASE_TYPEDEF, PRIMITIVE_TYPEDEF) => {
+                    //in case of pointer declaration
+                    while lexeme[head].get_token_type() != SEMICOLON {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    temp_lexeme.push(lexeme[head].clone());
+                    stream.append(&mut self.parse_typdef(&temp_lexeme));
+                    head += 1;
+                    // println!("{}", lexeme[head].get_token_value());
+                    temp_lexeme.clear();
+
                 }
 
                 // matches if statement
@@ -426,14 +443,29 @@ impl Parser {
 
                     match lexeme[head + 1].get_type() {
                         (_, IDENTIFIER) => {
-                            while lexeme[head].get_token_type() != SEMICOLON {
+                            if self.typde_def_table.contains(&lexeme[head].get_token_value()) {
+                                lookahead = skip_stmt(&lexeme, lookahead);
+
+                                // collect variable declaration
+                                while head != lookahead {
+                                    let l: Token = lexeme[head].clone();
+                                    temp_lexeme.push(l);
+                                    head += 1;
+                                }
+                                //  println!(" {:?}", temp_lexeme);
+                                // parse declaration
+                                stream.append(&mut self.parse_declaration(&temp_lexeme));
+                            } else {
+                                while lexeme[head].get_token_type() != SEMICOLON {
+                                    temp_lexeme.push(lexeme[head].clone());
+                                    head += 1;
+                                }
                                 temp_lexeme.push(lexeme[head].clone());
                                 head += 1;
+                                stream.append(&mut self.parse_class_decl(&temp_lexeme));
                             }
-                            temp_lexeme.push(lexeme[head].clone());
-                            head += 1;
-                            stream.append(&mut self.parse_class_decl(&temp_lexeme));
                             temp_lexeme.clear();
+
                         }
 
                         (_, OP_ASSIGN) => {
@@ -814,7 +846,11 @@ impl Parser {
             assigned_val: "NONE".to_string(),
             its_constant: false,
         };
+
+        //index modifier from enums
         let mut type_: usize = 0;
+
+        // find the type accoriding to the modifiers used in input code
         let type_mod = match lexeme[0].get_token_type() {
 
             KEYWORD_UNSIGNED => {
@@ -832,6 +868,8 @@ impl Parser {
             } 
             _ => 0,
         };
+        let typdef_type = lexeme[type_].get_token_value(); //get the type name
+
         let mut head: usize = type_ + 1;
         //let sym_idx:usize=0;
         while head < lexeme.len() {
@@ -929,15 +967,17 @@ impl Parser {
                     stream.push("mut".to_string());
                 }
             }
-            // get !the rust type
-             if let Some(rust_type) = parse_type(i.typ) {
+            // get the rust type
+            if let Some(rust_type) = parse_type(i.typ) {
                 if rust_type == "_" {
                     stream.pop();
                 } else {
                     stream.push(rust_type);
                 }
             } else {
-                stream.push("UNKNOWN_TYPE".to_string());
+                // if type parser dint return Some type check in typedef table
+                stream.push(typdef_type.clone());
+                //stream.push("UNKNOWN_TYPE".to_string());
             }
 
 
@@ -960,6 +1000,22 @@ impl Parser {
         stream
     }
 
+    /* parse simple typedef definition of form
+     * typedef typename newtype;
+     */
+    fn parse_typdef(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+        let mut stream: Vec<String> = Vec::new();
+        stream.push("type".to_string());
+        stream.push(lexeme[2].get_token_value() + "=");
+        self.typde_def_table.push(lexeme[2].get_token_value());
+        if let Some(typ) = parse_type(lexeme[1].get_token_type() as i32) {
+            stream.push(typ);
+        } else {
+            stream.push("UNKNOWN_TYPE".to_string());
+        }
+        stream.push(";".to_string());
+        return stream;
+    }
 
     /**
  * parse_if:
