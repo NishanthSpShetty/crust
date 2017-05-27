@@ -451,6 +451,7 @@ impl<'a> Tokenizer<'a> {
             "main" => (MAIN, BASE_NONE),
             "void" => (PRIMITIVE_VOID, BASE_DATATYPE),
             "struct" => (KEYWORD_STRUCT, BASE_NONE),
+            "string" => (TYPE_STRING,BASE_DATATYPE),
             "NULL" => (NULL, BASE_NONE),
             _ => (IDENTIFIER, BASE_NONE),
         }

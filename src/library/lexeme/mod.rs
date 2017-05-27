@@ -5,7 +5,7 @@
 #[allow(non_camel_case_types)]
 pub enum Type {
     // for specific type info
-    PRIMITIVE_INT, // i32 //
+    PRIMITIVE_INT, // i32 0
     PRIMITIVE_SHORT, // i16
     PRIMITIVE_LONG, // i64
     PRIMITIVE_FLOAT, // f32 //
@@ -13,13 +13,17 @@ pub enum Type {
     PRIMITIVE_CHAR, // char //
     PRIMITIVE_BOOL, // bool
     PRIMITIVE_VOID,
+
+    
+    
     //---> Put Types before this and make changes in parser while inserting into symbol table
 
 //---> Unimplemented Types
     PRIMITIVE_TYPEDEF, // typdef => Type
     KEYWORD_UNSIGNED, // u16, u32, u64
     KEYWORD_SIGNED, //
-    KEYWORD_AUTO,
+    KEYWORD_AUTO,//13
+    TYPE_STRING, //14 
 
     //---> Put Base Types for tokens here for recognizing different token categories
     BASE_DATATYPE,

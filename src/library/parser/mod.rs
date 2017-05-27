@@ -139,6 +139,7 @@ fn parse_type(c_type: i32) -> Option<String> {
         10 => Some("u64".to_string()),
         11 => Some("_".to_string()),
         13 => Some("u8".to_string()),
+        12 => Some("String".to_string()),
         _ => None,
     }
 }
@@ -929,7 +930,7 @@ impl Parser {
                 }
             }
             // get !the rust type
-            if let Some(rust_type) = parse_type(i.typ) {
+             if let Some(rust_type) = parse_type(i.typ) {
                 if rust_type == "_" {
                     stream.pop();
                 } else {
