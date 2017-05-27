@@ -1,5 +1,5 @@
-#[allow(dead_code)]
-
+#![allow(dead_code)]
+#[allow(unused_variables)]
 extern crate getopts;
 use getopts::Options;
 use std::env;

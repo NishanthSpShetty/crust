@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 use library::doc::DocType::*;
 use library::lexeme::Type::*;
 use library::lexeme::Token;
