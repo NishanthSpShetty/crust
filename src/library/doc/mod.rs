@@ -11,6 +11,8 @@ pub enum DocType {
     CONSTRUCTOR,
     CRUST,
     DEFAULT,
+	UNION,
+	UNION_DECL,
 }
 
 impl DocType {
@@ -39,7 +41,7 @@ impl DocType {
             }
             DocType::NO_POINTER => {
                 "\n/** Crust doesn't support pointers yet,\
-                \n * Please handle the pointers manual with rust refernce, Rc or raw pointers\
+                \n * Please handle the pointers manually with rust refernce, Rc, Arc or RefCell \
                 \n * ======> "
             }
             DocType::CONSTRUCTOR => {
@@ -54,6 +56,15 @@ impl DocType {
                 \n * Check warnings and errors and refer to the official Rust Documentation\
                 \n ************************************************************************/\n"
             }
+			DocType::UNION => {
+				"\n/* CRUST does not hanlde C/C++ tagged union type completely.\
+				 \n *It translates union type into Rust Some type. \
+				 \n *Please check the varient used properly */\n"
+			}
+			DocType::UNION_DECL => {
+				"\n/* Union declaration must be translated to Rust equivalent Some type varients\
+				\n * Make changes before compilation \n */"
+			}
             _ => "//Doc Not Found. Please Report bug",
         }
     }

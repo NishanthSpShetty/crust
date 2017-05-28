@@ -381,7 +381,7 @@ impl<'a> Tokenizer<'a> {
                 }
                 '#' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(INCLUDE, BASE_NONE);
+                    self.push_to_tok_buffer(HEADER_INCLUDE, BASE_PREP);
                 }
 
                 _ => {
@@ -429,6 +429,7 @@ impl<'a> Tokenizer<'a> {
             "typedef" => (PRIMITIVE_TYPEDEF, BASE_TYPEDEF),
             "class" => (KEYWORD_CLASS, BASE_NONE),
             "enum" => (KEYWORD_ENUM, BASE_NONE),
+            "union" => (KEYWORD_UNION, BASE_NONE),
             "break" => (KEYWORD_BREAK, BASE_NONE),
             "continue" => (KEYWORD_CONTINUE, BASE_NONE),
             "for" => (KEYWORD_FOR, BASE_NONE),
@@ -453,6 +454,8 @@ impl<'a> Tokenizer<'a> {
             "struct" => (KEYWORD_STRUCT, BASE_NONE),
             "string" => (TYPE_STRING, BASE_DATATYPE),
             "NULL" => (NULL, BASE_NONE),
+			"include" => (HEADER_INCLUDE,BASE_PREP),
+			"define" => (HEADER_DEFINE,BASE_PREP),
             _ => (IDENTIFIER, BASE_NONE),
         }
     }

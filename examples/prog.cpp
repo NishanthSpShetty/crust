@@ -1,6 +1,10 @@
+union A{
+		int aa;
+		float ff,bb,dd;
+};
+
 int main(){
-    typedef int INTEGER;
-    INTEGER a=0;
-    int i=19;
-    char c = 'a';
+	union A a;
+	a.aa=12;
+
 }

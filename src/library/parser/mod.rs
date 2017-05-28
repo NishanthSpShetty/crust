@@ -78,6 +78,7 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
         struct_mem: Vec::new(),
         typde_def_table: Vec::new(),
     };
+	
 
     stream.append(&mut parser.parse_program(&lexeme));
     stream
@@ -592,6 +593,34 @@ impl Parser {
                         stream.append(&mut self.parse_struct_decl(&temp_lexeme));
                         temp_lexeme.clear();
                     }
+                },
+
+                (_, KEYWORD_UNION) => {
+
+                    if lexeme[head + 2].get_token_type() == LEFT_CBRACE {
+					stream.push(UNION.get_doc().to_string());
+                        //struct A{};
+                        while lexeme[head].get_token_type() != RIGHT_CBRACE {
+                            temp_lexeme.push(lexeme[head].clone());
+                            head += 1;
+                        }
+                        //push the right curly brace
+                        temp_lexeme.push(lexeme[head].clone());
+                        stream.append(&mut self.parse_union(&temp_lexeme));
+                        temp_lexeme.clear();
+                        head += 2; //skip semicolon
+                    } else {
+                        //struct variable declaration
+
+                        while lexeme[head].get_token_type() != SEMICOLON {
+                            temp_lexeme.push(lexeme[head].clone());
+                            head += 1;
+                        }
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                        stream.append(&mut self.parse_union_decl(&temp_lexeme));
+                        temp_lexeme.clear();
+                    }
                 }
 
                 (_, KEYWORD_CLASS) => {
@@ -655,7 +684,7 @@ impl Parser {
                         head += 1;
                     }
                 }
-                (_, INCLUDE) => {
+                (_, HEADER_INCLUDE) => {
                     if self.once_warned == false {
                         stream.push(INCLUDE_STMT.get_doc().to_string());
                     } else {
@@ -1614,11 +1643,11 @@ impl Parser {
     fn parse_struct(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
-        stream.push(lexeme[head].get_token_value()); //push the keyword parse_struct
+        stream.push(lexeme[head].get_token_value()); //push the keyword struct
         head += 1;
         //push the struct id_name
-        stream.push(lexeme[head].get_token_value()); //push the keyword parse_struct
-        let name = lexeme[head].get_token_value();
+        stream.push(lexeme[head].get_token_value()); //push the struct name
+		let name = lexeme[head].get_token_value();
         stream.push("{".to_string());
         head += 2;
         let mut temp_lexeme: Vec<Token> = Vec::new();
@@ -1672,9 +1701,7 @@ impl Parser {
             head += 1;
             stream.push(",".to_string());
             self.struct_mem.push(struct_memt.clone());
-
         }
-
         stream
     }
 
@@ -1709,7 +1736,105 @@ impl Parser {
         stream
     }
 
-    // not tested
+    //parse tagged union
+    fn parse_union(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+        let mut stream: Vec<String> = Vec::new();
+        let mut head: usize = 0;
+        stream.push("enum".to_string()); //push the keyword union
+        head += 1;
+        //push the struct id_name
+        stream.push(lexeme[head].get_token_value()); //push the struct name
+		let name = lexeme[head].get_token_value();
+        stream.push("{".to_string());
+        head += 2;
+        let mut temp_lexeme: Vec<Token> = Vec::new();
+        while lexeme[head].get_token_type() != RIGHT_CBRACE {
+            while lexeme[head].get_token_type() != SEMICOLON {
+                temp_lexeme.push(lexeme[head].clone());
+                head += 1
+            }
+            temp_lexeme.push(lexeme[head].clone());
+            head += 1;
+            stream.append(&mut self.parse_union_inbody_decl(&temp_lexeme, &name));
+            temp_lexeme.clear();
+        }
+        stream.push(lexeme[head].get_token_value() + "\n");
+
+
+        stream
+    }
+
+	/* parse union type declarations
+	 * input : union tag_name var [;= ...]
+	 * output : let [mut] variant_name = Sometype_variant
+	 */
+    fn parse_union_decl(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+		let mut stream:Vec<String> = Vec::new();
+		let mut head:usize = 0;
+		
+		stream.push(UNION_DECL.get_doc().to_string());
+
+		//push the keyword let
+		stream.push("let".to_string());
+		if !self.strict{
+			stream.push("mut".to_string());
+		}
+
+		stream.push(lexeme[head+2].get_token_value());
+			head+=3;
+			while lexeme[head].get_token_type() != SEMICOLON{
+				stream.push(lexeme[head].get_token_value());
+				head+=1;	
+			}
+		
+		stream.push(";".to_string());
+
+		
+		stream
+	}
+	/* parse union body into Some type body 
+	 * return rust stream
+	 */
+    fn parse_union_inbody_decl(&mut self, lexeme: &Vec<Token>, name: &String) -> Vec<String> {
+        let mut stream: Vec<String> = Vec::new();
+        let mut head = 0;
+        let mut rust_type: String = "RUST_TYPE".to_string();
+        //push the identifier
+        stream.push(lexeme[head + 1].get_token_value());
+        stream.push("(".to_string());
+        let mut struct_memt = StructMem {
+            identifier: "NONE".to_string(),
+            typ: 0,
+            name: name.clone(),
+        };
+		//push the type
+        if let Some(rust_typ) = parse_type(lexeme[head].get_token_type() as i32) {
+            rust_type = rust_typ.clone();
+            stream.push(rust_typ);
+            struct_memt.typ = lexeme[head].get_token_type() as i32;
+            struct_memt.identifier = lexeme[head + 1].get_token_value();
+        }
+        head += 2;
+        stream.push("),".to_string());
+        //update struct member table (may require for analysis
+
+		self.struct_mem.push(struct_memt.clone());
+        while lexeme[head].get_token_type() != SEMICOLON {
+            if lexeme[head].get_token_type() == COMMA {
+                head += 1;
+            }
+            struct_memt.identifier = lexeme[head].get_token_value();
+            stream.push(lexeme[head].get_token_value());
+            stream.push("(".to_string());
+            stream.push(rust_type.clone());
+            head += 1;
+            stream.push("),".to_string());
+            self.struct_mem.push(struct_memt.clone());
+        }
+        stream
+    }
+
+	// not tested
     fn parse_class(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;

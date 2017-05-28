@@ -32,6 +32,7 @@ pub enum Type {
     BASE_VALUE,
     BASE_MODIFIER,
     BASE_MOD,
+	BASE_PREP,
     BASE_NONE,
 
     //---> Put operators here
@@ -114,7 +115,9 @@ pub enum Type {
     KEYWORD_RETURN, //
     KEYWORD_STRUCT,
     KEYWORD_ENUM,
-    INCLUDE,
+    KEYWORD_UNION,
+	HEADER_DEFINE,
+	HEADER_INCLUDE,
     NULL,
     BASE_TYPEDEF,
     //---> If all fails
