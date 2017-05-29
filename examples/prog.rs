@@ -4,20 +4,12 @@
  * CRUST isn't perfect and may require manual editing
  * Check warnings and errors and refer to the official Rust Documentation
  ************************************************************************/
-
-/* CRUST does not hanlde C/C++ tagged union type completely.
- *It translates union type into Rust Some type.
- *Please check the varient used properly */
-enum A {
-    aa(i32),
-    ff(f32),
-    bb(f32),
-    dd(f32),
-}
 fn main() {
-    /* Union declaration must be translated to Rust equivalent Some type varients
-     * Make changes before compilation
+    /*Avoid using mutable variables unless it is necessary to do so
      */
-    let mut a;
-    a.aa = 12;
+    let mut b: i32 = c;
+    c += 1;;
+    /*Avoid using mutable variables unless it is necessary to do so
+     */
+    let mut a: i32 = b + std::mem::size_of(i32);
 }

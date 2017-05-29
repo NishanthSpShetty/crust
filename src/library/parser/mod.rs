@@ -495,7 +495,8 @@ impl Parser {
                             }
                         }
                         (BASE_UNOP, _) => {
-                            if self.in_expr != true {
+                            println!("UN_OP");
+							if self.in_expr != true {
                                 stream.push(lexeme[head].get_token_value());
                                 stream.push(match lexeme[head + 1].get_token_type() {
                                     OP_INC => "+=1".to_string(),
@@ -560,7 +561,8 @@ impl Parser {
                 }
 
                 (BASE_UNOP, _) => {
-                    stream.push(lexeme[head + 1].get_token_value());
+                    println!(" 564 : unop");
+					stream.push(lexeme[head + 1].get_token_value());
                     stream.push(match lexeme[head].get_token_type() {
                         OP_INC => "+=1".to_string(),
                         OP_DEC => "-=1".to_string(),
@@ -923,7 +925,8 @@ impl Parser {
                             head += 1;
                         }
                     }
-                    while lexeme[head].get_token_type() != SEMICOLON &&
+                    let mut temp_lex:Vec<Token> = Vec::new();
+					while lexeme[head].get_token_type() != SEMICOLON &&
                           !(br == 0 && lexeme[head].get_token_type() == COMMA) {
                         if lexeme[head].get_token_type() == LEFT_BRACKET {
                             br += 1;
@@ -931,9 +934,19 @@ impl Parser {
                         if lexeme[head].get_token_type() == RIGHT_BRACKET {
                             br -= 1;
                         }
-                        sym.assigned_val.push_str(&lexeme[head].get_token_value());
+						temp_lex.push(lexeme[head].clone());
+					//parse assigned value for expression
+
                         head += 1;
                     }
+					temp_lex.push(lexeme[head].clone());
+					let a_val = self.parse_expr(&temp_lex);
+					let mut a_value = String::new();
+					for val in a_val{
+						a_value = a_value+&val;
+					}
+					sym.assigned_val.push_str(a_value.as_str());
+					 
                     continue;
                 }
 
@@ -1537,6 +1550,21 @@ impl Parser {
         while lexeme[thead].get_token_type() != SEMICOLON {
 
             if lexeme[thead].get_base_type() == BASE_UNOP {
+			if lexeme[thead].get_token_type() == OP_SIZEOF{
+				//println!(" {:?} ",lexeme);
+				stream.push("std::mem::size_of(".to_string());
+				thead+=2;
+				if lexeme[thead].get_base_type() == BASE_DATATYPE{
+					if let Some(t) = parse_type(lexeme[thead].get_token_type() as i32){
+						stream.push(t)
+					}
+				} else{
+					stream.push(lexeme[thead].get_token_value());
+				}
+				stream.push(")".to_string());
+				thead+=1;
+			}else{
+			//println!(" 1542 :unop");
                 //incase of post
                 if typ == IDENTIFIER {
                     tstream.push(prev_id.clone());
@@ -1563,7 +1591,7 @@ impl Parser {
                     thead += 1;
                 }
 
-
+			}
             } else {
                 stream.push(lexeme[thead].get_token_value());
             }

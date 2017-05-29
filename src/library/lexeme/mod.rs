@@ -65,7 +65,7 @@ pub enum Type {
     OP_ADDROF, // differentiate b/w this and OP_MUL during parsing?
     OP_ASSIGN, //
     OP_INDIRECT, // differentiate b/w this and OP_BITAND during parsing?
-
+	OP_SIZEOF,
     RETTYPE,
 
     //---> Values here

@@ -456,7 +456,8 @@ impl<'a> Tokenizer<'a> {
             "NULL" => (NULL, BASE_NONE),
 			"include" => (HEADER_INCLUDE,BASE_PREP),
 			"define" => (HEADER_DEFINE,BASE_PREP),
-            _ => (IDENTIFIER, BASE_NONE),
+            "sizeof" => (OP_SIZEOF,BASE_UNOP),
+			_ => (IDENTIFIER, BASE_NONE),
         }
     }
 
