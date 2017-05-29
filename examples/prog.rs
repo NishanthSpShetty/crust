@@ -7,8 +7,7 @@
 fn main() {
     /*Avoid using mutable variables unless it is necessary to do so
      */
-    let mut b: i32 = c;
-    c += 1;;
+    let mut b: i32 = c + b + c;
     /*Avoid using mutable variables unless it is necessary to do so
      */
     let mut a: i32 = b + std::mem::size_of(i32);

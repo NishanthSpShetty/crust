@@ -153,6 +153,7 @@ fn invoke(settings: &Settings) {
             //    std::thread::sleep(std::time::Duration::from_millis(600));
 
         }
+		let mode = if settings.strict { "Strict" } else { "Loose" };
         let rust_lexeme = parser::init_parser(&tokens, settings.strict);
         //regenerate the code from lexemes
         let mut o: String = String::new();
@@ -191,9 +192,10 @@ fn invoke(settings: &Settings) {
             .arg(&fname)
             .output()
             .expect("Failed to format the translated code");
-        println!("Rust equivalent of source of `{}` is generated successfully, View the rust \
-                  code in file : `{}`",
+        println!("Rust equivalent of source of `{}` in [{} mode ], is generated successfully, \n\
+		View the rust code in file : `{}`",
                  input.trim(),
+				 mode,
                  fname.display());
     }
 }
