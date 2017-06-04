@@ -31,7 +31,7 @@ Next, enter the translation mode, Strict or Loose (default is Loose). Strict mod
 It also asks whether the program should be converted into a cargo project. It essentially sets up the program into a project with package management. Check out [http://doc.crates.io/](http://doc.crates.io/) for more information.
 ```
 Enter the translation mode [(S/s)trict/(L/l)oose] : l
-Do you want to create a cargo project :[Y/N]n
+Do you want to create a cargo project :[Y/N] n
 ```
 
 Now, it completes the translation and shows where the translated file is stored
