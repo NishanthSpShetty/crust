@@ -22,7 +22,6 @@ impl<'a> Tokenizer<'a> {
     // and returns it
     //
     pub fn new(text: &str) -> Tokenizer {
-
         let token: Vec<char> = Vec::new();
         let token_stream: Vec<Token> = Vec::new();
 
@@ -45,7 +44,6 @@ impl<'a> Tokenizer<'a> {
     // returns the stream of tokens
     // trait bound Clone
     pub fn tokenize(&mut self) -> Vec<Token> {
-
         self.current_char = self.get_next_char();
         loop {
             match self.current_char {
@@ -62,7 +60,6 @@ impl<'a> Tokenizer<'a> {
                     self.push_advance();
 
                     while self.current_char != '"' {
-
                         self.push_advance();
                         if self.current_char == '\\' {
                             // 	self.token.push('$');
@@ -172,11 +169,11 @@ impl<'a> Tokenizer<'a> {
                     }
                 }
 
-                '_' | 'a'...'z' | 'A'...'Z' => {
+                '_' | 'a'..='z' | 'A'..='Z' => {
                     self.push_advance();
                     loop {
                         match self.current_char {
-                            '_' | 'a'...'z' | 'A'...'Z' | '0'...'9' => {
+                            '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' => {
                                 self.push_advance();
                             }
                             _ => {
@@ -188,13 +185,13 @@ impl<'a> Tokenizer<'a> {
                     self.push_to_tok_buffer(token_type, base_type);
                 }
 
-                '0'...'9' => {
+                '0'..='9' => {
                     self.push_advance();
                     let mut is_int: bool = true;
 
                     loop {
                         match self.current_char {
-                            '0'...'9' => {
+                            '0'..='9' => {
                                 self.push_advance();
                             }
                             '.' => {
@@ -454,10 +451,10 @@ impl<'a> Tokenizer<'a> {
             "struct" => (KEYWORD_STRUCT, BASE_NONE),
             "string" => (TYPE_STRING, BASE_DATATYPE),
             "NULL" => (NULL, BASE_NONE),
-			"include" => (HEADER_INCLUDE,BASE_PREP),
-			"define" => (HEADER_DEFINE,BASE_PREP),
-            "sizeof" => (OP_SIZEOF,BASE_UNOP),
-			_ => (IDENTIFIER, BASE_NONE),
+            "include" => (HEADER_INCLUDE, BASE_PREP),
+            "define" => (HEADER_DEFINE, BASE_PREP),
+            "sizeof" => (OP_SIZEOF, BASE_UNOP),
+            _ => (IDENTIFIER, BASE_NONE),
         }
     }
 
@@ -709,7 +706,6 @@ mod test {
                               Token::new(String::from("--"), BASE_UNOP, OP_DEC, 1, 1),
                               Token::new(String::from("~"), BASE_UNOP, OP_BITNEG, 2, 2),
                               Token::new(String::from("!"), BASE_UNOP, OP_LOGNOT, 3, 3),
-
                               Token::new(String::from("+"), BASE_BINOP, OP_PLUS, 4, 4),
                               Token::new(String::from("-"), BASE_BINOP, OP_MINUS, 5, 5),
                               Token::new(String::from("/"), BASE_BINOP, OP_DIV, 6, 6),
@@ -727,7 +723,6 @@ mod test {
                               Token::new(String::from("&&"), BASE_BINOP, OP_LOGAND, 18, 18),
                               Token::new(String::from("|"), BASE_BINOP, OP_BITOR, 19, 19),
                               Token::new(String::from("||"), BASE_BINOP, OP_LOGOR, 20, 20),
-
                               Token::new(String::from("="), BASE_NONE, OP_ASSIGN, 21, 21),
                               Token::new(String::from("+="), BASE_ASSIGNOP, OP_PLUSEQU, 22, 22),
                               Token::new(String::from("-="), BASE_ASSIGNOP, OP_MINEQU, 23, 23),

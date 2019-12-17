@@ -1,26 +1,38 @@
 #![allow(dead_code)]
+
 #[derive(Debug)]
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 #[derive(PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum Type {
     // for specific type info
-    PRIMITIVE_INT, // i32 0
-    PRIMITIVE_SHORT, // i16
-    PRIMITIVE_LONG, // i64
-    PRIMITIVE_FLOAT, // f32 //
-    PRIMITIVE_DOUBLE, // f64
-    PRIMITIVE_CHAR, // char //
-    PRIMITIVE_BOOL, // bool
+    PRIMITIVE_INT,
+    // i32 0
+    PRIMITIVE_SHORT,
+    // i16
+    PRIMITIVE_LONG,
+    // i64
+    PRIMITIVE_FLOAT,
+    // f32 //
+    PRIMITIVE_DOUBLE,
+    // f64
+    PRIMITIVE_CHAR,
+    // char //
+    PRIMITIVE_BOOL,
+    // bool
     PRIMITIVE_VOID,
 
     //---> Put Types before this and make changes in parser while inserting into symbol table
 
-//---> Unimplemented Types
-    PRIMITIVE_TYPEDEF, // typdef => Type
-    KEYWORD_UNSIGNED, // u16, u32, u64
-    KEYWORD_SIGNED, //
-    KEYWORD_AUTO, //13
+    //---> Unimplemented Types
+    PRIMITIVE_TYPEDEF,
+    // typdef => Type
+    KEYWORD_UNSIGNED,
+    // u16, u32, u64
+    KEYWORD_SIGNED,
+    //
+    KEYWORD_AUTO,
+    //13
     TYPE_STRING, //14
 
     //---> Put Base Types for tokens here for recognizing different token categories
@@ -32,92 +44,152 @@ pub enum Type {
     BASE_VALUE,
     BASE_MODIFIER,
     BASE_MOD,
-	BASE_PREP,
+    BASE_PREP,
     BASE_NONE,
 
     //---> Put operators here
-    OP_EQU, //
-    OP_NEQ, //
-    OP_PLUS, //
-    OP_MINUS, //
-    OP_MUL, //
-    OP_DIV, //
-    OP_MOD, //
-    OP_PLUSEQU, //
-    OP_MINEQU, //
-    OP_MULEQU, //
-    OP_DIVEQU, //
-    OP_MODEQU, //
-    OP_BITAND, //
-    OP_BITOR, //
-    OP_BITNEG, //
-    OP_BITLSHIFT, //
-    OP_BITRSHIFT, //
-    OP_LOGAND, //
-    OP_LOGOR, //
-    OP_LOGNOT, //
-    OP_INC, //
-    OP_DEC, //
-    OP_GT, //>
-    OP_LT, //<
-    OP_LE, //
-    OP_GE, //
-    OP_ADDROF, // differentiate b/w this and OP_MUL during parsing?
-    OP_ASSIGN, //
-    OP_INDIRECT, // differentiate b/w this and OP_BITAND during parsing?
-	OP_SIZEOF,
+    OP_EQU,
+    //
+    OP_NEQ,
+    //
+    OP_PLUS,
+    //
+    OP_MINUS,
+    //
+    OP_MUL,
+    //
+    OP_DIV,
+    //
+    OP_MOD,
+    //
+    OP_PLUSEQU,
+    //
+    OP_MINEQU,
+    //
+    OP_MULEQU,
+    //
+    OP_DIVEQU,
+    //
+    OP_MODEQU,
+    //
+    OP_BITAND,
+    //
+    OP_BITOR,
+    //
+    OP_BITNEG,
+    //
+    OP_BITLSHIFT,
+    //
+    OP_BITRSHIFT,
+    //
+    OP_LOGAND,
+    //
+    OP_LOGOR,
+    //
+    OP_LOGNOT,
+    //
+    OP_INC,
+    //
+    OP_DEC,
+    //
+    OP_GT,
+    //>
+    OP_LT,
+    //<
+    OP_LE,
+    //
+    OP_GE,
+    //
+    OP_ADDROF,
+    // differentiate b/w this and OP_MUL during parsing?
+    OP_ASSIGN,
+    //
+    OP_INDIRECT,
+    // differentiate b/w this and OP_BITAND during parsing?
+    OP_SIZEOF,
     RETTYPE,
 
     //---> Values here
-    CHAR_VAL, //
-    STRING, //
-    NUM_INT, //
-    NUM_FLOAT, //
-    TRUE_VAL, //
+    CHAR_VAL,
+    //
+    STRING,
+    //
+    NUM_INT,
+    //
+    NUM_FLOAT,
+    //
+    TRUE_VAL,
+    //
     FALSE_VAL, //
 
     //---> Punctuations here
-    LEFT_CBRACE, //
-    RIGHT_CBRACE, //
-    LEFT_BRACKET, //
-    RIGHT_BRACKET, //
-    LEFT_SBRACKET, //
-    RIGHT_SBRACKET, //
-    COLON, //
-    SEMICOLON, //
+    LEFT_CBRACE,
+    //
+    RIGHT_CBRACE,
+    //
+    LEFT_BRACKET,
+    //
+    RIGHT_BRACKET,
+    //
+    LEFT_SBRACKET,
+    //
+    RIGHT_SBRACKET,
+    //
+    COLON,
+    //
+    SEMICOLON,
+    //
     COMMA, //
 
     //---> Comments here
-    COMMENT_SINGLE, //
+    COMMENT_SINGLE,
+    //
     COMMENT_MULTI, //
 
     IDENTIFIER, //
 
     //---> Keywords here
     MAIN,
-    KEYWORD_CLASS, //
+    KEYWORD_CLASS,
+    //
     KEYWORD_NEW,
-    KEYWORD_FOR, //
-    KEYWORD_WHILE, //
-    KEYWORD_DO, //
-    KEYWORD_BREAK, //
-    KEYWORD_CONTINUE, //
-    KEYWORD_SWITCH, //
-    KEYWORD_IF, //
-    KEYWORD_ELSE, //
-    KEYWORD_PUBLIC, //
-    KEYWORD_PRIVATE, //
-    KEYWORD_PROTECTED, //
-    KEYWORD_CASE, //
-    KEYWORD_STATIC, //
-    KEYWORD_CONST, //
-    KEYWORD_DEFAULT, //
-    KEYWORD_RETURN, //
+    KEYWORD_FOR,
+    //
+    KEYWORD_WHILE,
+    //
+    KEYWORD_DO,
+    //
+    KEYWORD_BREAK,
+    //
+    KEYWORD_CONTINUE,
+    //
+    KEYWORD_SWITCH,
+    //
+    KEYWORD_IF,
+    //
+    KEYWORD_ELSE,
+    //
+    KEYWORD_PUBLIC,
+    //
+    KEYWORD_PRIVATE,
+    //
+    KEYWORD_PROTECTED,
+    //
+    KEYWORD_CASE,
+    //
+    KEYWORD_STATIC,
+    //
+    KEYWORD_CONST,
+    //
+    KEYWORD_DEFAULT,
+    //
+    KEYWORD_RETURN,
+    //
     KEYWORD_STRUCT,
     KEYWORD_ENUM,
     KEYWORD_UNION,
-	HEADER_DEFINE,
-	HEADER_INCLUDE,
+    HEADER_DEFINE,
+    HEADER_INCLUDE,
     NULL,
     BASE_TYPEDEF,
     //---> If all fails
@@ -224,6 +296,7 @@ mod test {
         token.set_token_value(&"\"");
         assert_eq!(token.get_token_value(), "\"");
     }
+
     #[test]
     fn test_get_set_token_type() {
         let mut token: Token = Token::new("12abcd".to_string(), Type::BASE_NONE, Type::OTHER, 0, 0);

@@ -1,6 +1,7 @@
 #![allow(dead_code)]
 #[allow(unused_variables)]
 extern crate getopts;
+
 use getopts::Options;
 use std::env;
 
@@ -104,7 +105,6 @@ fn get_settings_interactively() -> Settings {
 
 fn invoke(settings: &Settings) {
     for input in settings.files.iter() {
-
         let file = match File::open(input) {
             Ok(f) => f,
             Err(err) => {
@@ -135,25 +135,9 @@ fn invoke(settings: &Settings) {
             out.push(temp);
         }
 
-        for _ in 0..7 {
-            print!(".");
-            io::stdout().flush().ok().expect("Buffer cleaning error");
-            //    std::thread::sleep(std::time::Duration::from_millis(500));
+        print!("Invoking Parser ....");
 
-        }
-
-        //    file.write_all(output.as_bytes()).expect("Unable to write to file");
-
-        println!("\t:DONE");
-        print!("Invoking Parser .");
-
-        for _ in 0..7 {
-            print!(".");
-            io::stdout().flush().ok().expect("Buffer cleaning error");
-            //    std::thread::sleep(std::time::Duration::from_millis(600));
-
-        }
-		let mode = if settings.strict { "Strict" } else { "Loose" };
+        let mode = if settings.strict { "Strict" } else { "Loose" };
         let rust_lexeme = parser::init_parser(&tokens, settings.strict);
         //regenerate the code from lexemes
         let mut o: String = String::new();
@@ -162,8 +146,9 @@ fn invoke(settings: &Settings) {
             o = o + &i[..];
         }
 
-        println!("\t:DONE");
+
         let mut fname = PathBuf::from(input);
+
         fname.set_extension("rs");
 
         if let Some(ref project_name) = settings.project_name {
@@ -195,7 +180,7 @@ fn invoke(settings: &Settings) {
         println!("Rust equivalent of source of `{}` in [{} mode ], is generated successfully, \n\
 		View the rust code in file : `{}`",
                  input.trim(),
-				 mode,
+                 mode,
                  fname.display());
     }
 }
