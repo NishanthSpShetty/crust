@@ -32,3 +32,5 @@ tags
 ## vscode
 .vscode
 .idea
+out.txt
+test/

@@ -67,3 +67,15 @@ Same options are available using the `cargo build --` command. Options to CRUST 
 
 ---
 
+## I will
+1. convert the given C/C++ file with basic language construct into Rust.
+2. preserve the comments,
+3. run the formatter on the generated code.
+4. Convert to rust shorthand notion for return values.
+5. document section where i failed to convert leaving out the original code as is.
+
+## I (haven't implemented the parser for all features of C/C++), so I cant
+1. convert the included header files yet.
+2. convert function pointers yet.
+3. analyse the types and choose an efficient type.
+

@@ -21,7 +21,7 @@ struct Settings {
     files: Vec<String>,
 }
 
-use library::lexer;
+use library::lexer::tokenizer::Tokenizer;
 use library::parser;
 
 fn print_usage(program: &str, opts: Options) {
@@ -119,21 +119,23 @@ fn invoke(settings: &Settings) {
 
         println!("Input file size : {}bytes ", size);
 
-        let mut tok = lexer::Tokenizer::new(&text);
+        let mut tok = Tokenizer::new(&text);
         print!("Tokenizing");
 
         let mut out: Vec<String> = Vec::new();
         let tokens = tok.tokenize();
         // tok.tokenize();
-        let mut ln = 0;
-        for i in &tokens {
-            let mut temp = i.get_token_value();
-            if i.get_token_ln() != ln {
-                temp = "\n".to_string() + &temp[..];
-            }
-            ln = i.get_token_ln();
-            out.push(temp);
-        }
+        // let mut ln = 0;
+        // for token in &tokens {
+        //     let mut token_value = token.get_token_value();
+        //     print!("{:?}\n",token);
+        //     if token.get_token_line_num() != ln {
+        //         token_value = "\n".to_string() + &token_value[..];
+        //     }
+        //     ln = token.get_token_line_num();
+        //     out.push(token_value);
+        // }
+
 
         print!("Invoking Parser ....");
 
