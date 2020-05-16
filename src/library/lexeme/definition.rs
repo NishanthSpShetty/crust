@@ -72,7 +72,7 @@ pub enum TokenType {
     Assignment,
     //sizeof()
     SizeOf,
-
+    TernaryOpetator,
     //---> Values type
     CharValue,
     StringValue,
@@ -95,6 +95,7 @@ pub enum TokenType {
     MultilineComment,
     Identifier,
     Arrow,
+    ScopeResolution,
 
     //Identifiers an=d keywords
     KeywordClass,

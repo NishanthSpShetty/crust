@@ -1,10 +1,10 @@
 #![allow(dead_code)]
 
-use library::lexeme::definition::{TokenKind, TokenType, BLACK_HOLE};
+use std::str::Chars;
+
+use library::lexeme::definition::{BLACK_HOLE, TokenKind, TokenType};
 use library::lexeme::token::Token;
 use library::lexer::helper::*;
-
-use std::str::Chars;
 
 pub struct Tokenizer<'a> {
     line_no: u32,
@@ -278,7 +278,7 @@ impl<'a> Tokenizer<'a> {
 
                 '~' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(TokenType::BitwiseNegate, TokenKind::BinaryOperators);
+                    self.push_to_tok_buffer(TokenType::BitwiseNegate, TokenKind::UnaryOperators);
                 }
 
                 // could be address or bitwise operator
@@ -376,8 +376,19 @@ impl<'a> Tokenizer<'a> {
                 }
 
                 ':' => {
+
                     self.push_advance();
-                    self.push_to_tok_buffer(TokenType::Colon, TokenKind::SpecialChars);
+                    match self.current_char {
+                        ':' => {
+                            self.push_advance();
+                            self.push_to_tok_buffer(TokenType::ScopeResolution, TokenKind::SpecialChars);
+                        }
+                        _ => {
+                            self.push_to_tok_buffer(TokenType::Colon, TokenKind::SpecialChars);
+
+                        }
+                    };
+
                 }
 
                 ',' => {
@@ -387,6 +398,11 @@ impl<'a> Tokenizer<'a> {
                 '#' => {
                     self.push_advance();
                     self.push_to_tok_buffer(TokenType::HeaderInclude, TokenKind::Preprocessors);
+                }
+                '?' => {
+                    self.push_advance();
+                    self.push_to_tok_buffer(TokenType::TernaryOpetator, TokenKind::BinaryOperators);
+
                 }
 
                 _ => {
@@ -463,12 +479,13 @@ impl<'a> Tokenizer<'a> {
 #[cfg(test)]
 mod test {
     use std::fs::File;
-    use std::io::Read;
     // use std::io::Write;
     use std::io::BufReader;
-    use library::lexer::tokenizer::Tokenizer;
-    use library::lexeme::definition::{TokenType, TokenKind};
+    use std::io::Read;
+
+    use library::lexeme::definition::{TokenKind, TokenType};
     use library::lexeme::token::Token;
+    use library::lexer::tokenizer::Tokenizer;
 
     fn read_file(path: &str) -> String {
         let file = match File::open(path) {
@@ -576,7 +593,7 @@ mod test {
 
     #[test]
     fn test_tokenize_keywords() {
-        let text = read_file("test_cases/unit_tests/tokenize_keywords.cpp");
+        let text = read_file("src/test/resources/tokenize_keywords.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector =
             vec![Token::new(String::from("signed"), TokenKind::Modifiers, TokenType::Signed, 0, 0),
@@ -616,7 +633,7 @@ mod test {
 
     #[test]
     fn test_tokenize_types() {
-        let text = read_file("test_cases/unit_tests/tokenize_types.cpp");
+        let text = read_file("src/test/resources/tokenize_types.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector =
             vec![Token::new(String::from("int"), TokenKind::DataTypes, TokenType::Integer, 0, 0),
@@ -637,14 +654,14 @@ mod test {
 
     #[test]
     fn test_tokenize_comments() {
-        let text = read_file("test_cases/unit_tests/tokenize_comments.cpp");
+        let text = read_file("src/test/resources/tokenize_comments.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![Token::new(String::from("//Hello World"),
                                          TokenKind::Comments,
                                          TokenType::SingleLineComment,
                                          0,
                                          0),
-                              Token::new(String::from("/** hello\n* ,\n* world\n*/"),
+                              Token::new(String::from("/** hello\n * world\n */"),
                                          TokenKind::Comments,
                                          TokenType::MultilineComment,
                                          1,
@@ -659,10 +676,10 @@ mod test {
 
     #[test]
     fn test_tokenize_operators() {
-        let text = read_file("test_cases/unit_tests/tokenize_operators.cpp");
+        let text = read_file("src/test/resources/tokenize_operators.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![
-            Token::new(String::from("++"), TokenKind::BinaryOperators, TokenType::Increment, 0, 0),
+            Token::new(String::from("++"), TokenKind::UnaryOperators, TokenType::Increment, 0, 0),
             Token::new(String::from("--"), TokenKind::UnaryOperators, TokenType::Decrement, 1, 1),
             Token::new(String::from("~"), TokenKind::UnaryOperators, TokenType::BitwiseNegate, 2, 2),
             Token::new(String::from("!"), TokenKind::UnaryOperators, TokenType::LogicalNot, 3, 3),
@@ -687,13 +704,17 @@ mod test {
             Token::new(String::from("+="), TokenKind::AssignmentOperators, TokenType::PlusEqual, 22, 22),
             Token::new(String::from("-="), TokenKind::AssignmentOperators, TokenType::MinusEqual, 23, 23),
             Token::new(String::from("/="), TokenKind::AssignmentOperators, TokenType::DivideEqual, 24, 24),
-            Token::new(String::from("%="), TokenKind::AssignmentOperators, TokenType::ModuleEqual, 25, 25)];
-        assert_eq!(tok_vector, tok.tokenize());
+            Token::new(String::from("%="), TokenKind::AssignmentOperators, TokenType::ModuleEqual, 25, 25),
+            Token::new(String::from("->"), TokenKind::SpecialChars, TokenType::Arrow, 26, 26),
+            Token::new(String::from("::"), TokenKind::SpecialChars, TokenType::ScopeResolution, 27, 27),
+            Token::new(String::from("?"), TokenKind::BinaryOperators, TokenType::TernaryOpetator, 28, 28)
+        ];
+        debug_assert_eq!(tok_vector, tok.tokenize());
     }
 
     #[test]
     fn test_tokenize_punctuations() {
-        let text = read_file("test_cases/unit_tests/tokenize_punctuations.cpp");
+        let text = read_file("src/test/resources/tokenize_punctuations.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(String::from("{"), TokenKind::SpecialChars, TokenType::LeftCurlyBrace, 0, 0),
@@ -710,7 +731,7 @@ mod test {
 
     #[test]
     fn test_tokenize_values() {
-        let text = read_file("test_cases/unit_tests/tokenize_values.cpp");
+        let text = read_file("src/test/resources/tokenize_values.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(String::from("\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=[]\\;\',./~!@#$%^&*()_+{}|:\\\"<>?\\\"\'\""),
@@ -735,7 +756,7 @@ mod test {
 
     #[test]
     fn test_tokenize_ids() {
-        let text = read_file("test_cases/unit_tests/tokenize_ids.cpp");
+        let text = read_file("src/test/resources/tokenize_ids.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector =
             vec![Token::new(String::from("_"), TokenKind::Identifiers, TokenType::Identifier, 0, 0),
