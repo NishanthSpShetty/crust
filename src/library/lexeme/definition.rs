@@ -36,7 +36,7 @@ pub enum TokenType {
     Boolean,
     Void,
     Typedef,
-    unsigned,
+    Unsigned,
     Signed,
     Auto,
 

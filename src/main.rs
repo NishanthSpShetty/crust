@@ -2,27 +2,27 @@
 #[allow(unused_variables)]
 extern crate getopts;
 
-use getopts::Options;
 use std::env;
-
-mod library;
-
-use std::process::Command;
-use std::io;
-use std::path::PathBuf;
 use std::fs::File;
+use std::io;
+use std::io::BufReader;
 use std::io::Read;
 use std::io::Write;
-use std::io::BufReader;
+use std::path::PathBuf;
+use std::process::Command;
+
+use getopts::Options;
+
+use library::lexer::tokenizer::Tokenizer;
+use library::parser::parser;
+
+mod library;
 
 struct Settings {
     strict: bool,
     project_name: Option<String>,
     files: Vec<String>,
 }
-
-use library::lexer::tokenizer::Tokenizer;
-use library::parser;
 
 fn print_usage(program: &str, opts: Options) {
     let brief = format!("Usage: {} FILE [options]", program);

@@ -1,7 +1,7 @@
 use library::lexeme::definition::{TokenKind, TokenType};
 
-pub fn identify_token_type(tok: &Vec<char>) -> (Type, Type) {
-    let tok_value :String = tok.iter().collect();
+pub fn identify_token_type(tok: &Vec<char>) -> (TokenType, TokenKind) {
+    let tok_value: String = tok.iter().collect();
     match tok_value.as_str() {
         "auto" => (TokenType::Auto, TokenKind::DataTypes),
         "int" => (TokenType::Integer, TokenKind::DataTypes),
@@ -12,7 +12,7 @@ pub fn identify_token_type(tok: &Vec<char>) -> (Type, Type) {
         "short" => (TokenType::Short, TokenKind::DataTypes),
         "bool" => (TokenType::Boolean, TokenKind::DataTypes),
         "signed" => (TokenType::Signed, TokenKind::Modifiers),
-        "unsigned" => (TokenType::unsigned, TokenKind::Modifiers),
+        "unsigned" => (TokenType::Unsigned, TokenKind::Modifiers),
         "typedef" => (TokenType::Typedef, TokenKind::Typedef),
         "class" => (TokenType::KeywordClass, TokenKind::Keyword),
         "enum" => (TokenType::KeywordEnum, TokenKind::Keyword),

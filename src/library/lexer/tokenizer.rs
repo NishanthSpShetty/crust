@@ -2,6 +2,7 @@
 
 use library::lexeme::definition::{TokenKind, TokenType, BLACK_HOLE};
 use library::lexeme::token::Token;
+use library::lexer::helper::*;
 
 use std::str::Chars;
 
@@ -579,7 +580,7 @@ mod test {
         let mut tok = Tokenizer::new(&text);
         let tok_vector =
             vec![Token::new(String::from("signed"), TokenKind::Modifiers, TokenType::Signed, 0, 0),
-                 Token::new(String::from("unsigned"), TokenKind::Modifiers, TokenType::unsigned, 1, 1),
+                 Token::new(String::from("unsigned"), TokenKind::Modifiers, TokenType::Unsigned, 1, 1),
                  Token::new(String::from("class"), TokenKind::Keyword, TokenType::KeywordClass, 2, 2),
                  Token::new(String::from("new"), TokenKind::Keyword, TokenType::KeywordNew, 3, 3),
                  Token::new(String::from("while"), TokenKind::Keyword, TokenType::KeywordWhile, 4, 4),
