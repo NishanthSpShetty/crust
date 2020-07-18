@@ -659,7 +659,12 @@ impl Parser {
     fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
         println!("----------lexeme-start------------");
         for i in start..end {
-            println!("{}> {}", i, lexeme[i].get_token_value());
+            println!(
+                "Line Num {} , {}> {}",
+                lexeme[i].get_token_line_num(),
+                i,
+                lexeme[i].get_token_value()
+            );
         }
         println!("----------lexeme-end------------");
     }
@@ -755,7 +760,6 @@ impl Parser {
         let mut head: usize = 0;
         while head < lexeme.len() {
             let mut declaration_lexeme: Vec<Token> = Vec::new();
-
             while head < lexeme.len() && lexeme[head].get_token_type() != Comma {
                 //create a subset of argument declaration
 
