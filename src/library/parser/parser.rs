@@ -67,6 +67,7 @@ struct Parser {
     // structure book keeping
     struct_mem: Vec<CStructMem>,
     typde_def_table: Vec<String>,
+    struct_in_body_declaration: bool,
 }
 
 pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
@@ -84,6 +85,7 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
         sym_tab: Vec::new(),
         struct_mem: Vec::new(),
         typde_def_table: Vec::new(),
+        struct_in_body_declaration: false,
     };
     stream.append(&mut parser.parse_program(&lexeme));
     stream
@@ -620,15 +622,18 @@ impl Parser {
                         head += 1;
                     }
                 }
-                (_, HeaderInclude) => {
+                (TokenKind::Preprocessors, _) => {
+                    let line_num = lexeme[head].get_token_line_num();
                     if self.once_warned == false {
                         stream.push(INCLUDE_STMT.get_doc().to_string());
                     } else {
+                        //if warned once is set, we have already started the preprocessor block and commented out using multi line comment.
+                        //which is ended at line L369 below. Need to pop that out before writing next pre-processor statement.
                         stream.pop();
-                        stream.push("* >>>>>>>>".to_string());
                     }
 
-                    while lexeme[head].get_token_type() != GreaterThan {
+                    //read in the current line as is.
+                    while lexeme[head].get_token_line_num() != line_num {
                         stream.push(lexeme[head].get_token_value());
                         head += 1;
                     }
@@ -668,10 +673,10 @@ impl Parser {
         println!("----------lexeme-start------------");
         for i in start..end {
             println!(
-                "Line Num {} , {}> {}",
+                "Line Num {} , {}> {:?}",
                 lexeme[i].get_token_line_num(),
                 i,
-                lexeme[i].get_token_value()
+                lexeme[i],
             );
         }
         println!("----------lexeme-end------------");
@@ -793,6 +798,7 @@ impl Parser {
         lexeme: &Vec<Token>,
         argument_declaration: bool,
     ) -> Vec<String> {
+     
         let mut stream: Vec<String> = Vec::new();
 
         //  let mut sym_tab: Vec<SymbolTable> = Vec::new();
@@ -899,12 +905,13 @@ impl Parser {
             head += 1;
         }
 
-        if self.strict == false {
-            stream.push(NO_STRICT.get_doc().to_string());
-        } else {
-            stream.push(STRICT.get_doc().to_string());
+        if !self.struct_in_body_declaration {
+            if self.strict == false {
+                stream.push(NO_STRICT.get_doc().to_string());
+            } else {
+                stream.push(STRICT.get_doc().to_string());
+            }
         }
-
         //from `from` start declaration statement generation
         let (_, sym_table_right) = self.sym_tab.split_at(self.from);
         for i in sym_table_right {
@@ -916,17 +923,19 @@ impl Parser {
                     stream.push("const".to_string());
                 }
                 _ => {
-                    if self.strict == false {
-                        if self.in_block_stmnt == true {
-                            stream.push("let mut".to_string());
+                    if !self.struct_in_body_declaration {
+                        if self.strict == false {
+                            if self.in_block_stmnt == true {
+                                stream.push("let mut".to_string());
+                            } else {
+                                stream.push("static mut".to_string());
+                            }
                         } else {
-                            stream.push("static mut".to_string());
-                        }
-                    } else {
-                        if self.in_block_stmnt == true {
-                            stream.push("let".to_string());
-                        } else {
-                            stream.push("static".to_string());
+                            if self.in_block_stmnt == true {
+                                stream.push("let".to_string());
+                            } else {
+                                stream.push("static".to_string());
+                            }
                         }
                     }
                 }
@@ -1574,12 +1583,14 @@ impl Parser {
         if let Some(t) = parse_type(lexeme[0].get_token_type(), Modifier::Default) {
             typ = t;
         }
-        if self.strict == true {
-            stream.push(STRICT.get_doc().to_string());
-            stream.push("let".to_string());
-        } else {
-            stream.push(NO_STRICT.get_doc().to_string());
-            stream.push("let mut".to_string());
+        if !self.struct_in_body_declaration {
+            if self.strict == true {
+                stream.push(STRICT.get_doc().to_string());
+                stream.push("let".to_string());
+            } else {
+                stream.push(NO_STRICT.get_doc().to_string());
+                stream.push("let mut".to_string());
+            }
         }
 
         let mut head = 0;
@@ -1643,6 +1654,11 @@ impl Parser {
             }
             temp_lexeme.push(lexeme[head].clone());
             head += 1;
+            //check if line comment is present
+            if lexeme[head].get_token_type() == SingleLineComment {
+                temp_lexeme.push(lexeme[head].clone());
+                head += 1;
+            }
             stream.append(&mut self.parse_struct_inbody_decl(&temp_lexeme, &name));
             temp_lexeme.clear();
         }
@@ -1652,40 +1668,36 @@ impl Parser {
     }
 
     // not tested
-    fn parse_struct_inbody_decl(&mut self, lexeme: &Vec<Token>, name: &String) -> Vec<String> {
+    fn parse_struct_inbody_decl(&mut self, lexeme: &Vec<Token>, _name: &String) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
-        let mut head = 0;
         //push the identifier
-        stream.push(lexeme[head + 1].get_token_value());
-        stream.push(":".to_string());
-        let mut struct_memt = CStructMem {
-            identifier: "NONE".to_string(),
-            name: name.clone(),
-            member_type: TokenType::Others,
-        };
-
-        let mut rust_type = "RUST_TYPE".to_string();
-        if let Some(rust_typ) = parse_type(lexeme[head].get_token_type(), Modifier::Default) {
-            rust_type = rust_typ.clone();
-            stream.push(rust_typ);
-            struct_memt.member_type = lexeme[head].get_token_type();
-            struct_memt.identifier = lexeme[head + 1].get_token_value();
-        }
-        head += 2;
-        stream.push(",".to_string());
-        self.struct_mem.push(struct_memt.clone());
-        while lexeme[head].get_token_type() != Semicolon {
-            if lexeme[head].get_token_type() == Comma {
-                head += 1;
-            }
-            struct_memt.identifier = lexeme[head].get_token_value();
-            stream.push(lexeme[head].get_token_value());
-            stream.push(":".to_string());
-            stream.push(rust_type.clone());
+        self.struct_in_body_declaration = true;
+        let mut head: usize = 0;
+        let mut array_decl = false;
+        while head + 2 < lexeme.len() {
+            if lexeme[head].get_token_type() == LeftSquareBracket
+                && lexeme[head + 2].get_token_type() == RightSquareBracket
+                && lexeme[head + 1].get_token_type() == NumberInteger
+            //this pretty much defines the array decl, i guess
+            {
+                array_decl = true;
+            };
             head += 1;
-            stream.push(",".to_string());
-            self.struct_mem.push(struct_memt.clone());
         }
+
+        let mut parsed_decl: Vec<String>;
+        if array_decl {
+            parsed_decl = self.parse_array_declaration(&lexeme);
+        } else {
+            parsed_decl = self.parse_declaration(&lexeme, true);
+        }
+        //remove tailing semicolon added by parser
+        if parsed_decl.last().unwrap() == ";" {
+            parsed_decl.pop();
+        }
+        self.struct_in_body_declaration = false;
+        stream.append(&mut parsed_decl);
+        stream.push(",".to_string());
         stream
     }
 

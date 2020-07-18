@@ -37,7 +37,7 @@ impl DocType {
             DocType::INCLUDE_STMT => {
                 "\n/** Crust doesn't resolve C/C++ dependencies or included header.\n* You may have \
                  to define your own module and implement those functionality in Rust \n* Or you \
-                 can translate header file with Crust to produce Rust code. * \n* >>>>>>>>"
+                 can translate header file with Crust to produce Rust code. * \n"
             }
             DocType::NO_POINTER => {
                 "\n/** Crust doesn't support pointers yet,\

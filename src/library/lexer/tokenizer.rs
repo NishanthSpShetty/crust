@@ -476,7 +476,30 @@ impl<'a> Tokenizer<'a> {
                 }
                 '#' => {
                     self.push_advance();
-                    self.push_to_tok_buffer(TokenType::HeaderInclude, TokenKind::Preprocessors);
+                    loop {
+                        match self.current_char {
+                            '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' => {
+                                self.push_advance();
+                            }
+                            _ => {
+                                break;
+                            }
+                        }
+                    }
+                    let (token_type, base_type) = identify_token_type(&self.token);
+
+                    //read in entire line as the `token_type`.
+                    loop {
+                        match self.current_char {
+                            '\n' => {
+                                break;
+                            }
+                            _ => {
+                                self.push_advance();
+                            }
+                        }
+                    }
+                    self.push_to_tok_buffer(token_type, base_type);
                 }
                 '?' => {
                     self.push_advance();
