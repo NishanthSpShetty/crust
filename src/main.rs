@@ -140,21 +140,8 @@ fn invoke(settings: &Settings) {
         let mut tok = Tokenizer::new(&text);
         print!("Tokenizing");
 
-        let out: Vec<String> = Vec::new();
         let tokens = tok.tokenize();
 
-        for token in &tokens {
-            println!(
-                "{:?} : {}",
-                token.get_token_line_num(),
-                token.get_token_value()
-            );
-            //     if token.get_token_line_num() != ln {
-            //         token_value = "\n".to_string() + &token_value[..];
-            //     }
-            //     ln = token.get_token_line_num();
-            //     out.push(token_value);
-        }
 
         print!("Invoking Parser ....");
 
