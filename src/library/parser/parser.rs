@@ -99,8 +99,16 @@ impl Parser {
             lookahead = head;
             //match over token kind and token type
             match lexeme[head].get_type() {
-                (TokenKind::DataTypes, Typedef) => {
-                    //typedef STRUCT struct_t;
+                (TokenKind::Typedef, Typedef) => {
+                    //typedef STRUCT struct_t or
+                    //typedef struct typename {struct_def} new_type_name;
+                    if lexeme[head + 1].get_token_type() == KeywordStruct {
+                        //read in struct definition
+                        while lexeme[head].get_token_type() != RightCurlyBrace {
+                            temp_lexeme.push(lexeme[head].clone());
+                            head += 1;
+                        }
+                    }
                     while lexeme[head].get_token_type() != Semicolon {
                         temp_lexeme.push(lexeme[head].clone());
                         head += 1;
@@ -971,13 +979,48 @@ impl Parser {
      */
     fn parse_typdef(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
+
+        let mut struct_token_index = 1;
+        let mut alias_type_index = 2;
+        //extract struct definition if present
+        //typdef struct strcutname{} alias_type;
+        let mut struct_lexeme: Vec<Token> = Vec::new();
+
+        if lexeme.get(1).unwrap().get_token_type() == TokenType::KeywordStruct {
+            let mut head: usize = 1;
+            while lexeme.get(head).unwrap().get_token_type() != TokenType::RightCurlyBrace {
+                struct_lexeme.push(lexeme.get(head).unwrap().clone());
+                head += 1;
+            }
+            struct_lexeme.push(lexeme.get(head).unwrap().clone());
+            //3 token will be struct name
+            struct_token_index = 2;
+            //move head to point to alias type token
+            head += 1;
+            alias_type_index = head;
+        }
+
+        let alias_type = lexeme[alias_type_index].get_token_value();
+        let mut struct_token = lexeme[struct_token_index].clone();
+
+        if alias_type == struct_token.get_token_value() {
+            //rust doesnt allow to have struct with same name as type alias, so we need to scramble the name here
+            let new_name = struct_token.get_token_value() + "_alas_t";
+            struct_lexeme[1].set_token_value(&new_name);
+            struct_token = struct_lexeme[1].clone();
+        }
+
+        stream.push("\n".to_string());
+        let mut parsed_struct = self.parse_struct(&struct_lexeme);
+        stream.append(&mut parsed_struct);
+
         stream.push("type".to_string());
-        stream.push(lexeme[2].get_token_value() + "=");
-        self.typde_def_table.push(lexeme[2].get_token_value());
-        if let Some(typ) = parse_type(lexeme[1].get_token_type(), Modifier::Default) {
+        stream.push(alias_type.clone() + "=");
+        self.typde_def_table.push(alias_type.clone());
+        if let Some(typ) = parse_type(struct_token.get_token_type(), Modifier::Default) {
             stream.push(typ);
         } else {
-            stream.push(lexeme[1].get_token_value());
+            stream.push(struct_token.get_token_value());
         }
         stream.push(";".to_string());
         return stream;
