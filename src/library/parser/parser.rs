@@ -108,7 +108,6 @@ impl Parser {
                     temp_lexeme.push(lexeme[head].clone());
                     stream.append(&mut self.parse_typdef(&temp_lexeme));
                     head += 1;
-                    // println!("{}", lexeme[head].get_token_value());
                     temp_lexeme.clear();
                 }
                 // matches any datatype
@@ -183,7 +182,6 @@ impl Parser {
                                 temp_lexeme.push(l);
                                 head += 1;
                             }
-                            //  println!(" {:?}", temp_lexeme);
                             // parse declaration
                             stream.append(&mut self.parse_declaration(&temp_lexeme, false));
                             temp_lexeme.clear();
@@ -197,7 +195,6 @@ impl Parser {
                             temp_lexeme.push(lexeme[head].clone());
                             stream.append(&mut self.parse_declaration(&temp_lexeme, false));
                             head += 1;
-                            // println!("{}", lexeme[head].get_token_value());
                             temp_lexeme.clear();
                         }
 
@@ -389,7 +386,6 @@ impl Parser {
                                     temp_lexeme.push(l);
                                     head += 1;
                                 }
-                                //  println!(" {:?}", temp_lexeme);
                                 // parse declaration
                                 stream.append(&mut self.parse_declaration(&temp_lexeme, false));
                             } else {
@@ -495,7 +491,6 @@ impl Parser {
                 }
 
                 (TokenKind::UnaryOperators, _) => {
-                    println!(" 564 : unop");
                     stream.push(lexeme[head + 1].get_token_value());
                     stream.push(match lexeme[head].get_token_type() {
                         Increment => "+=1".to_string(),
@@ -593,8 +588,6 @@ impl Parser {
 
                     if t != lexeme.len() - 1 {
                         while lexeme[head].get_token_type() != Semicolon {
-                            // println!("{:?}", lexeme[head]);
-
                             stream.push(lexeme[head].get_token_value());
                             head += 1;
                         }
@@ -758,8 +751,6 @@ impl Parser {
      * into rust equivalent arguments
      */
     fn parse_arguments(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
-        println!("\n Parse Arguments \n {:?}", lexeme);
-
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         while head < lexeme.len() {
@@ -771,19 +762,13 @@ impl Parser {
                 declaration_lexeme.push(lexeme[head].clone());
 
                 head += 1;
-                println!(" Head {} , len {} ", head, lexeme.len());
             }
-            //            declaration_lexeme.push(lexeme[head].clone());
             head += 1;
 
             let mut parsed_argument = self.parse_declaration(&declaration_lexeme, true);
 
-            println!("Parsed argumnent {:?}", parsed_argument);
-
             stream.append(&mut parsed_argument);
-
             stream.push(",".to_string());
-            // push identifier
         }
         stream
     }
@@ -889,7 +874,6 @@ impl Parser {
                 Semicolon | Comma => {
                     // used enum value in the symbol table
                     sym.symbol_type = type_token.get_token_type();
-                    //       println!("SYM TYPE {}",sym.typ);
                     self.sym_tab.push(sym.clone());
                 }
                 //int * a ;
@@ -1393,7 +1377,6 @@ impl Parser {
         let m = 3;
 
         let mut tstream: Vec<String> = Vec::new();
-        // if lexeme[0].get_token_type() == OP_MUL {println!("DEBUG @1272 "); m+=1; n+=1;thead+=1;}
         if lexeme[n].get_token_kind() == TokenKind::UnaryOperators {
             while lexeme[thead].get_token_type() != Semicolon {
                 lexeme1.push(lexeme[thead].clone());
@@ -1480,7 +1463,6 @@ impl Parser {
         while lexeme[thead].get_token_type() != Semicolon {
             if lexeme[thead].get_token_kind() == TokenKind::UnaryOperators {
                 if lexeme[thead].get_token_type() == SizeOf {
-                    //println!(" {:?} ",lexeme);
                     stream.push("std::mem::size_of(".to_string());
                     thead += 2;
                     if lexeme[thead].get_token_kind() == TokenKind::DataTypes {
@@ -1495,7 +1477,6 @@ impl Parser {
                     stream.push(")".to_string());
                     thead += 1;
                 } else {
-                    //println!(" 1542 :unop");
                     //incase of post
                     if typ == Identifier {
                         tstream.push(prev_id.clone());
