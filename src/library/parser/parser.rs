@@ -185,7 +185,7 @@ impl Parser {
                             }
                             //  println!(" {:?}", temp_lexeme);
                             // parse declaration
-                            stream.append(&mut self.parse_declaration(&temp_lexeme));
+                            stream.append(&mut self.parse_declaration(&temp_lexeme, false));
                             temp_lexeme.clear();
                         }
                         Identifier => {
@@ -195,7 +195,7 @@ impl Parser {
                                 head += 1;
                             }
                             temp_lexeme.push(lexeme[head].clone());
-                            stream.append(&mut self.parse_declaration(&temp_lexeme));
+                            stream.append(&mut self.parse_declaration(&temp_lexeme, false));
                             head += 1;
                             // println!("{}", lexeme[head].get_token_value());
                             temp_lexeme.clear();
@@ -391,7 +391,7 @@ impl Parser {
                                 }
                                 //  println!(" {:?}", temp_lexeme);
                                 // parse declaration
-                                stream.append(&mut self.parse_declaration(&temp_lexeme));
+                                stream.append(&mut self.parse_declaration(&temp_lexeme, false));
                             } else {
                                 while lexeme[head].get_token_type() != Semicolon {
                                     temp_lexeme.push(lexeme[head].clone());
@@ -758,23 +758,32 @@ impl Parser {
      * into rust equivalent arguments
      */
     fn parse_arguments(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+        println!("\n Parse Arguments \n {:?}", lexeme);
+
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         while head < lexeme.len() {
-            if lexeme[head].get_token_type() == Comma {
-                stream.push(",".to_string());
-                head += 1;
-                continue;
-            }
-            // push identifier
-            stream.push(lexeme[head + 1].get_token_value()); //int f(int val)
-            stream.push(":".to_string());
+            let mut declaration_lexeme: Vec<Token> = Vec::new();
 
-            // parse argument type
-            if let Some(rust_type) = parse_type(lexeme[head].get_token_type(), Modifier::Default) {
-                stream.push(rust_type);
+            while head < lexeme.len() && lexeme[head].get_token_type() != Comma {
+                //create a subset of argument declaration
+
+                declaration_lexeme.push(lexeme[head].clone());
+
+                head += 1;
+                println!(" Head {} , len {} ", head, lexeme.len());
             }
-            head += 2;
+            //            declaration_lexeme.push(lexeme[head].clone());
+            head += 1;
+
+            let mut parsed_argument = self.parse_declaration(&declaration_lexeme, true);
+
+            println!("Parsed argumnent {:?}", parsed_argument);
+
+            stream.append(&mut parsed_argument);
+
+            stream.push(",".to_string());
+            // push identifier
         }
         stream
     }
@@ -782,7 +791,11 @@ impl Parser {
      * parse_declaration:
      * parse c/c++ declaration into rust
      * equivalent statements */
-    fn parse_declaration(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_declaration(
+        &mut self,
+        lexeme: &Vec<Token>,
+        argument_declaration: bool,
+    ) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
 
         //  let mut sym_tab: Vec<SymbolTable> = Vec::new();
@@ -958,7 +971,9 @@ impl Parser {
 
                 stream.push((&i.assigned_val).to_string());
             }
-            stream.push(";".to_string());
+            if !argument_declaration {
+                stream.push(";".to_string());
+            }
         }
         stream
     }
@@ -1284,7 +1299,7 @@ impl Parser {
             }
 
             if decl == true {
-                stream.append(&mut self.parse_declaration(&temp_lexeme));
+                stream.append(&mut self.parse_declaration(&temp_lexeme, false));
             } else {
                 stream.append(&mut self.parse_assignment(&temp_lexeme));
             }
