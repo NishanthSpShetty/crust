@@ -1,10 +1,7 @@
 pub const BLACK_HOLE: char = ' ';
 
-
 //TokenKind kind of a token, grouped together based on usage and various characteristics of tokens.
-#[derive(Debug)]
-#[derive(Clone, Copy)]
-#[derive(PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TokenKind {
     DataTypes,
     BinaryOperators,
@@ -21,9 +18,7 @@ pub enum TokenKind {
     None,
 }
 
-#[derive(Debug)]
-#[derive(Clone, Copy)]
-#[derive(PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(non_camel_case_types)]
 pub enum TokenType {
     //primitive types

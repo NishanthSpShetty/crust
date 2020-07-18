@@ -1,7 +1,6 @@
 use library::lexeme::definition::TokenType::*;
 use library::lexeme::token::Token;
 
-
 /**
  * skip_stmt:
  * forwards the lookahead by one statement
@@ -13,7 +12,6 @@ pub fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
     }
     lookahead + 1
 }
-
 
 /**
  * skip_block:
@@ -36,4 +34,3 @@ pub fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
     }
     lookahead
 }
-

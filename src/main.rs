@@ -63,13 +63,19 @@ fn get_settings_interactively() -> Settings {
     let mut input = String::new();
 
     print!("Enter the C/C++ file to be converted to Rust : ");
-    io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
+    io::stdout()
+        .flush()
+        .ok()
+        .expect("FATAL : Buffer flush failed");
     io::stdin().read_line(&mut input).expect("Unable to read");
 
     let mut strict = String::new();
 
     print!("Enter the translation mode [(S/s)trict/(L/l)oose] : ");
-    io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
+    io::stdout()
+        .flush()
+        .ok()
+        .expect("FATAL : Buffer flush failed");
     io::stdin().read_line(&mut strict).expect("Unable to read");
     let strict = strict.trim();
     let strict: bool = match &strict[..] {
@@ -79,8 +85,13 @@ fn get_settings_interactively() -> Settings {
 
     let mut cargo = String::new();
     print!("Do you want to create a cargo project :[Y/N]");
-    io::stdout().flush().ok().expect("FATAL : Buffer flush failed.");
-    io::stdin().read_line(&mut cargo).expect("Unable to read input");
+    io::stdout()
+        .flush()
+        .ok()
+        .expect("FATAL : Buffer flush failed.");
+    io::stdin()
+        .read_line(&mut cargo)
+        .expect("Unable to read input");
     let cargo = cargo.trim();
     let cargo: bool = match &cargo[..] {
         "Y" | "y" => true,
@@ -91,8 +102,13 @@ fn get_settings_interactively() -> Settings {
     if cargo == true {
         let mut project = String::new();
         print!("Enter cargo project name : ");
-        io::stdout().flush().ok().expect("FATAL : Buffer flush failed");
-        io::stdin().read_line(&mut project).expect("Unable to read input");
+        io::stdout()
+            .flush()
+            .ok()
+            .expect("FATAL : Buffer flush failed");
+        io::stdin()
+            .read_line(&mut project)
+            .expect("Unable to read input");
         project_name = Some(String::from(project.trim()));
     }
 
@@ -115,14 +131,16 @@ fn invoke(settings: &Settings) {
         // get the reader
         let mut reader = BufReader::new(&file);
         let mut text: String = String::new();
-        let size = reader.read_to_string(&mut text).expect("Unable to read file.");
+        let size = reader
+            .read_to_string(&mut text)
+            .expect("Unable to read file.");
 
         println!("Input file size : {}bytes ", size);
 
         let mut tok = Tokenizer::new(&text);
         print!("Tokenizing");
 
-        let mut out: Vec<String> = Vec::new();
+        //let out: Vec<String> = Vec::new();
         let tokens = tok.tokenize();
         // tok.tokenize();
         // let mut ln = 0;
@@ -136,7 +154,6 @@ fn invoke(settings: &Settings) {
         //     out.push(token_value);
         // }
 
-
         print!("Invoking Parser ....");
 
         let mode = if settings.strict { "Strict" } else { "Loose" };
@@ -147,7 +164,6 @@ fn invoke(settings: &Settings) {
             o = o + " ";
             o = o + &i[..];
         }
-
 
         let mut fname = PathBuf::from(input);
 
@@ -160,9 +176,11 @@ fn invoke(settings: &Settings) {
                 .status()
                 .expect("Failed to create project");
             if child.code().unwrap() == 101 {
-                println!("Project already exist with the name : {}, it will be overwritten by \
+                println!(
+                    "Project already exist with the name : {}, it will be overwritten by \
                           the `crust`.",
-                         project_name);
+                    project_name
+                );
 
                 fname = PathBuf::from(project_name.clone() + "/src/main.rs");
             }
@@ -173,16 +191,19 @@ fn invoke(settings: &Settings) {
         }
 
         let mut file = File::create(&fname).expect("Unable to open file to write");
-        file.write_all(o.as_bytes()).expect("Unable to write to file");
+        file.write_all(o.as_bytes())
+            .expect("Unable to write to file");
         Command::new("rustfmt")
             .arg("--")
             .arg(&fname)
             .output()
             .expect("Failed to format the translated code");
-        println!("Rust equivalent of source of `{}` in [{} mode ], is generated successfully, \n\
+        println!(
+            "Rust equivalent of source of `{}` in [{} mode ], is generated successfully, \n\
 		View the rust code in file : `{}`",
-                 input.trim(),
-                 mode,
-                 fname.display());
+            input.trim(),
+            mode,
+            fname.display()
+        );
     }
 }

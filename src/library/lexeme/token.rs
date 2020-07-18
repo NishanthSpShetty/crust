@@ -1,7 +1,6 @@
 use library::lexeme::definition::{TokenKind, TokenType};
 
-#[derive(Debug)]
-#[derive(PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Token {
     token: String,
     token_kind: TokenKind,
@@ -18,7 +17,13 @@ impl Clone for Token {
 }
 
 impl Token {
-    pub fn new(token: String, token_kind: TokenKind, token_type: TokenType, line_number: u32, id: u32) -> Token {
+    pub fn new(
+        token: String,
+        token_kind: TokenKind,
+        token_type: TokenType,
+        line_number: u32,
+        id: u32,
+    ) -> Token {
         Token {
             token,
             token_kind,
@@ -74,15 +79,17 @@ impl Token {
 
 #[cfg(test)]
 mod test {
-    use library::lexeme::{token::Token, definition::*};
+    use library::lexeme::{definition::*, token::Token};
 
     #[test]
     fn test_that_token_created_with_new_successfully() {
-        let token: Token = Token::new("Hello World".to_string(),
-                                      TokenKind::Values,
-                                      TokenType::StringValue,
-                                      0,
-                                      0);
+        let token: Token = Token::new(
+            "Hello World".to_string(),
+            TokenKind::Values,
+            TokenType::StringValue,
+            0,
+            0,
+        );
         assert_eq!(token.token, "Hello World".to_string());
         assert_eq!(token.token_kind, TokenKind::Values);
         assert_eq!(token.token_type, TokenType::StringValue);
@@ -92,7 +99,13 @@ mod test {
 
     #[test]
     fn test_that_token_value_can_set_and_read_successfully() {
-        let mut token: Token = Token::new('\''.to_string(), TokenKind::Values, TokenType::CharValue, 0, 0);
+        let mut token: Token = Token::new(
+            '\''.to_string(),
+            TokenKind::Values,
+            TokenType::CharValue,
+            0,
+            0,
+        );
         assert_eq!(token.get_token_value(), "\'");
 
         token.set_token_value(&"\"");
@@ -101,7 +114,13 @@ mod test {
 
     #[test]
     fn test_that_token_type_can_set_and_read_successfully() {
-        let mut token: Token = Token::new("int".to_string(), TokenKind::DataTypes, TokenType::Integer, 0, 0);
+        let mut token: Token = Token::new(
+            "int".to_string(),
+            TokenKind::DataTypes,
+            TokenType::Integer,
+            0,
+            0,
+        );
         assert_eq!(token.get_token_type(), TokenType::Integer);
 
         token.set_token_type(TokenType::Typedef);
@@ -110,9 +129,14 @@ mod test {
 
     #[test]
     fn test_that_token_kind_can_set_and_read_successfully() {
-        let mut token: Token =
-            Token::new("12.03".to_string(), TokenKind::Values, TokenType::NumberFloat, 0, 0);
-        assert_eq!(token.get_token_kind(),TokenKind::Values);
+        let mut token: Token = Token::new(
+            "12.03".to_string(),
+            TokenKind::Values,
+            TokenType::NumberFloat,
+            0,
+            0,
+        );
+        assert_eq!(token.get_token_kind(), TokenKind::Values);
 
         token.set_base_type(TokenKind::Typedef);
         assert_eq!(token.get_token_kind(), TokenKind::Typedef);
@@ -120,8 +144,13 @@ mod test {
 
     #[test]
     fn test_that_token_line_number_can_set_and_read_successfully() {
-        let mut token: Token =
-            Token::new("12.03".to_string(), TokenKind::Values, TokenType::NumberFloat, 0, 0);
+        let mut token: Token = Token::new(
+            "12.03".to_string(),
+            TokenKind::Values,
+            TokenType::NumberFloat,
+            0,
+            0,
+        );
         assert_eq!(token.get_token_line_num(), 0);
 
         token.set_token_ln(6);
@@ -130,8 +159,13 @@ mod test {
 
     #[test]
     fn test_that_token_id_can_set_and_read_successfully() {
-        let mut token: Token =
-            Token::new("12.03".to_string(), TokenKind::Values, TokenType::NumberFloat, 0, 0);
+        let mut token: Token = Token::new(
+            "12.03".to_string(),
+            TokenKind::Values,
+            TokenType::NumberFloat,
+            0,
+            0,
+        );
         assert_eq!(token.get_token_id(), 0);
 
         token.set_token_id(4);

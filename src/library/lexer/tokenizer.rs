@@ -2,7 +2,7 @@
 
 use std::str::Chars;
 
-use library::lexeme::definition::{BLACK_HOLE, TokenKind, TokenType};
+use library::lexeme::definition::{TokenKind, TokenType, BLACK_HOLE};
 use library::lexeme::token::Token;
 use library::lexer::helper::*;
 
@@ -122,16 +122,25 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '<' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::BitwiseLeftShift, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::BitwiseLeftShift,
+                                TokenKind::BinaryOperators,
+                            );
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::LessThanOrEqual, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::LessThanOrEqual,
+                                TokenKind::BinaryOperators,
+                            );
                         }
 
                         _ => {
-                            self.push_to_tok_buffer(TokenType::LessThan, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::LessThan,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                     }
                 }
@@ -141,16 +150,25 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '>' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::BitwiseRightShift, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::BitwiseRightShift,
+                                TokenKind::BinaryOperators,
+                            );
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::GreaterThanOrEqual, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::GreaterThanOrEqual,
+                                TokenKind::BinaryOperators,
+                            );
                         }
 
                         _ => {
-                            self.push_to_tok_buffer(TokenType::GreaterThan, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::GreaterThan,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                     }
                 }
@@ -164,7 +182,10 @@ impl<'a> Tokenizer<'a> {
                         }
 
                         _ => {
-                            self.push_to_tok_buffer(TokenType::Assignment, TokenKind::AssignmentOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::Assignment,
+                                TokenKind::AssignmentOperators,
+                            );
                         }
                     }
                 }
@@ -215,12 +236,18 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '+' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::Increment, TokenKind::UnaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::Increment,
+                                TokenKind::UnaryOperators,
+                            );
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::PlusEqual, TokenKind::AssignmentOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::PlusEqual,
+                                TokenKind::AssignmentOperators,
+                            );
                         }
                         _ => {
                             self.push_to_tok_buffer(TokenType::Plus, TokenKind::BinaryOperators);
@@ -233,12 +260,18 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '-' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::Decrement, TokenKind::UnaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::Decrement,
+                                TokenKind::UnaryOperators,
+                            );
                         }
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::MinusEqual, TokenKind::AssignmentOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::MinusEqual,
+                                TokenKind::AssignmentOperators,
+                            );
                         }
                         '>' => {
                             self.push_advance();
@@ -255,10 +288,16 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::MultiplyEqual, TokenKind::AssignmentOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::MultiplyEqual,
+                                TokenKind::AssignmentOperators,
+                            );
                         }
                         _ => {
-                            self.push_to_tok_buffer(TokenType::Multiplication, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::Multiplication,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                     };
                 }
@@ -268,7 +307,10 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::ModuleEqual, TokenKind::AssignmentOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::ModuleEqual,
+                                TokenKind::AssignmentOperators,
+                            );
                         }
                         _ => {
                             self.push_to_tok_buffer(TokenType::Module, TokenKind::BinaryOperators);
@@ -289,12 +331,18 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '&' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::LogicalAnd, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::LogicalAnd,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                         _ => {
                             //this is ambiguous resolution, should be validated at the parser side,
                             //tokenizer has very limited knowledge of the expression
-                            self.push_to_tok_buffer(TokenType::BitwiseAnd, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::BitwiseAnd,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                     };
                 }
@@ -304,10 +352,16 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '|' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::LogicalOr, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::LogicalOr,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                         _ => {
-                            self.push_to_tok_buffer(TokenType::BitwiseOr, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::BitwiseOr,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                     };
                 }
@@ -317,10 +371,16 @@ impl<'a> Tokenizer<'a> {
                     match self.current_char {
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::NotEqual, TokenKind::BinaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::NotEqual,
+                                TokenKind::BinaryOperators,
+                            );
                         }
                         _ => {
-                            self.push_to_tok_buffer(TokenType::LogicalNot, TokenKind::UnaryOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::LogicalNot,
+                                TokenKind::UnaryOperators,
+                            );
                         }
                     };
                 }
@@ -336,7 +396,10 @@ impl<'a> Tokenizer<'a> {
                                     self.push_advance();
                                     if self.current_char == '/' {
                                         self.push_advance();
-                                        self.push_to_tok_buffer(TokenType::MultilineComment, TokenKind::Comments);
+                                        self.push_to_tok_buffer(
+                                            TokenType::MultilineComment,
+                                            TokenKind::Comments,
+                                        );
                                         break;
                                     }
                                 }
@@ -348,7 +411,10 @@ impl<'a> Tokenizer<'a> {
                             loop {
                                 match self.current_char {
                                     '\n' | '\r' | '\0' => {
-                                        self.push_to_tok_buffer(TokenType::SingleLineComment, TokenKind::Comments);
+                                        self.push_to_tok_buffer(
+                                            TokenType::SingleLineComment,
+                                            TokenKind::Comments,
+                                        );
                                         self.current_char = self.get_next_char();
                                         self.line_no += 1;
                                         break;
@@ -361,7 +427,10 @@ impl<'a> Tokenizer<'a> {
 
                         '=' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::DivideEqual, TokenKind::AssignmentOperators);
+                            self.push_to_tok_buffer(
+                                TokenType::DivideEqual,
+                                TokenKind::AssignmentOperators,
+                            );
                         }
 
                         _ => {
@@ -376,19 +445,19 @@ impl<'a> Tokenizer<'a> {
                 }
 
                 ':' => {
-
                     self.push_advance();
                     match self.current_char {
                         ':' => {
                             self.push_advance();
-                            self.push_to_tok_buffer(TokenType::ScopeResolution, TokenKind::SpecialChars);
+                            self.push_to_tok_buffer(
+                                TokenType::ScopeResolution,
+                                TokenKind::SpecialChars,
+                            );
                         }
                         _ => {
                             self.push_to_tok_buffer(TokenType::Colon, TokenKind::SpecialChars);
-
                         }
                     };
-
                 }
 
                 ',' => {
@@ -402,7 +471,6 @@ impl<'a> Tokenizer<'a> {
                 '?' => {
                     self.push_advance();
                     self.push_to_tok_buffer(TokenType::TernaryOpetator, TokenKind::BinaryOperators);
-
                 }
 
                 _ => {
@@ -432,7 +500,6 @@ impl<'a> Tokenizer<'a> {
             '\0'
         }
     }
-
 
     // Push the token read so far into Token buffer
     // and clear the token
@@ -475,7 +542,6 @@ impl<'a> Tokenizer<'a> {
     // }
 }
 
-
 #[cfg(test)]
 mod test {
     use std::fs::File;
@@ -494,7 +560,9 @@ mod test {
         };
         let mut reader = BufReader::new(&file);
         let mut text: String = String::new();
-        reader.read_to_string(&mut text).expect("Failed to read file content into text buffer.");
+        reader
+            .read_to_string(&mut text)
+            .expect("Failed to read file content into text buffer.");
         text
     }
 
@@ -576,7 +644,10 @@ mod test {
         tok.push_advance();
         tok.push_to_tok_buffer(TokenType::Assignment, TokenKind::AssignmentOperators);
         assert_eq!(tok.token_buffer[1].get_token_type(), TokenType::Assignment);
-        assert_eq!(tok.token_buffer[1].get_token_kind(), TokenKind::AssignmentOperators);
+        assert_eq!(
+            tok.token_buffer[1].get_token_kind(),
+            TokenKind::AssignmentOperators
+        );
         assert_eq!(tok.token_buffer[1].get_token_value(), String::from("="));
         assert_eq!(tok.token_buffer[1].get_token_line_num(), 0);
 
@@ -595,39 +666,148 @@ mod test {
     fn test_tokenize_keywords() {
         let text = read_file("src/test/resources/tokenize_keywords.cpp");
         let mut tok = Tokenizer::new(&text);
-        let tok_vector =
-            vec![Token::new(String::from("signed"), TokenKind::Modifiers, TokenType::Signed, 0, 0),
-                 Token::new(String::from("unsigned"), TokenKind::Modifiers, TokenType::Unsigned, 1, 1),
-                 Token::new(String::from("class"), TokenKind::Keyword, TokenType::KeywordClass, 2, 2),
-                 Token::new(String::from("new"), TokenKind::Keyword, TokenType::KeywordNew, 3, 3),
-                 Token::new(String::from("while"), TokenKind::Keyword, TokenType::KeywordWhile, 4, 4),
-                 Token::new(String::from("for"), TokenKind::Keyword, TokenType::KeywordFor, 5, 5),
-                 Token::new(String::from("do"), TokenKind::Keyword, TokenType::KeywordDo, 6, 6),
-                 Token::new(String::from("break"), TokenKind::Keyword, TokenType::KeywordBreak, 7, 7),
-                 Token::new(String::from("continue"), TokenKind::Keyword, TokenType::KeywordContinue, 8, 8),
-                 Token::new(String::from("switch"), TokenKind::Keyword, TokenType::KeywordSwitch, 9, 9),
-                 Token::new(String::from("if"), TokenKind::Keyword, TokenType::KeywordIf, 10, 10),
-                 Token::new(String::from("else"), TokenKind::Keyword, TokenType::KeywordElse, 11, 11),
-                 Token::new(String::from("public"),
-                            TokenKind::Modifiers,
-                            TokenType::KeywordPublic,
-                            12,
-                            12),
-                 Token::new(String::from("private"),
-                            TokenKind::Modifiers,
-                            TokenType::keywordPrivate,
-                            13,
-                            13),
-                 Token::new(String::from("protected"),
-                            TokenKind::Modifiers,
-                            TokenType::KeywordProtected,
-                            14,
-                            14),
-                 Token::new(String::from("case"), TokenKind::Keyword, TokenType::KeywordCase, 15, 15),
-                 Token::new(String::from("static"), TokenKind::Modifiers, TokenType::KeywordStatic, 16, 16),
-                 Token::new(String::from("const"), TokenKind::Keyword, TokenType::KeywordConst, 17, 17),
-                 Token::new(String::from("default"), TokenKind::Keyword, TokenType::KeywordDefault, 18, 18),
-                 Token::new(String::from("return"), TokenKind::Keyword, TokenType::KeywordReturn, 19, 19)];
+        let tok_vector = vec![
+            Token::new(
+                String::from("signed"),
+                TokenKind::Modifiers,
+                TokenType::Signed,
+                0,
+                0,
+            ),
+            Token::new(
+                String::from("unsigned"),
+                TokenKind::Modifiers,
+                TokenType::Unsigned,
+                1,
+                1,
+            ),
+            Token::new(
+                String::from("class"),
+                TokenKind::Keyword,
+                TokenType::KeywordClass,
+                2,
+                2,
+            ),
+            Token::new(
+                String::from("new"),
+                TokenKind::Keyword,
+                TokenType::KeywordNew,
+                3,
+                3,
+            ),
+            Token::new(
+                String::from("while"),
+                TokenKind::Keyword,
+                TokenType::KeywordWhile,
+                4,
+                4,
+            ),
+            Token::new(
+                String::from("for"),
+                TokenKind::Keyword,
+                TokenType::KeywordFor,
+                5,
+                5,
+            ),
+            Token::new(
+                String::from("do"),
+                TokenKind::Keyword,
+                TokenType::KeywordDo,
+                6,
+                6,
+            ),
+            Token::new(
+                String::from("break"),
+                TokenKind::Keyword,
+                TokenType::KeywordBreak,
+                7,
+                7,
+            ),
+            Token::new(
+                String::from("continue"),
+                TokenKind::Keyword,
+                TokenType::KeywordContinue,
+                8,
+                8,
+            ),
+            Token::new(
+                String::from("switch"),
+                TokenKind::Keyword,
+                TokenType::KeywordSwitch,
+                9,
+                9,
+            ),
+            Token::new(
+                String::from("if"),
+                TokenKind::Keyword,
+                TokenType::KeywordIf,
+                10,
+                10,
+            ),
+            Token::new(
+                String::from("else"),
+                TokenKind::Keyword,
+                TokenType::KeywordElse,
+                11,
+                11,
+            ),
+            Token::new(
+                String::from("public"),
+                TokenKind::Modifiers,
+                TokenType::KeywordPublic,
+                12,
+                12,
+            ),
+            Token::new(
+                String::from("private"),
+                TokenKind::Modifiers,
+                TokenType::keywordPrivate,
+                13,
+                13,
+            ),
+            Token::new(
+                String::from("protected"),
+                TokenKind::Modifiers,
+                TokenType::KeywordProtected,
+                14,
+                14,
+            ),
+            Token::new(
+                String::from("case"),
+                TokenKind::Keyword,
+                TokenType::KeywordCase,
+                15,
+                15,
+            ),
+            Token::new(
+                String::from("static"),
+                TokenKind::Modifiers,
+                TokenType::KeywordStatic,
+                16,
+                16,
+            ),
+            Token::new(
+                String::from("const"),
+                TokenKind::Keyword,
+                TokenType::KeywordConst,
+                17,
+                17,
+            ),
+            Token::new(
+                String::from("default"),
+                TokenKind::Keyword,
+                TokenType::KeywordDefault,
+                18,
+                18,
+            ),
+            Token::new(
+                String::from("return"),
+                TokenKind::Keyword,
+                TokenType::KeywordReturn,
+                19,
+                19,
+            ),
+        ];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -635,20 +815,71 @@ mod test {
     fn test_tokenize_types() {
         let text = read_file("src/test/resources/tokenize_types.cpp");
         let mut tok = Tokenizer::new(&text);
-        let tok_vector =
-            vec![Token::new(String::from("int"), TokenKind::DataTypes, TokenType::Integer, 0, 0),
-                 Token::new(String::from("short"), TokenKind::DataTypes, TokenType::Short, 1, 1),
-                 Token::new(String::from("long"), TokenKind::DataTypes, TokenType::Long, 2, 2),
-                 Token::new(String::from("float"), TokenKind::DataTypes, TokenType::Float, 3, 3),
-                 Token::new(String::from("double"),
-                            TokenKind::DataTypes,
-                            TokenType::Double,
-                            4,
-                            4),
-                 Token::new(String::from("char"), TokenKind::DataTypes, TokenType::Character, 5, 5),
-                 Token::new(String::from("bool"), TokenKind::DataTypes, TokenType::Boolean, 6, 6),
-                 Token::new(String::from("void"), TokenKind::DataTypes, TokenType::Void, 7, 7),
-                 Token::new(String::from("typedef"), TokenKind::Typedef, TokenType::Typedef, 8, 8)];
+        let tok_vector = vec![
+            Token::new(
+                String::from("int"),
+                TokenKind::DataTypes,
+                TokenType::Integer,
+                0,
+                0,
+            ),
+            Token::new(
+                String::from("short"),
+                TokenKind::DataTypes,
+                TokenType::Short,
+                1,
+                1,
+            ),
+            Token::new(
+                String::from("long"),
+                TokenKind::DataTypes,
+                TokenType::Long,
+                2,
+                2,
+            ),
+            Token::new(
+                String::from("float"),
+                TokenKind::DataTypes,
+                TokenType::Float,
+                3,
+                3,
+            ),
+            Token::new(
+                String::from("double"),
+                TokenKind::DataTypes,
+                TokenType::Double,
+                4,
+                4,
+            ),
+            Token::new(
+                String::from("char"),
+                TokenKind::DataTypes,
+                TokenType::Character,
+                5,
+                5,
+            ),
+            Token::new(
+                String::from("bool"),
+                TokenKind::DataTypes,
+                TokenType::Boolean,
+                6,
+                6,
+            ),
+            Token::new(
+                String::from("void"),
+                TokenKind::DataTypes,
+                TokenType::Void,
+                7,
+                7,
+            ),
+            Token::new(
+                String::from("typedef"),
+                TokenKind::Typedef,
+                TokenType::Typedef,
+                8,
+                8,
+            ),
+        ];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -656,21 +887,29 @@ mod test {
     fn test_tokenize_comments() {
         let text = read_file("src/test/resources/tokenize_comments.cpp");
         let mut tok = Tokenizer::new(&text);
-        let tok_vector = vec![Token::new(String::from("//Hello World"),
-                                         TokenKind::Comments,
-                                         TokenType::SingleLineComment,
-                                         0,
-                                         0),
-                              Token::new(String::from("/** hello\n * world\n */"),
-                                         TokenKind::Comments,
-                                         TokenType::MultilineComment,
-                                         1,
-                                         1),
-                              Token::new(String::from("// Goodbye"),
-                                         TokenKind::Comments,
-                                         TokenType::SingleLineComment,
-                                         2,
-                                         2)];
+        let tok_vector = vec![
+            Token::new(
+                String::from("//Hello World"),
+                TokenKind::Comments,
+                TokenType::SingleLineComment,
+                0,
+                0,
+            ),
+            Token::new(
+                String::from("/** hello\n * world\n */"),
+                TokenKind::Comments,
+                TokenType::MultilineComment,
+                1,
+                1,
+            ),
+            Token::new(
+                String::from("// Goodbye"),
+                TokenKind::Comments,
+                TokenType::SingleLineComment,
+                2,
+                2,
+            ),
+        ];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -679,35 +918,209 @@ mod test {
         let text = read_file("src/test/resources/tokenize_operators.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![
-            Token::new(String::from("++"), TokenKind::UnaryOperators, TokenType::Increment, 0, 0),
-            Token::new(String::from("--"), TokenKind::UnaryOperators, TokenType::Decrement, 1, 1),
-            Token::new(String::from("~"), TokenKind::UnaryOperators, TokenType::BitwiseNegate, 2, 2),
-            Token::new(String::from("!"), TokenKind::UnaryOperators, TokenType::LogicalNot, 3, 3),
-            Token::new(String::from("+"), TokenKind::BinaryOperators, TokenType::Plus, 4, 4),
-            Token::new(String::from("-"), TokenKind::BinaryOperators, TokenType::Minus, 5, 5),
-            Token::new(String::from("/"), TokenKind::BinaryOperators, TokenType::Divide, 6, 6),
-            Token::new(String::from("*"), TokenKind::BinaryOperators, TokenType::Multiplication, 7, 7),
-            Token::new(String::from("%"), TokenKind::BinaryOperators, TokenType::Module, 8, 8),
-            Token::new(String::from(">"), TokenKind::BinaryOperators, TokenType::GreaterThan, 9, 9),
-            Token::new(String::from(">="), TokenKind::BinaryOperators, TokenType::GreaterThanOrEqual, 10, 10),
-            Token::new(String::from(">>"), TokenKind::BinaryOperators, TokenType::BitwiseRightShift, 11, 11),
-            Token::new(String::from("<"), TokenKind::BinaryOperators, TokenType::LessThan, 12, 12),
-            Token::new(String::from("<="), TokenKind::BinaryOperators, TokenType::LessThanOrEqual, 13, 13),
-            Token::new(String::from("<<"), TokenKind::BinaryOperators, TokenType::BitwiseLeftShift, 14, 14),
-            Token::new(String::from("=="), TokenKind::BinaryOperators, TokenType::Equal, 15, 15),
-            Token::new(String::from("!="), TokenKind::BinaryOperators, TokenType::NotEqual, 16, 16),
-            Token::new(String::from("&"), TokenKind::BinaryOperators, TokenType::BitwiseAnd, 17, 17),
-            Token::new(String::from("&&"), TokenKind::BinaryOperators, TokenType::LogicalAnd, 18, 18),
-            Token::new(String::from("|"), TokenKind::BinaryOperators, TokenType::BitwiseOr, 19, 19),
-            Token::new(String::from("||"), TokenKind::BinaryOperators, TokenType::LogicalOr, 20, 20),
-            Token::new(String::from("="), TokenKind::AssignmentOperators, TokenType::Assignment, 21, 21),
-            Token::new(String::from("+="), TokenKind::AssignmentOperators, TokenType::PlusEqual, 22, 22),
-            Token::new(String::from("-="), TokenKind::AssignmentOperators, TokenType::MinusEqual, 23, 23),
-            Token::new(String::from("/="), TokenKind::AssignmentOperators, TokenType::DivideEqual, 24, 24),
-            Token::new(String::from("%="), TokenKind::AssignmentOperators, TokenType::ModuleEqual, 25, 25),
-            Token::new(String::from("->"), TokenKind::SpecialChars, TokenType::Arrow, 26, 26),
-            Token::new(String::from("::"), TokenKind::SpecialChars, TokenType::ScopeResolution, 27, 27),
-            Token::new(String::from("?"), TokenKind::BinaryOperators, TokenType::TernaryOpetator, 28, 28)
+            Token::new(
+                String::from("++"),
+                TokenKind::UnaryOperators,
+                TokenType::Increment,
+                0,
+                0,
+            ),
+            Token::new(
+                String::from("--"),
+                TokenKind::UnaryOperators,
+                TokenType::Decrement,
+                1,
+                1,
+            ),
+            Token::new(
+                String::from("~"),
+                TokenKind::UnaryOperators,
+                TokenType::BitwiseNegate,
+                2,
+                2,
+            ),
+            Token::new(
+                String::from("!"),
+                TokenKind::UnaryOperators,
+                TokenType::LogicalNot,
+                3,
+                3,
+            ),
+            Token::new(
+                String::from("+"),
+                TokenKind::BinaryOperators,
+                TokenType::Plus,
+                4,
+                4,
+            ),
+            Token::new(
+                String::from("-"),
+                TokenKind::BinaryOperators,
+                TokenType::Minus,
+                5,
+                5,
+            ),
+            Token::new(
+                String::from("/"),
+                TokenKind::BinaryOperators,
+                TokenType::Divide,
+                6,
+                6,
+            ),
+            Token::new(
+                String::from("*"),
+                TokenKind::BinaryOperators,
+                TokenType::Multiplication,
+                7,
+                7,
+            ),
+            Token::new(
+                String::from("%"),
+                TokenKind::BinaryOperators,
+                TokenType::Module,
+                8,
+                8,
+            ),
+            Token::new(
+                String::from(">"),
+                TokenKind::BinaryOperators,
+                TokenType::GreaterThan,
+                9,
+                9,
+            ),
+            Token::new(
+                String::from(">="),
+                TokenKind::BinaryOperators,
+                TokenType::GreaterThanOrEqual,
+                10,
+                10,
+            ),
+            Token::new(
+                String::from(">>"),
+                TokenKind::BinaryOperators,
+                TokenType::BitwiseRightShift,
+                11,
+                11,
+            ),
+            Token::new(
+                String::from("<"),
+                TokenKind::BinaryOperators,
+                TokenType::LessThan,
+                12,
+                12,
+            ),
+            Token::new(
+                String::from("<="),
+                TokenKind::BinaryOperators,
+                TokenType::LessThanOrEqual,
+                13,
+                13,
+            ),
+            Token::new(
+                String::from("<<"),
+                TokenKind::BinaryOperators,
+                TokenType::BitwiseLeftShift,
+                14,
+                14,
+            ),
+            Token::new(
+                String::from("=="),
+                TokenKind::BinaryOperators,
+                TokenType::Equal,
+                15,
+                15,
+            ),
+            Token::new(
+                String::from("!="),
+                TokenKind::BinaryOperators,
+                TokenType::NotEqual,
+                16,
+                16,
+            ),
+            Token::new(
+                String::from("&"),
+                TokenKind::BinaryOperators,
+                TokenType::BitwiseAnd,
+                17,
+                17,
+            ),
+            Token::new(
+                String::from("&&"),
+                TokenKind::BinaryOperators,
+                TokenType::LogicalAnd,
+                18,
+                18,
+            ),
+            Token::new(
+                String::from("|"),
+                TokenKind::BinaryOperators,
+                TokenType::BitwiseOr,
+                19,
+                19,
+            ),
+            Token::new(
+                String::from("||"),
+                TokenKind::BinaryOperators,
+                TokenType::LogicalOr,
+                20,
+                20,
+            ),
+            Token::new(
+                String::from("="),
+                TokenKind::AssignmentOperators,
+                TokenType::Assignment,
+                21,
+                21,
+            ),
+            Token::new(
+                String::from("+="),
+                TokenKind::AssignmentOperators,
+                TokenType::PlusEqual,
+                22,
+                22,
+            ),
+            Token::new(
+                String::from("-="),
+                TokenKind::AssignmentOperators,
+                TokenType::MinusEqual,
+                23,
+                23,
+            ),
+            Token::new(
+                String::from("/="),
+                TokenKind::AssignmentOperators,
+                TokenType::DivideEqual,
+                24,
+                24,
+            ),
+            Token::new(
+                String::from("%="),
+                TokenKind::AssignmentOperators,
+                TokenType::ModuleEqual,
+                25,
+                25,
+            ),
+            Token::new(
+                String::from("->"),
+                TokenKind::SpecialChars,
+                TokenType::Arrow,
+                26,
+                26,
+            ),
+            Token::new(
+                String::from("::"),
+                TokenKind::SpecialChars,
+                TokenType::ScopeResolution,
+                27,
+                27,
+            ),
+            Token::new(
+                String::from("?"),
+                TokenKind::BinaryOperators,
+                TokenType::TernaryOpetator,
+                28,
+                28,
+            ),
         ];
         debug_assert_eq!(tok_vector, tok.tokenize());
     }
@@ -717,15 +1130,70 @@ mod test {
         let text = read_file("src/test/resources/tokenize_punctuations.cpp");
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![
-            Token::new(String::from("{"), TokenKind::SpecialChars, TokenType::LeftCurlyBrace, 0, 0),
-            Token::new(String::from("}"), TokenKind::SpecialChars, TokenType::RightCurlyBrace, 1, 1),
-            Token::new(String::from("("), TokenKind::SpecialChars, TokenType::LeftBracket, 2, 2),
-            Token::new(String::from(")"), TokenKind::SpecialChars, TokenType::RightBracket, 3, 3),
-            Token::new(String::from("["), TokenKind::SpecialChars, TokenType::LeftSquareBracket, 4, 4),
-            Token::new(String::from("]"), TokenKind::SpecialChars, TokenType::RightSquareBracket, 5, 5),
-            Token::new(String::from(":"), TokenKind::SpecialChars, TokenType::Colon, 6, 6),
-            Token::new(String::from(";"), TokenKind::SpecialChars, TokenType::Semicolon, 7, 7),
-            Token::new(String::from(","), TokenKind::SpecialChars, TokenType::Comma, 8, 8)];
+            Token::new(
+                String::from("{"),
+                TokenKind::SpecialChars,
+                TokenType::LeftCurlyBrace,
+                0,
+                0,
+            ),
+            Token::new(
+                String::from("}"),
+                TokenKind::SpecialChars,
+                TokenType::RightCurlyBrace,
+                1,
+                1,
+            ),
+            Token::new(
+                String::from("("),
+                TokenKind::SpecialChars,
+                TokenType::LeftBracket,
+                2,
+                2,
+            ),
+            Token::new(
+                String::from(")"),
+                TokenKind::SpecialChars,
+                TokenType::RightBracket,
+                3,
+                3,
+            ),
+            Token::new(
+                String::from("["),
+                TokenKind::SpecialChars,
+                TokenType::LeftSquareBracket,
+                4,
+                4,
+            ),
+            Token::new(
+                String::from("]"),
+                TokenKind::SpecialChars,
+                TokenType::RightSquareBracket,
+                5,
+                5,
+            ),
+            Token::new(
+                String::from(":"),
+                TokenKind::SpecialChars,
+                TokenType::Colon,
+                6,
+                6,
+            ),
+            Token::new(
+                String::from(";"),
+                TokenKind::SpecialChars,
+                TokenType::Semicolon,
+                7,
+                7,
+            ),
+            Token::new(
+                String::from(","),
+                TokenKind::SpecialChars,
+                TokenType::Comma,
+                8,
+                8,
+            ),
+        ];
         assert_eq!(tok_vector, tok.tokenize());
     }
 
@@ -758,16 +1226,43 @@ mod test {
     fn test_tokenize_ids() {
         let text = read_file("src/test/resources/tokenize_ids.cpp");
         let mut tok = Tokenizer::new(&text);
-        let tok_vector =
-            vec![Token::new(String::from("_"), TokenKind::Identifiers, TokenType::Identifier, 0, 0),
-                 Token::new(String::from("_1123abcd_deff04"),
-                            TokenKind::Identifiers,
-                            TokenType::Identifier,
-                            1,
-                            1),
-                 Token::new(String::from("abcd_deff04_"), TokenKind::Identifiers, TokenType::Identifier, 2, 2),
-                 Token::new(String::from("integer"), TokenKind::Identifiers, TokenType::Identifier, 3, 3),
-                 Token::new(String::from("main"), TokenKind::Identifiers, TokenType::Main, 4, 4)];
+        let tok_vector = vec![
+            Token::new(
+                String::from("_"),
+                TokenKind::Identifiers,
+                TokenType::Identifier,
+                0,
+                0,
+            ),
+            Token::new(
+                String::from("_1123abcd_deff04"),
+                TokenKind::Identifiers,
+                TokenType::Identifier,
+                1,
+                1,
+            ),
+            Token::new(
+                String::from("abcd_deff04_"),
+                TokenKind::Identifiers,
+                TokenType::Identifier,
+                2,
+                2,
+            ),
+            Token::new(
+                String::from("integer"),
+                TokenKind::Identifiers,
+                TokenType::Identifier,
+                3,
+                3,
+            ),
+            Token::new(
+                String::from("main"),
+                TokenKind::Identifiers,
+                TokenType::Main,
+                4,
+                4,
+            ),
+        ];
         assert_eq!(tok_vector, tok.tokenize());
     }
 }

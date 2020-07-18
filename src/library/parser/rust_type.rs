@@ -10,7 +10,6 @@ pub enum Modifier {
     Default, //none applied
 }
 
-
 /**
  * fn parse_type:
  * takes the integer value of type Type
@@ -41,7 +40,6 @@ pub fn parse_type(c_type: TokenType, modifier: Modifier) -> Option<String> {
         (_, _) => None,
     }
 }
-
 
 pub fn get_default_value_for(c_type: TokenType) -> String {
     let value = match c_type {
