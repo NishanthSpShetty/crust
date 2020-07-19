@@ -57,7 +57,7 @@ impl Token {
         self.id
     }
 
-    fn set_token_value(&mut self, val: &str) {
+    pub fn set_token_value(&mut self, val: &str) {
         self.token = val.to_string();
     }
 

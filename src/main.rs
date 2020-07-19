@@ -141,8 +141,6 @@ fn invoke(settings: &Settings) {
         print!("Tokenizing");
 
         let tokens = tok.tokenize();
-
-
         print!("Invoking Parser ....");
 
         let mode = if settings.strict { "Strict" } else { "Loose" };

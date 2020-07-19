@@ -41,8 +41,10 @@ pub fn identify_token_type(tok: &Vec<char>) -> (TokenType, TokenKind) {
         "struct" => (TokenType::KeywordStruct, TokenKind::Keyword),
         "string" => (TokenType::StringValue, TokenKind::DataTypes),
         "NULL" => (TokenType::Null, TokenKind::Keyword),
-        "include" => (TokenType::HeaderInclude, TokenKind::Preprocessors),
-        "define" => (TokenType::HeaderDefine, TokenKind::Preprocessors),
+        "#include" => (TokenType::HeaderInclude, TokenKind::Preprocessors),
+        "#define" => (TokenType::HeaderDefine, TokenKind::Preprocessors),
+        "#ifdef" => (TokenType::HeaderIfDefineStart, TokenKind::Preprocessors),
+        "#endif" => (TokenType::HeaderIfDefineEnd, TokenKind::Preprocessors),
         "sizeof" => (TokenType::SizeOf, TokenKind::UnaryOperators),
         _ => (TokenType::Identifier, TokenKind::Identifiers),
     }
