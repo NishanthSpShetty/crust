@@ -347,11 +347,28 @@ impl Parser {
 
                 // matches for statement
                 (_, KeywordFor) => {
-                    while lexeme[lookahead].get_token_type() != LeftCurlyBrace {
+                    //read till end of for()
+                    while lexeme[lookahead].get_token_type() != RightBracket {
                         lookahead += 1;
                     }
+                    //forward the look ahead buffer if block statements found
+
                     lookahead += 1;
-                    lookahead = skip_block(&lexeme, lookahead);
+                    if lexeme[lookahead].get_token_type() == LeftCurlyBrace {
+                        /*
+                        for(x;y;z){
+                            c=a+b;
+                        }*/
+
+                        lookahead = skip_block(&lexeme, lookahead);
+                    } else {
+                        /*
+                        for(x;y;z)
+                            c=a+b;
+                            */
+                        //read till end of following expression/statement. i.e semicolon
+                        lookahead = skip_stmt(&lexeme, lookahead);
+                    }
 
                     while head < lookahead {
                         let l: Token = lexeme[head].clone();
@@ -359,8 +376,7 @@ impl Parser {
                         head += 1;
                     }
 
-                    let was_in_switch: bool;
-                    was_in_switch = self.in_switch;
+                    let was_in_switch = self.in_switch;
                     self.in_switch = false;
 
                     stream.append(&mut self.parse_for(&temp_lexeme));
@@ -477,10 +493,20 @@ impl Parser {
                             }
                         }
                         (TokenKind::SpecialChars, LeftBracket) => {
-                            while lexeme[head].get_token_type() != RightBracket {
-                                stream.push(lexeme[head].get_token_value());
+                            //function call?
+                            let mut temp_lexeme: Vec<Token> = Vec::new();
+                            stream.push(lexeme[head].get_token_value());
+                            stream.push(lexeme[head + 1].get_token_value());
+
+                            head += 2;
+
+                            let lookahead = skip_paranthised_block(&lexeme, head);
+                            while head < lookahead - 1 {
+                                temp_lexeme.push(lexeme[head].clone());
                                 head += 1;
                             }
+                            let mut parsed_expr = self.parse_params(&temp_lexeme);
+                            stream.append(&mut parsed_expr);
                             stream.push(lexeme[head].get_token_value());
                             head += 1;
                         }
@@ -643,6 +669,18 @@ impl Parser {
 
                     self.once_warned = true;
                 }
+                (TokenKind::SpecialChars, LeftBracket) => {
+                    let mut temp_lexeme: Vec<Token> = Vec::new();
+                    while lexeme[head].get_token_type() != RightBracket {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    temp_lexeme.push(lexeme[head].clone());
+
+                    stream.append(&mut self.parse_typecast(&temp_lexeme));
+                    head += 1;
+                }
+
                 // if all fails
                 (_, _) => {
                     if lexeme[head].get_token_type() != RightCurlyBrace {
@@ -789,6 +827,37 @@ impl Parser {
         }
         stream
     }
+
+    fn parse_params(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+        let mut stream: Vec<String> = Vec::new();
+
+        //create expression termination token ';'
+        let terminal_token = Token::new(";".to_string(), TokenKind::SpecialChars, Semicolon, 0, 0);
+        let mut head: usize = 0;
+        let mut temp_lexeme: Vec<Token> = Vec::new();
+        while head < lexeme.len() {
+            if lexeme[head].get_token_type() == Comma {
+                temp_lexeme.push(terminal_token.clone());
+
+                let mut parsed_expr = self.parse_expr(&temp_lexeme);
+                //pop the tailing semicolon
+                parsed_expr.pop();
+                stream.append(&mut parsed_expr);
+                stream.push(",".to_string());
+                temp_lexeme.clear();
+            } else {
+                temp_lexeme.push(lexeme[head].clone());
+            }
+            head += 1;
+        }
+        temp_lexeme.push(terminal_token.clone());
+        let mut parsed_expr = self.parse_expr(&temp_lexeme);
+        //pop the tailing semicolon
+        parsed_expr.pop();
+        stream.append(&mut parsed_expr);
+
+        return stream;
+    }
     /**
      * parse_declaration:
      * parse c/c++ declaration into rust
@@ -798,7 +867,6 @@ impl Parser {
         lexeme: &Vec<Token>,
         argument_declaration: bool,
     ) -> Vec<String> {
-     
         let mut stream: Vec<String> = Vec::new();
 
         //  let mut sym_tab: Vec<SymbolTable> = Vec::new();
@@ -851,16 +919,15 @@ impl Parser {
                     sym.assigned_val = "".to_string();
                     head += 1;
                     let mut br = 0;
+                    let mut lhead = head;
                     if sym.is_ptr == true {
                         if lexeme[head].get_token_type() == Null {
-                            while lexeme[head].get_token_type() != Semicolon
-                                && lexeme[head].get_token_type() != Comma
+                            while lexeme[lhead].get_token_type() != Semicolon
+                                && lexeme[lhead].get_token_type() != Comma
                             {
-                                head += 1;
+                                lhead += 1;
                             }
                             sym.is_assigned = false;
-                        } else {
-                            head += 1;
                         }
                     }
                     let mut temp_lex: Vec<Token> = Vec::new();
@@ -1330,7 +1397,7 @@ impl Parser {
         // initial assignment
         lookahead = skip_stmt(&lexeme, lookahead);
 
-        //incase of initialization expressio for (;i<10;i++) ; common case
+        //incase of initialization expression for (;i<10;i++) ; common case
         if head + 1 < lookahead {
             while head < lookahead {
                 let l: Token = lexeme[head].clone();
@@ -1431,7 +1498,6 @@ impl Parser {
 
         let mut n = 2;
         let m = 3;
-
         let mut tstream: Vec<String> = Vec::new();
         if lexeme[n].get_token_kind() == TokenKind::UnaryOperators {
             while lexeme[thead].get_token_type() != Semicolon {
@@ -1515,8 +1581,7 @@ impl Parser {
         let mut prev_id = " ".to_string();
         let mut typ = Others;
         //a=b+c++;
-
-        while lexeme[thead].get_token_type() != Semicolon {
+        while thead < lexeme.len() && lexeme[thead].get_token_type() != Semicolon {
             if lexeme[thead].get_token_kind() == TokenKind::UnaryOperators {
                 if lexeme[thead].get_token_type() == SizeOf {
                     stream.push("std::mem::size_of(".to_string());
@@ -1559,6 +1624,24 @@ impl Parser {
                         thead += 1;
                     }
                 }
+            } else if lexeme[thead].get_token_kind() == TokenKind::SpecialChars {
+                if lexeme[thead].get_token_type() == LeftBracket
+                    && lexeme[thead + 1].get_token_kind() == TokenKind::DataTypes
+                {
+                    //type cast expression.
+                    let mut temp_lexeme: Vec<Token> = Vec::new();
+                    while thead < lexeme.len()
+                        && lexeme[thead].get_token_type() != Semicolon
+                        && lexeme[thead].get_token_type() != Comma
+                    {
+                        temp_lexeme.push(lexeme[thead].clone());
+                        thead += 1;
+                    }
+                    let mut parsed_stmnt = self.parse_typecast(&temp_lexeme);
+                    stream.append(&mut parsed_stmnt);
+                    //move back from end of statement, so next move thead inc will not panic
+                    thead -= 1;
+                }
             } else {
                 stream.push(lexeme[thead].get_token_value());
             }
@@ -1573,6 +1656,62 @@ impl Parser {
             stream.append(&mut tstream);
         }
         stream
+    }
+
+    /**
+     * Parse simple type case statement of form (int)a or (int *)a
+     * */
+    fn parse_typecast(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+        let mut stream: Vec<String> = Vec::new();
+
+        //get the type
+
+        let mut lookahead: usize = 0;
+
+        while lexeme[lookahead].get_token_type() != RightBracket {
+            lookahead += 1;
+        }
+
+        //lookahead - 1 is *, then its a pointer
+        let is_ptr = if lexeme[lookahead - 1].get_token_type() == Multiplication {
+            true
+        } else {
+            false
+        };
+        let type_index = lookahead - 2;
+        //move lookahead to poit to expression
+        lookahead += 1;
+        while lookahead < lexeme.len() {
+            //TODO: skip address of op operator ?
+
+            stream.push(lexeme[lookahead].get_token_value());
+            if lexeme[lookahead].get_token_type() == BitwiseAnd && !self.strict {
+                stream.push(" mut ".to_string());
+            }
+            lookahead += 1;
+        }
+
+        //get the rust equivalent type
+        let mut typ: String = "".to_string();
+        if let Some(t) = parse_type(lexeme[type_index].get_token_type(), Modifier::Default) {
+            typ = t;
+        }
+
+        if is_ptr {
+            //TODO : Equivalent of this??
+            if self.strict {
+                stream.push(" as & ".to_string());
+            } else {
+                stream.push(" as &mut ".to_string());
+            }
+            stream.push(typ);
+        } else {
+            stream.push(" as ".to_string());
+            stream.push(typ);
+        }
+
+        //check if its a pointer
+        return stream;
     }
 
     fn parse_array_declaration(&mut self, lexeme: &Vec<Token>) -> Vec<String> {

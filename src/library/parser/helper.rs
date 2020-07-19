@@ -34,3 +34,25 @@ pub fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
     }
     lookahead
 }
+
+/**
+ * skip_block:
+ * forwards the lookahead by one block
+ * returns the lookahead at the lexeme after the closing brace
+ */
+pub fn skip_paranthised_block(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
+    let mut paren = 1;
+
+    // while all braces are not closed
+    // skip nested blocks if any
+    while paren != 0 && lookahead < lexeme.len() {
+        if lexeme[lookahead].get_token_type() == LeftBracket {
+            paren += 1;
+        }
+        if lexeme[lookahead].get_token_type() == RightBracket {
+            paren -= 1;
+        }
+        lookahead += 1;
+    }
+    lookahead
+}
