@@ -1,7 +1,6 @@
 use library::lexeme::definition::TokenType::*;
 use library::lexeme::token::Token;
 
-
 /**
  * skip_stmt:
  * forwards the lookahead by one statement
@@ -13,7 +12,6 @@ pub fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
     }
     lookahead + 1
 }
-
 
 /**
  * skip_block:
@@ -37,3 +35,21 @@ pub fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
     lookahead
 }
 
+pub fn get_operator_as_fucn_name(token: &Token) -> &str {
+    match token.get_token_type() {
+        Plus => "_plus",
+        Minus => "_minus",
+        Multiplication => "_mult",
+        Divide => "_div",
+        PlusEqual => "_plus_eq",
+        MinusEqual => "_minus_eq",
+        MultiplyEqual => "_mult_eq",
+        DivideEqual => "_div_eq",
+        Increment => "_inc",
+        Decrement => "_dec",
+        Equal => "_eq",
+        Assignment => "_assign",
+        RightBracket => "_call",
+        _ => "_misc_op",
+    }
+}

@@ -1,6 +1,7 @@
 #![allow(dead_code)]
+
 #[allow(non_camel_case_types)]
-#[derive(Clone,Copy)]
+#[derive(Clone, Copy)]
 pub enum DocType {
     NO_STRICT,
     STRICT,
@@ -11,8 +12,9 @@ pub enum DocType {
     CONSTRUCTOR,
     CRUST,
     DEFAULT,
-	UNION,
-	UNION_DECL,
+    UNION,
+    UNION_DECL,
+    OPERATOR_OVERLOAD,
 }
 
 impl DocType {
@@ -56,15 +58,20 @@ impl DocType {
                 \n * Check warnings and errors and refer to the official Rust Documentation\
                 \n ************************************************************************/\n"
             }
-			DocType::UNION => {
-				"\n/* CRUST does not hanlde C/C++ tagged union type completely.\
+            DocType::UNION => {
+                "\n/* CRUST does not hanlde C/C++ tagged union type completely.\
 				 \n *It translates union type into Rust Some type. \
 				 \n *Please check the varient used properly */\n"
-			}
-			DocType::UNION_DECL => {
-				"\n/* Union declaration must be translated to Rust equivalent Some type varients\
+            }
+            DocType::UNION_DECL => {
+                "\n/* Union declaration must be translated to Rust equivalent Some type varients\
 				\n * Make changes before compilation \n */"
-			}
+            }
+            DocType::OPERATOR_OVERLOAD => {
+                "\n/* Operator overloading is not supported at the current state of Crust.\
+				\n * It will convert into operator_op_name\
+				\n * Ex : operator==()  will be defined as operator_eq()\n */"
+            }
             _ => "//Doc Not Found. Please Report bug",
         }
     }
