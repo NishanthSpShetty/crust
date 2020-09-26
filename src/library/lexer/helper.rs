@@ -44,6 +44,7 @@ pub fn identify_token_type(tok: &Vec<char>) -> (TokenType, TokenKind) {
         "include" => (TokenType::HeaderInclude, TokenKind::Preprocessors),
         "define" => (TokenType::HeaderDefine, TokenKind::Preprocessors),
         "sizeof" => (TokenType::SizeOf, TokenKind::UnaryOperators),
+        "using" => (TokenType::Using, TokenKind::Keyword),
         _ => (TokenType::Identifier, TokenKind::Identifiers),
     }
 }

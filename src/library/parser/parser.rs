@@ -346,7 +346,16 @@ impl Parser {
 
                     self.in_switch = was_in_switch;
                 }
-
+                (TokenKind::Keyword, Using) => {
+                    stream.push("//FIXME: Convert the below statement manually,\n/**\n".to_string());
+                    while lexeme[head].get_token_type() != Semicolon {
+                        stream.push(lexeme[head].get_token_value());
+                        head += 1;
+                    }
+                    stream.push(lexeme[head].get_token_value());
+                    stream.push("\n */".to_string());
+                    head += 1;
+                }
                 // matches for statement
                 (_, KeywordFor) => {
                     while lexeme[lookahead].get_token_type() != LeftCurlyBrace {
