@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 
+use library::doc::DocType;
 use library::doc::DocType::*;
 use library::lexeme::definition::TokenKind::Identifiers;
 use library::lexeme::definition::TokenType::*;
@@ -7,7 +8,6 @@ use library::lexeme::definition::{TokenKind, TokenType};
 use library::lexeme::token::Token;
 use library::parser::helper::*;
 use library::parser::rust_type::*;
-use library::doc::DocType;
 
 #[derive(Debug)]
 struct SymbolTable {
@@ -347,7 +347,8 @@ impl Parser {
                     self.in_switch = was_in_switch;
                 }
                 (TokenKind::Keyword, Using) => {
-                    stream.push("//FIXME: Convert the below statement manually,\n/**\n".to_string());
+                    stream
+                        .push("//FIXME: Convert the below statement manually,\n/**\n".to_string());
                     while lexeme[head].get_token_type() != Semicolon {
                         stream.push(lexeme[head].get_token_value());
                         head += 1;
@@ -720,11 +721,13 @@ impl Parser {
         let mut warn_operator_overload = false;
         while lexeme[lookahead].get_token_type() != LeftBracket {
             match lexeme[lookahead].get_token_kind() {
-                TokenKind::UnaryOperators | TokenKind::BinaryOperators | TokenKind::AssignmentOperators => {
+                TokenKind::UnaryOperators
+                | TokenKind::BinaryOperators
+                | TokenKind::AssignmentOperators => {
                     warn_operator_overload = true;
                     fucntion_name.push_str(get_operator_as_fucn_name(&lexeme[lookahead]))
                 }
-                _ => fucntion_name.push_str(lexeme[lookahead].get_token_value().as_str())
+                _ => fucntion_name.push_str(lexeme[lookahead].get_token_value().as_str()),
             }
             lookahead += 1
         }
@@ -1570,7 +1573,7 @@ impl Parser {
                     thead += 2;
                     if lexeme[thead].get_token_kind() == TokenKind::DataTypes {
                         if let Some(t) =
-                        parse_type(lexeme[thead].get_token_type(), Modifier::Default)
+                            parse_type(lexeme[thead].get_token_type(), Modifier::Default)
                         {
                             stream.push(t)
                         }
@@ -1592,7 +1595,7 @@ impl Parser {
                         tstream.push(";".to_string());
 
                         thead += 1;
-                        //continue;
+                    //continue;
                     }
                     // incase of pre
                     else {
@@ -1985,8 +1988,8 @@ impl Parser {
         stream.push(lexeme[1].get_token_value());
         stream.push("(".to_string());
         stream.push("&self".to_string()); //first argument of method must be self, for sefety we consider reference/borrow
-        // parse arguments differenly for functions that are not main
-        // collect arguments
+                                          // parse arguments differenly for functions that are not main
+                                          // collect arguments
         while lexeme[lookahead].get_token_type() != RightBracket {
             lookahead += 1;
         }

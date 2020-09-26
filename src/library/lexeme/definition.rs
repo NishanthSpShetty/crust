@@ -118,6 +118,8 @@ pub enum TokenType {
 
     HeaderDefine,
     HeaderInclude,
+    HeaderIfDefineStart,
+    HeaderIfDefineEnd,
     Main,
     Null,
     Others,
