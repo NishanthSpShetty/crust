@@ -844,7 +844,7 @@ impl Parser {
             //TODO : should check the typedef table
             arg_type = lexeme[typ_index].get_token_value();
         }
-        let mut identifier_idx = 2;
+        let mut identifier_idx = 1;
 
         let mut reference = false;
         let reference_idx = 1 + typ_index;
@@ -863,9 +863,9 @@ impl Parser {
 
         if reference {
             stream.push("&".to_string());
-        }
-        if !self.strict && !is_const {
-            stream.push("mut".to_string());
+            if !self.strict && !is_const {
+                stream.push("mut".to_string());
+            }
         }
         stream.push(arg_type);
         stream
