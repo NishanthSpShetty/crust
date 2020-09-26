@@ -30,7 +30,7 @@ pub fn identify_token_type(tok: &Vec<char>) -> (TokenType, TokenKind) {
         "protected" => (TokenType::KeywordProtected, TokenKind::Modifiers),
         "case" => (TokenType::KeywordCase, TokenKind::Keyword),
         "static" => (TokenType::KeywordStatic, TokenKind::Modifiers),
-        "const" => (TokenType::KeywordConst, TokenKind::Keyword),
+        "const" => (TokenType::KeywordConst, TokenKind::Modifiers),
         "default" => (TokenType::KeywordDefault, TokenKind::Keyword),
         "return" => (TokenType::KeywordReturn, TokenKind::Keyword),
         "true" => (TokenType::True, TokenKind::Values),

@@ -1,4 +1,5 @@
 use library::lexeme::definition::{TokenKind, TokenType};
+use std::fmt;
 
 #[derive(Debug)]
 #[derive(PartialEq, Eq)]
@@ -72,6 +73,18 @@ impl Token {
     }
 }
 
+impl fmt::Display for Token {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "[Token ID {}, Token: {}, Kind : {:?}, Type: {:?}, LineNumber : {}]\n",
+               self.id,
+               self.token,
+               self.token_kind,
+               self.token_type,
+               self.line_number,
+        )
+    }
+}
+
 #[cfg(test)]
 mod test {
     use library::lexeme::{token::Token, definition::*};
@@ -112,7 +125,7 @@ mod test {
     fn test_that_token_kind_can_set_and_read_successfully() {
         let mut token: Token =
             Token::new("12.03".to_string(), TokenKind::Values, TokenType::NumberFloat, 0, 0);
-        assert_eq!(token.get_token_kind(),TokenKind::Values);
+        assert_eq!(token.get_token_kind(), TokenKind::Values);
 
         token.set_base_type(TokenKind::Typedef);
         assert_eq!(token.get_token_kind(), TokenKind::Typedef);

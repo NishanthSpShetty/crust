@@ -47,7 +47,7 @@ impl<'a> Tokenizer<'a> {
     pub fn tokenize(&mut self) -> Vec<Token> {
         self.current_char = self.get_next_char();
         loop {
-            match self.current_char {
+           match self.current_char {
                 '\n' => {
                     self.line_no += 1;
                     self.current_char = self.get_next_char()
@@ -625,7 +625,7 @@ mod test {
                             14),
                  Token::new(String::from("case"), TokenKind::Keyword, TokenType::KeywordCase, 15, 15),
                  Token::new(String::from("static"), TokenKind::Modifiers, TokenType::KeywordStatic, 16, 16),
-                 Token::new(String::from("const"), TokenKind::Keyword, TokenType::KeywordConst, 17, 17),
+                 Token::new(String::from("const"), TokenKind::Modifiers, TokenType::KeywordConst, 17, 17),
                  Token::new(String::from("default"), TokenKind::Keyword, TokenType::KeywordDefault, 18, 18),
                  Token::new(String::from("return"), TokenKind::Keyword, TokenType::KeywordReturn, 19, 19)];
         assert_eq!(tok_vector, tok.tokenize());

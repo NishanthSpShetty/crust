@@ -137,7 +137,7 @@ fn invoke(settings: &Settings) {
         // }
 
 
-        print!("Invoking Parser ....");
+        print!("Invoking Parser ....\n");
 
         let mode = if settings.strict { "Strict" } else { "Loose" };
         let rust_lexeme = parser::init_parser(&tokens, settings.strict);

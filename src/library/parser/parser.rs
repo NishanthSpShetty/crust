@@ -6,6 +6,7 @@ use library::lexeme::definition::TokenType::*;
 use library::lexeme::token::Token;
 use library::parser::helper::*;
 use library::parser::rust_type::*;
+use library::lexeme::definition::TokenKind::SpecialChars;
 
 #[derive(Debug)]
 struct SymbolTable {
@@ -102,6 +103,7 @@ impl Parser {
         while head < lexeme.len() {
             lookahead = head;
             //match over token kind and token type
+            print!(" {:?}\n ", lexeme[head]);
             match lexeme[head].get_type() {
                 (TokenKind::DataTypes, Typedef) => {
                     //typedef STRUCT struct_t;
@@ -126,8 +128,15 @@ impl Parser {
                     //ex : int a = 0; int a;
                     //     int foo(){}
                     lookahead += 2;
+                    //A quick hack to prevent parser going into infinite loop on processing
+                    if lexeme[lookahead].get_token_type() == ScopeResolution {
+                        while lexeme[lookahead].get_token_type() != LeftBracket {
+                            lookahead += 1;
+                        }
+                    }
                     match lexeme[lookahead].get_token_type() {
                         // function declaration
+
                         LeftBracket => {
                             //inside the function
                             self.in_block_stmnt = true;
@@ -141,7 +150,7 @@ impl Parser {
                             // skip function body declaration
                             if lexeme[lookahead].get_token_type() != LeftCurlyBrace {
                                 lookahead += 1;
-                                head = lookahead;
+                                // head = lookahead;
                                 //FIXME : Why is continue here ?
                                 //continue; ??
                             }
@@ -153,6 +162,7 @@ impl Parser {
                                 temp_lexeme.push(l);
                                 head += 1;
                             }
+
 
                             //parse function block
                             stream.append(&mut self.parse_function(&temp_lexeme));
@@ -480,6 +490,13 @@ impl Parser {
                             stream.push(lexeme[head].get_token_value());
                             head += 1;
                         }
+                        // a -> x->y(); ==> a.x.y()
+                        (TokenKind::SpecialChars, Arrow) => {
+                            //insert the previous identifier token
+                            stream.push(lexeme[head].get_token_value());
+                            stream.push(".".to_string());
+                            head += 2;
+                        }
                         // (_, LEFT_SBRACKET) => {
                         //     while lexeme[head].get_token_type() != RIGHT_SBRACKET {
                         //         stream.push(lexeme[head].get_token_value());
@@ -668,7 +685,7 @@ impl Parser {
     fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
         println!("----------lexeme-start------------");
         for i in start..end {
-            println!("{}> {}", i, lexeme[i].get_token_value());
+            println!("{}", lexeme[i]);
         }
         println!("----------lexeme-end------------");
     }
@@ -681,11 +698,32 @@ impl Parser {
     fn parse_function(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
         let mut temp_lexeme: Vec<Token> = Vec::new();
         let mut head: usize = 3;
-        let mut lookahead: usize = head;
+        let mut lookahead: usize = 1;
         let mut stream: Vec<String> = Vec::new();
+        let mut in_impl: bool = false;
+        //if the function has scope resolution we need build a impl `class|struct`
 
+        let mut fucntion_name: String = "".to_string();
+        if lexeme[2].get_token_type() == ScopeResolution {
+            stream.push("impl ".to_string());
+            stream.push(lexeme[1].get_token_value());
+            stream.push("{".to_string());
+            in_impl = true;
+            lookahead = 3;
+        }
+        //move lookahead to functiion arguments
+        //FIXME : i will f up when overloading operator() in cpp
+
+        while lexeme[lookahead].get_token_type() != LeftBracket {
+            fucntion_name.push_str(lexeme[lookahead].get_token_value().as_str());
+            lookahead += 1
+        }
+        lookahead += 1;
+        head = lookahead;
+        Parser::print_lexemes(lexeme, 0, lexeme.len());
+        print!(" parsingL {} , H {}\n", lookahead, head);
         stream.push("fn".to_string());
-        stream.push(lexeme[1].get_token_value());
+        stream.push(fucntion_name);
         stream.push("(".to_string());
 
         // parse arguments differently for functions that are not main
@@ -736,7 +774,7 @@ impl Parser {
                 }
             }
         }
-
+        print!(" 778  headß \n");
         while lexeme[head].get_token_type() != LeftCurlyBrace {
             head += 1
         }
@@ -752,6 +790,9 @@ impl Parser {
         // parse function body
         stream.append(&mut self.parse_program(&temp_lexeme));
         stream.push("}".to_string());
+        if in_impl {
+            stream.push("} //end impl".to_string());
+        }
         self.in_main = false;
         stream
     }
@@ -765,22 +806,32 @@ impl Parser {
     fn parse_arguments(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
+        let mut temp_lexeme: Vec<Token> = Vec::new();
         while head < lexeme.len() {
             if lexeme[head].get_token_type() == Comma {
+                let mut arg_decl = self.parse_argument_declaration(&temp_lexeme);
+
+                print!(" decl {:?} \n", arg_decl);
+                stream.append(&mut arg_decl);
                 stream.push(",".to_string());
+                temp_lexeme.clear();
                 head += 1;
                 continue;
             }
-            // push identifier
-            stream.push(lexeme[head + 1].get_token_value()); //int f(int val)
-            stream.push(":".to_string());
+            temp_lexeme.push(lexeme[head].clone());
 
-            // parse argument type
-            if let Some(rust_type) = parse_type(lexeme[head].get_token_type(), Modifier::Default) {
-                stream.push(rust_type);
-            }
-            head += 2;
+            head += 1;
         }
+        if !temp_lexeme.is_empty() {
+            let mut arg_decl = self.parse_argument_declaration(&temp_lexeme);
+
+            stream.append(&mut arg_decl);
+            print!(" decl Lexme :{:?}\n {:?} \n", temp_lexeme, arg_decl);
+        }
+        stream
+    }
+    fn parse_argument_declaration(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+        let mut stream: Vec<String> = Vec::new();
         stream
     }
     /**
@@ -1750,7 +1801,6 @@ impl Parser {
         let mut rust_type = "RUST_TYPE".to_string();
         //push the type
         if let Some(rust_typ) = parse_type(lexeme[head].get_token_type(), Modifier::Default) {
-
             rust_type = rust_typ.clone();
             stream.push(rust_typ);
             struct_memt.member_type = lexeme[head].get_token_type();
