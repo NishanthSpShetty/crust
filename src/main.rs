@@ -137,7 +137,7 @@ fn invoke(settings: &Settings) {
 
         println!("Input file size : {}bytes ", size);
 
-        let mut tok = Tokenizer::new(&text);
+        let tok = Tokenizer::new(&text);
         print!("Tokenizing");
 
         let tokens = tok.tokenize();
