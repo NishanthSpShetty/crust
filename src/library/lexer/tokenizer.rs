@@ -1,5 +1,3 @@
-#![allow(dead_code)]
-
 use std::str::Chars;
 
 use library::lexeme::definition::{TokenKind, TokenType, BLACK_HOLE};
@@ -18,16 +16,11 @@ pub struct Tokenizer<'a> {
 }
 
 impl<'a> Tokenizer<'a> {
-    // tokenizer constructor
-    // Create object of type Tokenizer
-    // and returns it
-    //
     pub fn new(text: &str) -> Tokenizer {
         let token: Vec<char> = Vec::new();
         let token_stream: Vec<Token> = Vec::new();
 
-        // create structure object and initialize
-        let self_object = Tokenizer {
+        Tokenizer {
             position: 0,
             id: 0,
             line_no: 0,
@@ -36,20 +29,21 @@ impl<'a> Tokenizer<'a> {
             token: token,
             token_buffer: token_stream,
             input: text.chars(),
-        };
-        self_object
+        }
     }
 
-    // tokenize
-    // function walks over given code text and
-    // returns the stream of tokens
-    // trait bound Clone
+    ///increment the line number
+    fn new_line(&mut self) {
+        self.line_no += 1;
+    }
+
+    /// Walks over given text and returns the stream of tokens
     pub fn tokenize(&mut self) -> Vec<Token> {
         self.current_char = self.get_next_char();
         loop {
             match self.current_char {
                 '\n' => {
-                    self.line_no += 1;
+                    self.new_line();
                     self.current_char = self.get_next_char()
                 }
 
@@ -416,7 +410,7 @@ impl<'a> Tokenizer<'a> {
                                             TokenKind::Comments,
                                         );
                                         self.current_char = self.get_next_char();
-                                        self.line_no += 1;
+                                        self.new_line();
                                         break;
                                     }
 
@@ -554,10 +548,7 @@ mod test {
     use library::lexer::tokenizer::Tokenizer;
 
     fn read_file(path: &str) -> String {
-        let file = match File::open(path) {
-            Ok(f) => f,
-            Err(..) => panic!("Unable to open input source file."),
-        };
+        let file = File::open(path).expect("Unable to open input source file.");
         let mut reader = BufReader::new(&file);
         let mut text: String = String::new();
         reader
@@ -889,7 +880,7 @@ mod test {
         let mut tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
-                String::from("//Hello World"),
+                String::from("// Hello World"),
                 TokenKind::Comments,
                 TokenType::SingleLineComment,
                 0,
@@ -910,7 +901,7 @@ mod test {
                 2,
             ),
         ];
-        assert_eq!(tok_vector, tok.tokenize());
+        assert_eq!(tok_vector, tok.tokenize(), "returns token of comments");
     }
 
     #[test]
