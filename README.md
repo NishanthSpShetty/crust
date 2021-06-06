@@ -1,4 +1,4 @@
-# CRUST
+# [CRUST](https://nishanthspshetty.github.io/crust/)
 
 ## C/C++ to Rust Transpiler
 
