@@ -113,8 +113,8 @@ fn get_settings_interactively() -> Settings {
     }
 
     Settings {
-        strict: strict,
-        project_name: project_name,
+        strict,
+        project_name,
         files: vec![input.trim().to_owned()],
     }
 }
