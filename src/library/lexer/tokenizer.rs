@@ -525,16 +525,6 @@ mod test {
 
     use super::Tokenizer;
 
-    fn read_file(path: &str) -> String {
-        let file = File::open(path).expect("Unable to open input source file.");
-        let mut reader = BufReader::new(&file);
-        let mut text: String = String::new();
-        reader
-            .read_to_string(&mut text)
-            .expect("Failed to read file content into text buffer.");
-        text
-    }
-
     #[test]
     fn test_get_next_char() {
         let get_next_char = |x: &str| Tokenizer::new(&x).get_next_char();
@@ -633,7 +623,7 @@ mod test {
 
     #[test]
     fn test_tokenize_keywords() {
-        let text = read_file("src/test/resources/tokenize_keywords.cpp");
+        let text ="signed\n unsigned\n class\n new\n while\n for\n do\n break\n continue\n switch\n if\n else\n public\n private\n protected\n case\n static\n const\n default\n return\n";
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
@@ -782,7 +772,7 @@ mod test {
 
     #[test]
     fn test_tokenize_types() {
-        let text = read_file("src/test/resources/tokenize_types.cpp");
+        let text = "int\n short\n long\n float\n double\n char\n bool\n void\n typedef\n";
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
@@ -854,7 +844,8 @@ mod test {
 
     #[test]
     fn test_tokenize_comments() {
-        let text = read_file("src/test/resources/tokenize_comments.cpp");
+        let text = "// Hello World\n/** hello\n * world\n */\n// Goodbye";
+        //read_file("src/test/resources/tokenize_comments.cpp");
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
@@ -884,7 +875,7 @@ mod test {
 
     #[test]
     fn test_tokenize_operators() {
-        let text = read_file("src/test/resources/tokenize_operators.cpp");
+        let text = "++\n --\n ~\n !\n +\n -\n /\n *\n %\n >\n >=\n >>\n <\n <=\n <<\n ==\n !=\n &\n &&\n |\n ||\n =\n +=\n -=\n /=\n %=\n ->\n ::\n ?\n";
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
@@ -1096,7 +1087,7 @@ mod test {
 
     #[test]
     fn test_tokenize_punctuations() {
-        let text = read_file("src/test/resources/tokenize_punctuations.cpp");
+        let text = "{\n }\n (\n)\n [\n ]\n :\n ;\n ,\n";
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
@@ -1168,7 +1159,7 @@ mod test {
 
     #[test]
     fn test_tokenize_values() {
-        let text = read_file("src/test/resources/tokenize_values.cpp");
+        let text = "\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=[]\\;\',./~!@#$%^&*()_+{}|:\\\"<>?\\\"\'\"\n'a'\n\'\\\'\'\n\'\\\"\'\n'\\\\'\n 1234567890\n1234567890.0987654321\ntrue\nfalse\n";
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(String::from("\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ`1234567890-=[]\\;\',./~!@#$%^&*()_+{}|:\\\"<>?\\\"\'\""),
@@ -1193,7 +1184,7 @@ mod test {
 
     #[test]
     fn test_tokenize_ids() {
-        let text = read_file("src/test/resources/tokenize_ids.cpp");
+        let text = "_\n _1123abcd_deff04\n abcd_deff04_\n integer\n main\n";
         let tok = Tokenizer::new(&text);
         let tok_vector = vec![
             Token::new(
