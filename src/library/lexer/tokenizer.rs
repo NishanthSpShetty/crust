@@ -515,15 +515,8 @@ impl<'a> Tokenizer<'a> {
 
 #[cfg(test)]
 mod test {
-
-    use std::fs::File;
-    // use std::io::Write;
-    use std::io::BufReader;
-    use std::io::Read;
-
-    use crate::library::lexeme::{definition::TokenKind, definition::TokenType, token::Token};
-
     use super::Tokenizer;
+    use crate::library::lexeme::{definition::TokenKind, definition::TokenType, token::Token};
 
     #[test]
     fn test_get_next_char() {
