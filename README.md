@@ -1,5 +1,7 @@
 # [CRUST](https://nishanthspshetty.github.io/crust/)
 
+![Build](https://github.com/nishanthspshetty/crust/actions/workflows/rust.yml/badge.svg)
+
 ## C/C++ to Rust Transpiler
 
 C++ is a system programming language widely used in development of operating systems,  firmwares, device drivers and in application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer. The programming language *Rust* is system programming language which provides the safe and secure programming with highly enforced compiler restrictions with zero cost abstraction.
