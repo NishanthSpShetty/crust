@@ -1,5 +1,5 @@
-use library::lexeme::definition::TokenType::*;
-use library::lexeme::token::Token;
+use crate::library::lexeme::definition::TokenType::*;
+use crate::library::lexeme::token::Token;
 
 /**
  * skip_stmt:

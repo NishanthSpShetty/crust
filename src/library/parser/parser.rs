@@ -1,13 +1,13 @@
 #![allow(dead_code)]
 
-use library::doc::DocType;
-use library::doc::DocType::*;
-use library::lexeme::definition::TokenKind::Identifiers;
-use library::lexeme::definition::TokenType::*;
-use library::lexeme::definition::{TokenKind, TokenType};
-use library::lexeme::token::Token;
-use library::parser::helper::*;
-use library::parser::rust_type::*;
+use crate::library::doc::DocType;
+use crate::library::doc::DocType::*;
+use crate::library::lexeme::definition::TokenKind::Identifiers;
+use crate::library::lexeme::definition::TokenType::*;
+use crate::library::lexeme::definition::{TokenKind, TokenType};
+use crate::library::lexeme::token::Token;
+use crate::library::parser::helper::*;
+use crate::library::parser::rust_type::*;
 
 #[derive(Debug)]
 struct SymbolTable {

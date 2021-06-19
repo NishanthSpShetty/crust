@@ -1,8 +1,8 @@
 use std::str::Chars;
 
-use library::lexeme::definition::{TokenKind, TokenType, BLACK_HOLE};
-use library::lexeme::token::Token;
-use library::lexer::helper::*;
+use crate::library::lexeme::definition::{TokenKind, TokenType, BLACK_HOLE};
+use crate::library::lexeme::token::Token;
+use crate::library::lexer::helper::*;
 
 pub struct Tokenizer<'a> {
     line_no: u32,

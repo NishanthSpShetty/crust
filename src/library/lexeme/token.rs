@@ -1,4 +1,4 @@
-use library::lexeme::definition::{TokenKind, TokenType};
+use crate::library::lexeme::definition::{TokenKind, TokenType};
 use std::fmt;
 
 #[derive(Debug, PartialEq, Eq)]
@@ -90,7 +90,7 @@ impl fmt::Display for Token {
 
 #[cfg(test)]
 mod test {
-    use library::lexeme::{definition::*, token::Token};
+    use crate::library::lexeme::{definition::*, token::Token};
 
     #[test]
     fn test_that_token_created_with_new_successfully() {

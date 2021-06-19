@@ -1,5 +1,4 @@
-use library::lexeme::definition::TokenType;
-use library::lexeme::definition::TokenType::*;
+use crate::library::lexeme::definition::TokenType;
 
 #[derive(Copy, Clone, Debug)]
 pub enum Modifier {
