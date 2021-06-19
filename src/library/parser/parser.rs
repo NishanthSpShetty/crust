@@ -102,7 +102,7 @@ impl Parser {
             //match over token kind and token type
 
             match lexeme[head].get_type() {
-                (TokenKind::DataTypes, Typedef) => {
+                (TokenKind::DataTypes, TokenType::Typedef) => {
                     //typedef STRUCT struct_t;
                     while lexeme[head].get_token_type() != Semicolon {
                         temp_lexeme.push(lexeme[head].clone());
