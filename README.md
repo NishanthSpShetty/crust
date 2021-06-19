@@ -1,6 +1,6 @@
 # [CRUST](https://nishanthspshetty.github.io/crust/)
 
-![Build](https://github.com/nishanthspshetty/crust/actions/workflows/rust.yml/badge.svg)
+![Build](https://github.com/nishanthspshetty/crust/actions/workflows/crust.yml/badge.svg)
 
 ## C/C++ to Rust Transpiler
 
