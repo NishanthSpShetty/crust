@@ -1,8 +1,10 @@
 # [CRUST](https://nishanthspshetty.github.io/crust/)
 
+![Build](https://github.com/nishanthspshetty/crust/actions/workflows/rust.yml/badge.svg)
+
 ## C/C++ to Rust Transpiler
 
-C++ is a system programming language widely used in development of operating system,  firmwares, device drivers and in some application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer. The new programming language *Rust* is system programming language provides the safe and secure programming with highly enforced compiler restrictions with zero cost abstraction.
+C++ is a system programming language widely used in development of operating systems,  firmwares, device drivers and in application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer. The programming language *Rust* is system programming language which provides the safe and secure programming with highly enforced compiler restrictions with zero cost abstraction.
 
 ---
 
@@ -63,7 +65,7 @@ Options:
 
 Note that if the strict options are not applied, it implies loose mode.
 
-Same options are available using the `cargo build --` command. Options to CRUST must be entered after the `--`, while options to cargo must be entered before the `--`. It's just easier to use the executable.
+Same options are available using the `cargo run --` command. Options to CRUST must be entered after the `--`, while options to cargo must be entered before the `--`. It's just easier to use the executable.
 
 ---
 

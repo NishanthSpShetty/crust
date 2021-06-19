@@ -1,36 +1,35 @@
-class A{
-    int a;
-    int b;
+class A {
+  int a;
+  int b;
 
-  private:  float getfloat(){ return 1.23; }
+private:
+  float getfloat() { return 1.23; }
 
-    public : int getInt(int a){ return a; }
+public:
+  int getInt() { return a; }
 
-    A() {
-      a = 5;
-      b = 6;
-    }
+  A() {
+    a = 5;
+    b = 6;
+  }
 };
 
 class B {
-int aa,bb;
+  int aa, bb;
 };
 
 class Address {
-	int id;
-char name;
-	char postal;
-	int pin;
+  int id;
+  char name;
+  char postal;
+  int pin;
 };
 
-int main(){
+int main() {
   B b = B();
-	A a = A();
+  A a = A();
   a.getInt();
-  a.getfloat();
- 
- Address add = Address();
-  
-  //do some thing else
-}
+  Address add = Address();
 
+  // do some thing else
+}

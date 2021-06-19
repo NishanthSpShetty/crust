@@ -1,13 +1,13 @@
 #![allow(dead_code)]
 
-use library::doc::DocType;
-use library::doc::DocType::*;
-use library::lexeme::definition::TokenKind::Identifiers;
-use library::lexeme::definition::TokenType::*;
-use library::lexeme::definition::{TokenKind, TokenType};
-use library::lexeme::token::Token;
-use library::parser::helper::*;
-use library::parser::rust_type::*;
+use crate::library::doc::DocType;
+use crate::library::doc::DocType::*;
+use crate::library::lexeme::definition::TokenKind::Identifiers;
+use crate::library::lexeme::definition::TokenType::*;
+use crate::library::lexeme::definition::{TokenKind, TokenType};
+use crate::library::lexeme::token::Token;
+use crate::library::parser::helper::*;
+use crate::library::parser::rust_type::*;
 
 #[derive(Debug)]
 struct SymbolTable {
@@ -102,7 +102,7 @@ impl Parser {
             //match over token kind and token type
 
             match lexeme[head].get_type() {
-                (TokenKind::DataTypes, Typedef) => {
+                (TokenKind::DataTypes, TokenType::Typedef) => {
                     //typedef STRUCT struct_t;
                     while lexeme[head].get_token_type() != Semicolon {
                         temp_lexeme.push(lexeme[head].clone());
