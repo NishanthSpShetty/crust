@@ -1,6 +1,4 @@
 #![allow(dead_code)]
-#[allow(unused_variables)]
-extern crate getopts;
 
 use std::env;
 use std::fs::File;
@@ -115,7 +113,7 @@ fn invoke(settings: &Settings) {
         let mut text: String = String::new();
         let size = reader
             .read_to_string(&mut text)
-            .expect("Unable to read file.");
+            .expect("unable to read file.");
 
         println!("Input file size : {}bytes ", size);
 
@@ -136,7 +134,7 @@ fn invoke(settings: &Settings) {
         //     out.push(token_value);
         // }
 
-        print!("Invoking Parser ....\n");
+        println!("Invoking Parser....");
 
         let mode = if settings.strict { "Strict" } else { "Loose" };
         let rust_lexeme = parser::init_parser(&tokens, settings.strict);

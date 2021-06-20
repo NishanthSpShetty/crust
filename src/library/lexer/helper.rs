@@ -1,6 +1,6 @@
 use crate::library::lexeme::definition::{TokenKind, TokenType};
 
-pub fn identify_token_type(tok: &Vec<char>) -> (TokenType, TokenKind) {
+pub fn identify_token_type(tok: &[char]) -> (TokenType, TokenKind) {
     let tok_value: String = tok.iter().collect();
     match tok_value.as_str() {
         "auto" => (TokenType::Auto, TokenKind::DataTypes),

@@ -186,16 +186,21 @@ impl<'a> Tokenizer<'a> {
 
                 '_' | 'a'..='z' | 'A'..='Z' => {
                     self.push_advance();
-                    loop {
-                        match self.current_char {
-                            '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' => {
-                                self.push_advance();
-                            }
-                            _ => {
-                                break;
-                            }
-                        }
+
+                    while let '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' = self.current_char {
+                        self.push_advance();
                     }
+
+                    //                    loop {
+                    //                        match self.current_char {
+                    //                            '_' | 'a'..='z' | 'A'..='Z' | '0'..='9' => {
+                    //                                self.push_advance();
+                    //                            }
+                    //                            _ => {
+                    //                                break;
+                    //                            }
+                    //                        }
+                    //                    }
                     let (token_type, base_type) = identify_token_type(&self.token);
                     self.push_to_tok_buffer(token_type, base_type);
                 }

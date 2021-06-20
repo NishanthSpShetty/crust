@@ -80,9 +80,9 @@ impl Token {
 
 impl fmt::Display for Token {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
+        writeln!(
             f,
-            "[Token ID {}, Token: {}, Kind : {:?}, Type: {:?}, LineNumber : {}]\n",
+            "[Token ID {}, Token: {}, Kind : {:?}, Type: {:?}, LineNumber : {}]",
             self.id, self.token, self.token_kind, self.token_type, self.line_number,
         )
     }
