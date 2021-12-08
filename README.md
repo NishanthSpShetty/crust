@@ -21,7 +21,7 @@ Now that you're setup for rust. Open any suitable terminal and `cd` into the cru
 
 Run `cargo build` to compile the entire project and download some dependencies.
 
-Now, you many test out CRUST using some of the examples in the example folder as follows:
+Now, you may test out CRUST using some of the examples in the example folder as follows:
 `cargo run`
 
 The program asks for the C/C++ file to be converted to Rust (Enter the path relative to the current location):
