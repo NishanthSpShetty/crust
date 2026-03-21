@@ -92,435 +92,158 @@ pub fn init_parser(lexeme: &[Token], strict_parser: bool) -> Vec<String> {
 }
 
 impl Parser {
+    /// Safe array access helper with bounds checking
+    fn safe_get<'a>(&self, tokens: &'a [Token], index: usize) -> Option<&'a Token> {
+        if index < tokens.len() {
+            Some(&tokens[index])
+        } else {
+            None
+        }
+    }
+
     fn parse_program(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         let mut lookahead: usize;
         let mut temp_lexeme: Vec<Token> = Vec::new();
+
         while head < lexeme.len() {
             lookahead = head;
-            //match over token kind and token type
 
+            // Try control flow statement handling first
             match lexeme[head].get_type() {
-                (TokenKind::DataTypes, TokenType::Typedef) => {
-                    //typedef STRUCT struct_t;
-                    while lexeme[head].get_token_type() != Semicolon {
-                        temp_lexeme.push(lexeme[head].clone());
-                        head += 1;
-                    }
+                (TokenKind::Keyword, KeywordIf | KeywordElse | KeywordSwitch | KeywordWhile | KeywordDo | KeywordFor) | (_, KeywordIf | KeywordElse | KeywordSwitch | KeywordWhile | KeywordDo | KeywordFor) => {
+                    head = self.parse_control_flow_statement(lexeme, head, &mut stream);
+                    continue;
+                }
+                _ => {}
+            }
+
+            // Try type definition handling
+            match lexeme[head].get_type() {
+                (_, KeywordStruct | KeywordUnion | KeywordClass | KeywordEnum) => {
+                    head = self.parse_type_definition(lexeme, head, &mut stream);
+                    continue;
+                }
+                _ => {}
+            }
+
+            // Handle typedef
+            if matches!(lexeme[head].get_type(), (TokenKind::DataTypes, TokenType::Typedef)) {
+                while lexeme[head].get_token_type() != Semicolon {
                     temp_lexeme.push(lexeme[head].clone());
-                    stream.append(&mut self.parse_typdef(&temp_lexeme));
                     head += 1;
-                    // println!("{}", lexeme[head].get_token_value());
-                    temp_lexeme.clear();
                 }
-                // matches any datatype
+                temp_lexeme.push(lexeme[head].clone());
+                stream.append(&mut self.parse_typdef(&temp_lexeme));
+                head += 1;
+                temp_lexeme.clear();
+                continue;
+            }
+
+            // Handle data type declarations
+            match lexeme[head].get_type() {
                 (TokenKind::DataTypes, _) => {
-                    //if token is modifiers , move lookahead pointer to next lexeme
-                    if lexeme[head].get_token_type() == Signed
-                        || lexeme[head].get_token_type() == Unsigned
-                    {
+                    // Check for modifiers (signed, unsigned)
+                    if lexeme[head].get_token_type() == Signed || lexeme[head].get_token_type() == Unsigned {
                         lookahead += 1;
                     }
-                    //To see whats after the given identifier
-                    //ex : int a = 0; int a;
-                    //     int foo(){}
                     lookahead += 2;
-                    //A quick hack to prevent parser going into infinite loop on processing
-                    if lexeme[lookahead].get_token_type() == ScopeResolution {
-                        while lexeme[lookahead].get_token_type() != LeftBracket {
+
+                    // Prevent infinite loop on scope resolution
+                    if lookahead < lexeme.len() && lexeme[lookahead].get_token_type() == ScopeResolution {
+                        while lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != LeftBracket {
                             lookahead += 1;
                         }
                     }
-                    match lexeme[lookahead].get_token_type() {
-                        // function declaration
-                        LeftBracket => {
-                            //inside the function
-                            self.in_block_stmnt = true;
-                            //move till end of function argument declaration
-                            while lexeme[lookahead].get_token_type() != RightBracket {
-                                lookahead += 1;
-                            }
-                            //move ahead of )
-                            lookahead += 1;
 
-                            // skip function body declaration
-                            if lexeme[lookahead].get_token_type() != LeftCurlyBrace {
-                                lookahead += 1;
-                                // head = lookahead;
-                                //FIXME : Why is continue here ?
-                                //continue; ??
-                            }
-                            // advance lookahead to end of block
-                            lookahead = skip_block(&lexeme, lookahead + 1);
-                            // collect entire function block
-                            while head < lookahead {
-                                let l: Token = lexeme[head].clone();
-                                temp_lexeme.push(l);
-                                head += 1;
-                            }
-
-                            //parse function block
-                            stream.append(&mut self.parse_function(&temp_lexeme));
-                            temp_lexeme.clear();
-
-                            self.in_block_stmnt = false;
-                        }
-
-                        //array declaration found
-                        LeftSquareBracket => {
-                            lookahead = skip_stmt(&lexeme, lookahead);
-
-                            // collect variable declaration
-                            while head != lookahead {
-                                let l: Token = lexeme[head].clone();
-                                temp_lexeme.push(l);
-                                head += 1;
-                            }
-                            // parse declaration
-                            stream.append(&mut self.parse_array_declaration(&temp_lexeme));
-                            temp_lexeme.clear();
-                        }
-
-                        // variable declaration or declaration + assignment
-                        Semicolon | Comma | Assignment => {
-                            lookahead = skip_stmt(&lexeme, lookahead);
-
-                            // collect variable declaration
-                            while head != lookahead {
-                                let l: Token = lexeme[head].clone();
-                                temp_lexeme.push(l);
-                                head += 1;
-                            }
-                            //  println!(" {:?}", temp_lexeme);
-                            // parse declaration
-                            stream.append(&mut self.parse_declaration(&temp_lexeme));
-                            temp_lexeme.clear();
-                        }
-                        Identifier => {
-                            //in case of pointer declaration : int *a;
-                            while lexeme[head].get_token_type() != Semicolon {
-                                temp_lexeme.push(lexeme[head].clone());
-                                head += 1;
-                            }
-                            temp_lexeme.push(lexeme[head].clone());
-                            stream.append(&mut self.parse_declaration(&temp_lexeme));
-                            head += 1;
-                            // println!("{}", lexeme[head].get_token_value());
-                            temp_lexeme.clear();
-                        }
-
-                        _ => {}
-                    };
-                }
-
-                // matches if statement
-                (TokenKind::Keyword, KeywordIf) => {
-                    // let mut temp_lexeme: Vec<Token> = Vec::new();
-
-                    // move lookahead past conditon
-                    while lexeme[lookahead].get_token_type() != RightBracket {
-                        lookahead += 1;
-                    }
-                    lookahead += 1;
-
-                    // move lookahead past block
-                    if lexeme[lookahead].get_token_type() == LeftCurlyBrace {
-                        lookahead = skip_block(&lexeme, lookahead + 1);
-                    }
-                    // move lookahead past block for 'if' without braces
-                    else {
-                        lookahead = skip_stmt(&lexeme, lookahead);
-                    }
-                    // collect if block
-                    while head < lookahead {
-                        let l: Token = lexeme[head].clone();
-                        temp_lexeme.push(l);
-                        head += 1;
-                    }
-
-                    // parse if
-                    stream.append(&mut self.parse_if(&temp_lexeme));
-                    temp_lexeme.clear();
-                }
-
-                (TokenKind::Keyword, KeywordElse) => {
-                    stream.push("else".to_string());
-                    head += 1;
-                    lookahead = head;
-                    if lexeme[head].get_token_type() == KeywordIf {
-                        continue;
-                    } else {
-                        if lexeme[lookahead].get_token_type() == LeftCurlyBrace {
-                            head += 1;
-                            lookahead = skip_block(&lexeme, head) - 1;
-                        } else {
-                            lookahead = skip_stmt(&lexeme, lookahead);
-                        }
-
-                        while head < lookahead {
-                            let l: Token = lexeme[head].clone();
-                            temp_lexeme.push(l);
-                            head += 1;
-                        }
-                        //** parse else body
-                        stream.push("{".to_string());
-                        stream.append(&mut self.parse_program(&temp_lexeme));
-                        temp_lexeme.clear();
-                        stream.push("}".to_string());
-                    }
-                }
-
-                (TokenKind::Keyword, KeywordSwitch) => {
-                    while lexeme[lookahead].get_token_type() != LeftCurlyBrace {
-                        lookahead += 1;
-                    }
-                    lookahead += 1;
-
-                    lookahead = skip_block(&lexeme, lookahead);
-                    while head < lookahead {
-                        let l: Token = lexeme[head].clone();
-                        temp_lexeme.push(l);
-                        head += 1;
-                    }
-                    self.in_switch = true;
-
-                    stream.append(&mut self.parse_switch(&temp_lexeme));
-                    temp_lexeme.clear();
-                    self.in_switch = false;
-                }
-
-                (TokenKind::Keyword, KeywordWhile) => {
-                    // let mut temp_lexeme: Vec<Token> = Vec::new();
-
-                    // move lookahead past conditon
-                    while lexeme[lookahead].get_token_type() != RightBracket {
-                        lookahead += 1;
-                    }
-                    lookahead += 1;
-
-                    // move lookahead past block
-                    if lexeme[lookahead].get_token_type() == LeftCurlyBrace {
-                        lookahead = skip_block(&lexeme, lookahead + 1);
-                    }
-                    // move lookahead past block for 'if' without braces
-                    else {
-                        lookahead = skip_stmt(&lexeme, lookahead);
-                    }
-                    // collect if block
-                    while head < lookahead {
-                        let l: Token = lexeme[head].clone();
-                        temp_lexeme.push(l);
-                        head += 1;
-                    }
-
-                    let was_in_switch: bool;
-                    was_in_switch = self.in_switch;
-                    self.in_switch = false;
-
-                    // parse if
-                    stream.append(&mut self.parse_while(&temp_lexeme));
-                    self.in_switch = was_in_switch;
-                    temp_lexeme.clear();
-                }
-
-                // matches do while statement
-                (TokenKind::Keyword, KeywordDo) => {
-                    // move lookahead past block
-                    lookahead = skip_block(&lexeme, lookahead + 2);
-                    lookahead = skip_stmt(&lexeme, lookahead);
-
-                    // collect while block
-                    while head < lookahead {
-                        let l: Token = lexeme[head].clone();
-                        temp_lexeme.push(l);
-                        head += 1;
-                    }
-                    // parse while
-                    let was_in_switch: bool;
-                    was_in_switch = self.in_switch;
-                    self.in_switch = false;
-
-                    stream.append(&mut self.parse_dowhile(&temp_lexeme));
-                    temp_lexeme.clear();
-
-                    self.in_switch = was_in_switch;
-                }
-                (TokenKind::Keyword, Using) => {
-                    stream
-                        .push("//FIXME: Convert the below statement manually,\n/**\n".to_string());
-                    while lexeme[head].get_token_type() != Semicolon {
-                        stream.push(lexeme[head].get_token_value());
-                        head += 1;
-                    }
-                    stream.push(lexeme[head].get_token_value());
-                    stream.push("\n */".to_string());
-                    head += 1;
-                }
-                // matches for statement
-                (_, KeywordFor) => {
-                    while lexeme[lookahead].get_token_type() != LeftCurlyBrace {
-                        lookahead += 1;
-                    }
-                    lookahead += 1;
-                    lookahead = skip_block(&lexeme, lookahead);
-
-                    while head < lookahead {
-                        let l: Token = lexeme[head].clone();
-                        temp_lexeme.push(l);
-                        head += 1;
-                    }
-
-                    let was_in_switch: bool;
-                    was_in_switch = self.in_switch;
-                    self.in_switch = false;
-
-                    stream.append(&mut self.parse_for(&temp_lexeme));
-                    temp_lexeme.clear();
-                    self.in_switch = was_in_switch;
-                }
-
-                // matches single and multi-line comment
-                (TokenKind::Comments, _) => {
-                    stream.push(lexeme[head].get_token_value() + "\n");
-                    head += 1;
-                }
-
-                // assignment statements
-                (_, Identifier) => {
-                    // let mut temp_lexeme: Vec<Token> = Vec::new();
-                    //identifier = expr
-                    //identifier()
-                    //identifier+expr
-                    //identifier OP_INC|OP_DEC; =>postfix
-
-                    match lexeme[head + 1].get_type() {
-                        (TokenKind::Identifiers, Identifier) => {
-                            if self
-                                .typde_def_table
-                                .contains(&lexeme[head].get_token_value())
-                            {
-                                lookahead = skip_stmt(&lexeme, lookahead);
-
-                                // collect variable declaration
-                                while head != lookahead {
-                                    let l: Token = lexeme[head].clone();
-                                    temp_lexeme.push(l);
-                                    head += 1;
+                    if lookahead < lexeme.len() {
+                        match lexeme[lookahead].get_token_type() {
+                            // Function declaration
+                            LeftBracket => {
+                                self.in_block_stmnt = true;
+                                while lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != RightBracket {
+                                    lookahead += 1;
                                 }
-                                //  println!(" {:?}", temp_lexeme);
-                                // parse declaration
-                                stream.append(&mut self.parse_declaration(&temp_lexeme));
-                            } else {
-                                while lexeme[head].get_token_type() != Semicolon {
+                                if lookahead < lexeme.len() {
+                                    lookahead += 1;
+                                }
+
+                                if lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != LeftCurlyBrace {
+                                    lookahead += 1;
+                                }
+                                if lookahead < lexeme.len() {
+                                    lookahead = skip_block(&lexeme, lookahead + 1);
+                                }
+
+                                while head < lookahead {
                                     temp_lexeme.push(lexeme[head].clone());
                                     head += 1;
                                 }
-                                temp_lexeme.push(lexeme[head].clone());
-                                head += 1;
-                                stream.append(&mut self.parse_class_decl(&temp_lexeme));
-                            }
-                            temp_lexeme.clear();
-                        }
-
-                        (TokenKind::AssignmentOperators, Assignment) => {
-                            // move lookahead past statement
-                            if lexeme[head + 3].get_token_type() == Comma {
-                                lookahead = head + 3;
-                                while head < lookahead + 1 {
-                                    let l: Token = lexeme[head].clone();
-                                    temp_lexeme.push(l);
-                                    head += 1;
-                                }
-                                stream.append(&mut self.parse_assignment(&temp_lexeme));
+                                stream.append(&mut self.parse_function(&temp_lexeme));
                                 temp_lexeme.clear();
-                            } else {
+                                self.in_block_stmnt = false;
+                            }
+
+                            // Array declaration
+                            LeftSquareBracket => {
                                 lookahead = skip_stmt(&lexeme, lookahead);
-                                // collect statement
-                                while head < lookahead {
-                                    let l: Token = lexeme[head].clone();
-                                    temp_lexeme.push(l);
+                                while head != lookahead && head < lexeme.len() {
+                                    temp_lexeme.push(lexeme[head].clone());
                                     head += 1;
                                 }
-
-                                // parse assignment
-                                stream.append(&mut self.parse_assignment(&temp_lexeme));
+                                stream.append(&mut self.parse_array_declaration(&temp_lexeme));
                                 temp_lexeme.clear();
                             }
-                        }
-                        (TokenKind::UnaryOperators, _) => {
-                            if self.in_expr != true {
-                                stream.push(lexeme[head].get_token_value());
-                                stream.push(match lexeme[head + 1].get_token_type() {
-                                    Increment => "+=1".to_string(),
-                                    Decrement => "-=1".to_string(),
-                                    _ => " ;".to_string(),
-                                });
-                                head += 2;
-                            } else {
-                                head += 2;
-                            }
-                        }
-                        (TokenKind::BinaryOperators, _) => {
-                            lookahead = skip_stmt(&lexeme, lookahead);
 
-                            //check if overloaded operators is in effect like << >>
-                            if lexeme[head + 2].get_token_type() == StringValue
-                                || lexeme[head + 2].get_token_type() == CharValue
-                            {
-                                stream.push(
-                                    "\n//This statement need to be handled manually \n".to_string(),
-                                );
-                                while head < lookahead {
-                                    stream.push(lexeme[head].get_token_value());
+                            // Variable declaration or declaration + assignment
+                            Semicolon | Comma | Assignment => {
+                                lookahead = skip_stmt(&lexeme, lookahead);
+                                while head != lookahead && head < lexeme.len() {
+                                    temp_lexeme.push(lexeme[head].clone());
                                     head += 1;
                                 }
-                            } else {
-                                // move lookahead past statement
-                                // collect statement
-                                while head < lookahead {
-                                    let l: Token = lexeme[head].clone();
-                                    temp_lexeme.push(l);
-                                    head += 1;
-                                }
-
-                                // parse assignment
-                                stream.append(&mut self.parse_expr(&temp_lexeme));
+                                stream.append(&mut self.parse_declaration(&temp_lexeme));
                                 temp_lexeme.clear();
                             }
-                        }
-                        (TokenKind::SpecialChars, LeftBracket) => {
-                            while lexeme[head].get_token_type() != RightBracket {
-                                stream.push(lexeme[head].get_token_value());
+
+                            // Pointer declaration: int *a;
+                            Identifier => {
+                                while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                                    temp_lexeme.push(lexeme[head].clone());
+                                    head += 1;
+                                }
+                                if head < lexeme.len() {
+                                    temp_lexeme.push(lexeme[head].clone());
+                                    stream.append(&mut self.parse_declaration(&temp_lexeme));
+                                    head += 1;
+                                }
+                                temp_lexeme.clear();
+                            }
+
+                            _ => {
                                 head += 1;
                             }
-                            stream.push(lexeme[head].get_token_value());
-                            head += 1;
                         }
-                        // a -> x->y(); ==> a.x.y()
-                        (TokenKind::SpecialChars, Arrow) => {
-                            //insert the previous identifier token
-                            stream.push(lexeme[head].get_token_value());
-                            stream.push(".".to_string());
-                            head += 2;
-                        }
-                        // (_, LEFT_SBRACKET) => {
-                        //     while lexeme[head].get_token_type() != RIGHT_SBRACKET {
-                        //         stream.push(lexeme[head].get_token_value());
-                        //         head += 1;
-                        //     }
-                        //     stream.push(lexeme[head].get)
-                        // }
-                        (_, _) => {
-                            if lexeme[head].get_token_type() != RightCurlyBrace {
-                                stream.push(lexeme[head].get_token_value());
-                            }
-                            head += 1;
-                        }
-                    };
+                    } else {
+                        head += 1;
+                    }
+                    continue;
                 }
+                _ => {}
+            }
 
-                (TokenKind::UnaryOperators, _) => {
+            // Handle identifier statements (assignments, function calls, etc.)
+            if matches!(lexeme[head].get_type(), (_, Identifier)) {
+                if head + 1 < lexeme.len() {
+                    head = self.parse_identifier_statement(lexeme, head, &mut stream);
+                    continue;
+                }
+            }
+
+            // Handle unary operators
+            if head + 1 < lexeme.len() && matches!(lexeme[head].get_type(), (TokenKind::UnaryOperators, _)) {
+                if head + 1 < lexeme.len() {
                     stream.push(lexeme[head + 1].get_token_value());
                     stream.push(match lexeme[head].get_token_type() {
                         Increment => "+=1".to_string(),
@@ -528,159 +251,493 @@ impl Parser {
                         _ => " ;".to_string(),
                     });
                     head += 2;
+                } else {
+                    head += 1;
+                }
+                continue;
+            }
+
+            // Handle comments
+            if matches!(lexeme[head].get_type(), (TokenKind::Comments, _)) {
+                stream.push(lexeme[head].get_token_value() + "\n");
+                head += 1;
+                continue;
+            }
+
+            // Handle return statements
+            if matches!(lexeme[head].get_type(), (_, KeywordReturn)) {
+                let mut t = head;
+                stream.push(NO_RETURN.get_doc().to_string());
+
+                while t < lexeme.len() && lexeme[t].get_token_type() != Semicolon {
+                    t += 1;
                 }
 
-                (_, KeywordStruct) => {
-                    if lexeme[head + 2].get_token_type() == LeftCurlyBrace {
-                        //struct A{};
-                        while lexeme[head].get_token_type() != RightCurlyBrace {
-                            temp_lexeme.push(lexeme[head].clone());
+                if t < lexeme.len() && t != lexeme.len() - 1 {
+                    while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                        stream.push(lexeme[head].get_token_value());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
+                        stream.push(lexeme[head].get_token_value());
+                        head += 1;
+                    }
+                } else {
+                    head += 1;
+                    if self.in_main {
+                        stream.push("std::process::exit(".to_string());
+                        while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                            stream.push(lexeme[head].get_token_value());
                             head += 1;
                         }
-                        //push the right curly brace
+                        stream.push(");".to_string());
+                    } else {
+                        while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                            stream.push(lexeme[head].get_token_value());
+                            head += 1;
+                        }
+                    }
+                    if head < lexeme.len() {
+                        head += 1;
+                    }
+                }
+                continue;
+            }
+
+            // Handle header include
+            if matches!(lexeme[head].get_type(), (_, HeaderInclude)) {
+                if !self.once_warned {
+                    stream.push(INCLUDE_STMT.get_doc().to_string());
+                } else if !stream.is_empty() {
+                    stream.pop();
+                    stream.push("* >>>>>>>>".to_string());
+                }
+
+                while head < lexeme.len() && lexeme[head].get_token_type() != GreaterThan {
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+                if head < lexeme.len() && lexeme[head].get_token_type() == GreaterThan {
+                    stream.push(lexeme[head].get_token_value() + "\n");
+                    head += 1;
+                }
+                stream.push("**/\n".to_string());
+                self.once_warned = true;
+                continue;
+            }
+
+            // Handle using statements
+            if matches!(lexeme[head].get_type(), (TokenKind::Keyword, Using)) {
+                stream.push("//FIXME: Convert the below statement manually,\n/**\n".to_string());
+                while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+                if head < lexeme.len() {
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+                stream.push("\n */".to_string());
+                continue;
+            }
+
+            // Catch-all for unhandled tokens
+            if head < lexeme.len() && lexeme[head].get_token_type() != RightCurlyBrace {
+                if lexeme[head].get_token_type() == Comma {
+                    stream.push(";".to_string());
+                } else if lexeme[head].get_token_type() == KeywordBreak {
+                    if !self.in_switch {
+                        stream.push(lexeme[head].get_token_value());
+                    }
+                } else {
+                    stream.push(lexeme[head].get_token_value());
+                }
+            }
+            head += 1;
+        }
+
+        stream
+    }
+
+    /**
+     * parse_control_flow_statement:
+     * Handle control flow statements: if, else, while, do-while, for, switch
+     * Returns the updated head position
+     */
+    fn parse_control_flow_statement(&mut self, lexeme: &[Token], mut head: usize, stream: &mut Vec<String>) -> usize {
+        let mut lookahead = head;
+        let mut temp_lexeme: Vec<Token> = Vec::new();
+
+        match lexeme[head].get_type() {
+            (TokenKind::Keyword, KeywordIf) => {
+                // move lookahead past condition
+                while lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != RightBracket {
+                    lookahead += 1;
+                }
+                if lookahead < lexeme.len() {
+                    lookahead += 1;
+                }
+
+                // move lookahead past block
+                if lookahead < lexeme.len() && lexeme[lookahead].get_token_type() == LeftCurlyBrace {
+                    lookahead = skip_block(&lexeme, lookahead + 1);
+                } else {
+                    lookahead = skip_stmt(&lexeme, lookahead);
+                }
+                // collect if block
+                while head < lookahead && head < lexeme.len() {
+                    temp_lexeme.push(lexeme[head].clone());
+                    head += 1;
+                }
+                stream.append(&mut self.parse_if(&temp_lexeme));
+            }
+
+            (TokenKind::Keyword, KeywordElse) => {
+                stream.push("else".to_string());
+                head += 1;
+                lookahead = head;
+                if lookahead < lexeme.len() && lexeme[head].get_token_type() == KeywordIf {
+                    return head;
+                } else {
+                    if lookahead < lexeme.len() && lexeme[lookahead].get_token_type() == LeftCurlyBrace {
+                        head += 1;
+                        lookahead = skip_block(&lexeme, head);
+                        if lookahead > 0 {
+                            lookahead -= 1;
+                        }
+                    } else {
+                        lookahead = skip_stmt(&lexeme, lookahead);
+                    }
+
+                    while head < lookahead && head < lexeme.len() {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    stream.push("{".to_string());
+                    stream.append(&mut self.parse_program(&temp_lexeme));
+                    stream.push("}".to_string());
+                }
+            }
+
+            (TokenKind::Keyword, KeywordSwitch) => {
+                while lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != LeftCurlyBrace {
+                    lookahead += 1;
+                }
+                if lookahead < lexeme.len() {
+                    lookahead += 1;
+                }
+                lookahead = skip_block(&lexeme, lookahead);
+                while head < lookahead && head < lexeme.len() {
+                    temp_lexeme.push(lexeme[head].clone());
+                    head += 1;
+                }
+                self.in_switch = true;
+                stream.append(&mut self.parse_switch(&temp_lexeme));
+                self.in_switch = false;
+            }
+
+            (TokenKind::Keyword, KeywordWhile) => {
+                // move lookahead past condition
+                while lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != RightBracket {
+                    lookahead += 1;
+                }
+                if lookahead < lexeme.len() {
+                    lookahead += 1;
+                }
+
+                // move lookahead past block
+                if lookahead < lexeme.len() && lexeme[lookahead].get_token_type() == LeftCurlyBrace {
+                    lookahead = skip_block(&lexeme, lookahead + 1);
+                } else {
+                    lookahead = skip_stmt(&lexeme, lookahead);
+                }
+                // collect while block
+                while head < lookahead && head < lexeme.len() {
+                    temp_lexeme.push(lexeme[head].clone());
+                    head += 1;
+                }
+
+                let was_in_switch = self.in_switch;
+                self.in_switch = false;
+                stream.append(&mut self.parse_while(&temp_lexeme));
+                self.in_switch = was_in_switch;
+            }
+
+            (TokenKind::Keyword, KeywordDo) => {
+                // move lookahead past block
+                lookahead = skip_block(&lexeme, lookahead + 2);
+                lookahead = skip_stmt(&lexeme, lookahead);
+
+                // collect dowhile block
+                while head < lookahead && head < lexeme.len() {
+                    temp_lexeme.push(lexeme[head].clone());
+                    head += 1;
+                }
+
+                let was_in_switch = self.in_switch;
+                self.in_switch = false;
+                stream.append(&mut self.parse_dowhile(&temp_lexeme));
+                self.in_switch = was_in_switch;
+            }
+
+            (_, KeywordFor) => {
+                while lookahead < lexeme.len() && lexeme[lookahead].get_token_type() != LeftCurlyBrace {
+                    lookahead += 1;
+                }
+                if lookahead < lexeme.len() {
+                    lookahead += 1;
+                }
+                lookahead = skip_block(&lexeme, lookahead);
+
+                while head < lookahead && head < lexeme.len() {
+                    temp_lexeme.push(lexeme[head].clone());
+                    head += 1;
+                }
+
+                let was_in_switch = self.in_switch;
+                self.in_switch = false;
+                stream.append(&mut self.parse_for(&temp_lexeme));
+                self.in_switch = was_in_switch;
+            }
+
+            _ => {}
+        }
+
+        head
+    }
+
+    /**
+     * parse_type_definition:
+     * Handle type definitions: struct, union, class, enum
+     * Returns the updated head position
+     */
+    fn parse_type_definition(&mut self, lexeme: &[Token], mut head: usize, stream: &mut Vec<String>) -> usize {
+        let mut temp_lexeme: Vec<Token> = Vec::new();
+
+        match lexeme[head].get_type() {
+            (_, KeywordStruct) => {
+                if head + 2 < lexeme.len() && lexeme[head + 2].get_token_type() == LeftCurlyBrace {
+                    // Struct definition
+                    while head < lexeme.len() && lexeme[head].get_token_type() != RightCurlyBrace {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
                         temp_lexeme.push(lexeme[head].clone());
                         stream.append(&mut self.parse_struct(&temp_lexeme));
                         temp_lexeme.clear();
-                        head += 2; //skip semicolon
-                    } else {
-                        //struct variable declaration
-
-                        while lexeme[head].get_token_type() != Semicolon {
-                            temp_lexeme.push(lexeme[head].clone());
-                            head += 1;
+                        head += 1;
+                        if head < lexeme.len() {
+                            head += 1; // skip semicolon
                         }
+                    }
+                } else {
+                    // Struct variable declaration
+                    while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
                         temp_lexeme.push(lexeme[head].clone());
                         head += 1;
                         stream.append(&mut self.parse_struct_decl(&temp_lexeme));
                         temp_lexeme.clear();
                     }
                 }
+            }
 
-                (_, KeywordUnion) => {
-                    if lexeme[head + 2].get_token_type() == LeftCurlyBrace {
-                        stream.push(UNION.get_doc().to_string());
-                        //struct A{};
-                        while lexeme[head].get_token_type() != RightCurlyBrace {
-                            temp_lexeme.push(lexeme[head].clone());
-                            head += 1;
-                        }
-                        //push the right curly brace
+            (_, KeywordUnion) => {
+                if head + 2 < lexeme.len() && lexeme[head + 2].get_token_type() == LeftCurlyBrace {
+                    // Union definition
+                    stream.push(UNION.get_doc().to_string());
+                    while head < lexeme.len() && lexeme[head].get_token_type() != RightCurlyBrace {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
                         temp_lexeme.push(lexeme[head].clone());
                         stream.append(&mut self.parse_union(&temp_lexeme));
                         temp_lexeme.clear();
-                        head += 2; //skip semicolon
-                    } else {
-                        //struct variable declaration
-
-                        while lexeme[head].get_token_type() != Semicolon {
-                            temp_lexeme.push(lexeme[head].clone());
-                            head += 1;
+                        head += 1;
+                        if head < lexeme.len() {
+                            head += 1; // skip semicolon
                         }
+                    }
+                } else {
+                    // Union variable declaration
+                    while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
                         temp_lexeme.push(lexeme[head].clone());
                         head += 1;
                         stream.append(&mut self.parse_union_decl(&temp_lexeme));
                         temp_lexeme.clear();
                     }
                 }
+            }
 
-                (_, KeywordClass) => {
-                    if lexeme[head + 2].get_token_type() == LeftCurlyBrace {
-                        //struct A{};
-                        while lexeme[head].get_token_type() != RightCurlyBrace
-                            || lexeme[head + 1].get_token_type() != Semicolon
-                        {
-                            temp_lexeme.push(lexeme[head].clone());
-                            head += 1;
-                        }
-
-                        //push the right curly brace
+            (_, KeywordClass) => {
+                if head + 2 < lexeme.len() && lexeme[head + 2].get_token_type() == LeftCurlyBrace {
+                    // Class definition
+                    while head + 1 < lexeme.len() && (lexeme[head].get_token_type() != RightCurlyBrace
+                        || lexeme[head + 1].get_token_type() != Semicolon)
+                    {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
                         temp_lexeme.push(lexeme[head].clone());
                         stream.append(&mut self.parse_class(&temp_lexeme));
                         temp_lexeme.clear();
-                        head += 2; //skip semicolon
-                    }
-                }
-
-                (_, KeywordEnum) => {
-                    while lexeme[head].get_token_type() != Semicolon {
-                        stream.push(lexeme[head].get_token_value());
                         head += 1;
-                    }
-                    head += 1;
-                }
-                (_, KeywordReturn) => {
-                    let mut t = head;
-                    stream.push(NO_RETURN.get_doc().to_string());
-
-                    while lexeme[t].get_token_type() != Semicolon {
-                        t += 1;
-                    }
-
-                    if t != lexeme.len() - 1 {
-                        while lexeme[head].get_token_type() != Semicolon {
-                            // println!("{:?}", lexeme[head]);
-
-                            stream.push(lexeme[head].get_token_value());
-                            head += 1;
-                        }
-                        stream.push(lexeme[head].get_token_value());
-                        head += 1;
-                    } else {
-                        //convert to shorthand notation
-                        head += 1;
-                        if self.in_main {
-                            stream.push("std::process::exit(".to_string());
-                            while lexeme[head].get_token_type() != Semicolon {
-                                stream.push(lexeme[head].get_token_value());
-                                head += 1;
-                            }
-                            stream.push(");".to_string());
-                        } else {
-                            while lexeme[head].get_token_type() != Semicolon {
-                                stream.push(lexeme[head].get_token_value());
-                                head += 1;
-                            }
-                        }
-                        head += 1;
-                    }
-                }
-                (_, HeaderInclude) => {
-                    if !self.once_warned {
-                        stream.push(INCLUDE_STMT.get_doc().to_string());
-                    } else {
-                        stream.pop();
-                        stream.push("* >>>>>>>>".to_string());
-                    }
-
-                    while lexeme[head].get_token_type() != GreaterThan {
-                        stream.push(lexeme[head].get_token_value());
-                        head += 1;
-                    }
-                    stream.push(lexeme[head].get_token_value() + "\n");
-                    stream.push("**/\n".to_string());
-                    head += 1;
-
-                    self.once_warned = true;
-                }
-                // if all fails
-                (_, _) => {
-                    if lexeme[head].get_token_type() != RightCurlyBrace {
-                        if lexeme[head].get_token_type() == Comma {
-                            stream.push(";".to_string());
-                        } else if lexeme[head].get_token_type() == KeywordBreak {
-                            if !self.in_switch {
-                                stream.push(lexeme[head].get_token_value());
-                            }
-                        } else {
-                            stream.push(lexeme[head].get_token_value());
+                        if head < lexeme.len() {
+                            head += 1; // skip semicolon
                         }
                     }
+                }
+            }
+
+            (_, KeywordEnum) => {
+                while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                    stream.push(lexeme[head].get_token_value());
                     head += 1;
                 }
-            };
+                if head < lexeme.len() {
+                    head += 1;
+                }
+            }
+
+            _ => {}
         }
-        //return the rust lexeme to main
-        stream
+
+        head
+    }
+
+    /**
+     * parse_identifier_statement:
+     * Handle identifier-based statements: assignments, function calls, operators
+     * Returns the updated head position
+     */
+    fn parse_identifier_statement(&mut self, lexeme: &[Token], mut head: usize, stream: &mut Vec<String>) -> usize {
+        if head + 1 >= lexeme.len() {
+            return head + 1;
+        }
+
+        let mut lookahead = head;
+        let mut temp_lexeme: Vec<Token> = Vec::new();
+
+        match lexeme[head + 1].get_type() {
+            (TokenKind::Identifiers, Identifier) => {
+                if self.typde_def_table.contains(&lexeme[head].get_token_value()) {
+                    // User-defined type declaration
+                    lookahead = skip_stmt(&lexeme, lookahead);
+                    while head != lookahead && head < lexeme.len() {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    stream.append(&mut self.parse_declaration(&temp_lexeme));
+                    temp_lexeme.clear();
+                } else {
+                    // Class instantiation
+                    while head < lexeme.len() && lexeme[head].get_token_type() != Semicolon {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    if head < lexeme.len() {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                        stream.append(&mut self.parse_class_decl(&temp_lexeme));
+                        temp_lexeme.clear();
+                    }
+                }
+            }
+
+            (TokenKind::AssignmentOperators, Assignment) => {
+                // Assignment statement
+                if head + 3 < lexeme.len() && lexeme[head + 3].get_token_type() == Comma {
+                    lookahead = head + 3;
+                    while head < lookahead + 1 && head < lexeme.len() {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    stream.append(&mut self.parse_assignment(&temp_lexeme));
+                    temp_lexeme.clear();
+                } else {
+                    lookahead = skip_stmt(&lexeme, lookahead);
+                    while head < lookahead && head < lexeme.len() {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    stream.append(&mut self.parse_assignment(&temp_lexeme));
+                    temp_lexeme.clear();
+                }
+            }
+
+            (TokenKind::UnaryOperators, _) => {
+                if !self.in_expr {
+                    stream.push(lexeme[head].get_token_value());
+                    stream.push(match lexeme[head + 1].get_token_type() {
+                        Increment => "+=1".to_string(),
+                        Decrement => "-=1".to_string(),
+                        _ => " ;".to_string(),
+                    });
+                    head += 2;
+                } else {
+                    head += 2;
+                }
+            }
+
+            (TokenKind::BinaryOperators, _) => {
+                // Binary operator expression
+                lookahead = skip_stmt(&lexeme, lookahead);
+                if head + 2 < lexeme.len() && (lexeme[head + 2].get_token_type() == StringValue
+                    || lexeme[head + 2].get_token_type() == CharValue)
+                {
+                    stream.push("\n//This statement need to be handled manually \n".to_string());
+                    while head < lookahead && head < lexeme.len() {
+                        stream.push(lexeme[head].get_token_value());
+                        head += 1;
+                    }
+                } else {
+                    while head < lookahead && head < lexeme.len() {
+                        temp_lexeme.push(lexeme[head].clone());
+                        head += 1;
+                    }
+                    stream.append(&mut self.parse_expr(&temp_lexeme));
+                    temp_lexeme.clear();
+                }
+            }
+
+            (TokenKind::SpecialChars, LeftBracket) => {
+                // Function call
+                while head < lexeme.len() && lexeme[head].get_token_type() != RightBracket {
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+                if head < lexeme.len() {
+                    stream.push(lexeme[head].get_token_value());
+                    head += 1;
+                }
+            }
+
+            (TokenKind::SpecialChars, Arrow) => {
+                // Arrow operator: a->x ==> a.x
+                stream.push(lexeme[head].get_token_value());
+                stream.push(".".to_string());
+                head += 2;
+            }
+
+            (_, _) => {
+                if head < lexeme.len() && lexeme[head].get_token_type() != RightCurlyBrace {
+                    stream.push(lexeme[head].get_token_value());
+                }
+                head += 1;
+            }
+        }
+
+        head
     }
 
     /**
