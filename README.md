@@ -1,83 +1,172 @@
 # [CRUST](https://nishanthspshetty.github.io/crust/)
 
-![Build](https://github.com/nishanthspshetty/crust/actions/workflows/crust.yml/badge.svg)
+[![Build Status](https://github.com/nishanthspshetty/crust/actions/workflows/crust.yml/badge.svg)](https://github.com/nishanthspshetty/crust/actions/workflows/crust.yml)
+[![Coverage Status](https://img.shields.io/badge/coverage-NA-lightgrey)](https://github.com/nishanthspshetty/crust)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 ## C/C++ to Rust Transpiler
 
-C++ is a system programming language widely used in development of operating systems,  firmwares, device drivers and in application development. Major drawback with C++ or any other system programming language is memory safety, null pointers and dangling pointers, which are very dangerous if not handled properly by the programmer. The programming language *Rust* is system programming language which provides the safe and secure programming with highly enforced compiler restrictions with zero cost abstraction.
+CRUST is a command-line transpiler that converts C/C++ syntax into Rust code.
+It aims to reduce migration effort while preserving semantics with safe, auditable output.
+
+### Highlights
+
+- Converts declarations, assignments, and basic expressions
+- Supports control flow: `if` / `if-else`, `while`, `for`, `switch`
+- Handles basic struct/union/class definitions
+- Preserves comments and outputs warning markers for unsupported constructs
+- Strict (`-s`) vs loose mode (default) semantics for variable mutability
+
+> Works best for small/medium C++ code slices. Complex constructs (templates, macros, function pointers) are partially supported and may require manual adjustments.
 
 ---
 
-This tool is intended to translate existing C++ code base into Rust with less effort.
-May require manual lookup or minute edit to the translated code.
+## Visual Preview
+
+![CRUST Workflow Example](https://user-images.githubusercontent.com/000000/placeholder-screen.png)
+
+> Replace with actual screenshot path or GitHub-hosted asset when available.
 
 ---
 
-## Usage
+## Quick Start
 
-First, make sure you are setup for Rust development. Check out [http://www.rust-lang.org](http://www.rust-lang.org) for more information. The installation sets up the Rust compiler and Cargo package management system. Also, it adds `rustc` and `cargo` commands to your PATH variable.
+### 1) Install Rust
 
-Now that you're setup for rust. Open any suitable terminal and `cd` into the crust directory
-
-Run `cargo build` to compile the entire project and download some dependencies.
-
-Now, you may test out CRUST using some of the examples in the example folder as follows:
-`cargo run`
-
-The program asks for the C/C++ file to be converted to Rust (Enter the path relative to the current location):
-```
-Enter the C/C++ file to be converted to Rust : examples/prog.cpp
-```
-Next, enter the translation mode, Strict or Loose (default is Loose). Strict mode assumes all variables to be immutable and Loose mode makes all variables mutable.
-
-It also asks whether the program should be converted into a cargo project. It essentially sets up the program into a project with package management. Check out [http://doc.crates.io/](http://doc.crates.io/) for more information.
-```
-Enter the translation mode [(S/s)trict/(L/l)oose] : l
-Do you want to create a cargo project :[Y/N] n
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source $HOME/.cargo/env
+rustc --version
 ```
 
-Now, it completes the translation and shows where the translated file is stored
+### 2) Clone the repository
+
+```bash
+git clone https://github.com/nishanthspshetty/crust.git
+cd crust
 ```
-Input file size : 177bytes
-Tokenizing.......       :DONE
-Invoking Parser ........        :DONE
-Rust equivalent of source of `examples/prog.cpp` is generated successfully, View the rust code in file : ./examples/pro
-g.rs
+
+### 3) Build
+
+```bash
+cargo build
+```
+
+### 4) Run
+
+```bash
+cargo run -- examples/prog.cpp
+```
+
+Interactive prompts:
+
+- `Enter the C/C++ file to be converted to Rust : examples/prog.cpp`
+- `Enter the translation mode [(S/s)trict/(L/l)oose] : l`
+- `Do you want to create a cargo project :[Y/N] n`
+
+Output is written to `examples/prog.rs` by default (or `<project>/src/main.rs` if project creation is selected).
+
+---
+
+## CLI Options
+
+```bash
+cargo run -- -s -p myproj examples/main.cpp
+```
+
+- `-s`, `--strict`: strict mode (immutable bindings)
+- `-p`, `--project-name`: create a new Cargo project and write to `project/src/main.rs`
+- `-h`, `--help`: display usage information
+
+---
+
+## Testing
+
+Run the full test suite:
+
+```bash
+cargo test
+```
+
+Key test locations:
+
+- `src/library/parser/parser_test.rs`
+- `src/library/lexer/tokenizer/*`
+
+### Recent test additions
+
+- full expression output validation for declarations and expressions
+- parser bounds-safe checks to avoid index panics
+- strict/loose mode behavior tests
+
+---
+
+## Developer Documentation
+
+### Architecture
+
+- `src/main.rs`: CLI + orchestration + file I/O
+- `src/library/lexer`: tokenization pipeline
+- `src/library/parser`: recursive descent translation engine
+
+### Parser flow
+
+1. Tokenize input into `Vec<Token>`
+2. `init_parser` processes with `Parser` state
+3. `parse_program` dispatches to specialized handlers (control flow, types, assignments)
+4. Build Rust token stream and output text
+
+### Coding standards
+
+- avoid `Vec` cloning; use `&[Token]` slices
+- avoid `expect` in parser production paths; use `Result` with structured errors next
+- enforce `cargo fmt`, `cargo clippy`
+
+### Local dev workflow
+
+```bash
+cargo test
+cargo fmt --all
+cargo clippy -- -D warnings
 ```
 
 ---
 
-Alternatively, you may generate an executable similar to C executable as follows:
+## Supported Features
 
-`cargo build --release`
+- Types: `int`, `float`, `char`, `const`, `unsigned`, pointers
+- Control structures: `if`, `if-else`, `while`, `for`, `switch`
+- `typedef`, `struct`, `union`, `class`, `enum`
+- Comments preserved (as `//` or `/* */` blocks)
 
-This generates an executable, `/target/release/crust` which can be moved anywhere and run anytime using:
-`./crust`
+## Limitations
 
-While executing this binary, the following options are available:
-
-```
-Options:
-    -s, --strict        Strict mode (immutable)
-    -p, --project-name  Cargo project name
-    -h, --help          show this help message
-```
-
-Note that if the strict options are not applied, it implies loose mode.
-
-Same options are available using the `cargo run --` command. Options to CRUST must be entered after the `--`, while options to cargo must be entered before the `--`. It's just easier to use the executable.
+- templates, generic C++ constructs
+- function pointers and functors
+- macros with preprocessor logic
+- comprehensive standard library conversion (e.g., iostream / std::vector)
 
 ---
 
-## I will
-1. convert the given C/C++ file with basic language construct into Rust.
-2. preserve the comments,
-3. run the formatter on the generated code.
-4. Convert to rust shorthand notion for return values.
-5. document section where i failed to convert leaving out the original code as is.
+## Release Notes (latest)
 
-## I (haven't implemented the parser for all features of C/C++), so I cant
-1. convert the included header files yet.
-2. convert function pointers yet.
-3. analyse the types and choose an efficient type.
+- fixed Cargo metadata (`exclude` in `[package]`)
+- enabled robust parser bounds safety
+- added full-expression tests for parser outputs
+- expanded README with user + developer details, badges, screenshot placeholder
 
+---
+
+## Contributing
+
+1. Fork repository
+2. branch: `feature/<name>`
+3. Add/update tests in `src/library/parser/parser_test.rs`
+4. `cargo test` and `cargo fmt`
+5. PR with summary of behavior regressions/improvements
+
+---
+
+## License
+
+MIT
