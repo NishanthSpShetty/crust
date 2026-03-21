@@ -21,14 +21,6 @@ It aims to reduce migration effort while preserving semantics with safe, auditab
 
 ---
 
-## Visual Preview
-
-![CRUST Workflow Example](https://user-images.githubusercontent.com/000000/placeholder-screen.png)
-
-> Replace with actual screenshot path or GitHub-hosted asset when available.
-
----
-
 ## Quick Start
 
 ### 1) Install Rust
