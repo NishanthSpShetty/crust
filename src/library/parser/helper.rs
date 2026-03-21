@@ -6,7 +6,7 @@ use crate::library::lexeme::token::Token;
  * forwards the lookahead by one statement
  * returns the lookahead at the lexeme after the semi-colon
  */
-pub fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
+pub fn skip_stmt(lexeme: &[Token], mut lookahead: usize) -> usize {
     while lexeme[lookahead].get_token_type() != Semicolon {
         lookahead += 1;
     }
@@ -18,7 +18,7 @@ pub fn skip_stmt(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
  * forwards the lookahead by one block
  * returns the lookahead at the lexeme after the closing brace
  */
-pub fn skip_block(lexeme: &Vec<Token>, mut lookahead: usize) -> usize {
+pub fn skip_block(lexeme: &[Token], mut lookahead: usize) -> usize {
     let mut paren = 1;
 
     // while all braces are not closed

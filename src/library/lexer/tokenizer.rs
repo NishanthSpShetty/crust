@@ -16,7 +16,7 @@ pub struct Tokenizer<'a> {
 }
 
 impl<'a> Tokenizer<'a> {
-    pub fn new(text: &str) -> Tokenizer {
+    pub fn new(text: &str) -> Tokenizer<'_> {
         let token_vec: Vec<char> = Vec::new();
         let token_stream: Vec<Token> = Vec::new();
 

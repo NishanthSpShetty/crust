@@ -71,7 +71,7 @@ struct Parser {
     typde_def_table: Vec<String>,
 }
 
-pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
+pub fn init_parser(lexeme: &[Token], strict_parser: bool) -> Vec<String> {
     let mut stream: Vec<String> = Vec::new();
     stream.push(CRUST.get_doc().to_string());
 
@@ -92,7 +92,7 @@ pub fn init_parser(lexeme: &Vec<Token>, strict_parser: bool) -> Vec<String> {
 }
 
 impl Parser {
-    fn parse_program(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_program(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         let mut lookahead: usize;
@@ -645,7 +645,7 @@ impl Parser {
                     }
                 }
                 (_, HeaderInclude) => {
-                    if self.once_warned == false {
+                    if !self.once_warned {
                         stream.push(INCLUDE_STMT.get_doc().to_string());
                     } else {
                         stream.pop();
@@ -688,7 +688,7 @@ impl Parser {
      * prints the lexemes in the lexeme vector
      * from index start to end
      */
-    fn print_lexemes(lexeme: &Vec<Token>, start: usize, end: usize) {
+    fn print_lexemes(lexeme: &[Token], start: usize, end: usize) {
         println!("----------lexeme-start------------");
         for i in start..end {
             println!("{}", lexeme[i]);
@@ -700,7 +700,7 @@ impl Parser {
      * parse_function:
      * parse c/c++ function into rust equivalent function
      */
-    fn parse_function(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_function(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut temp_lexeme: Vec<Token> = Vec::new();
         let mut head: usize;
         let mut lookahead: usize = 1;
@@ -777,7 +777,7 @@ impl Parser {
             stream.push(")".to_string());
             stream.push("{".to_string());
             if lexeme[head].get_token_type() != RightBracket {
-                if self.strict == false {
+                if !self.strict {
                     stream.push(NO_STRICT.get_doc().to_string());
                     stream.push("let mut argv: Vec<_> = std::env::args().collect();".to_string());
                     stream.push("let mut argc = argv.len();".to_string());
@@ -816,7 +816,7 @@ impl Parser {
      * parse c/c++ formal arguments in the function signature
      * into rust equivalent arguments
      */
-    fn parse_arguments(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_arguments(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         let mut temp_lexeme: Vec<Token> = Vec::new();
@@ -839,7 +839,7 @@ impl Parser {
         }
         stream
     }
-    fn parse_argument_declaration(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_argument_declaration(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut is_const = false;
         let mut typ_index = 0;
@@ -886,7 +886,7 @@ impl Parser {
      * parse_declaration:
      * parse c/c++ declaration into rust
      * equivalent statements */
-    fn parse_declaration(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_declaration(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
 
         //  let mut sym_tab: Vec<SymbolTable> = Vec::new();
@@ -939,7 +939,7 @@ impl Parser {
                     sym.assigned_val = "".to_string();
                     head += 1;
                     let mut br = 0;
-                    if sym.is_ptr == true {
+                    if sym.is_ptr {
                         if lexeme[head].get_token_type() == Null {
                             while lexeme[head].get_token_type() != Semicolon
                                 && lexeme[head].get_token_type() != Comma
@@ -994,7 +994,7 @@ impl Parser {
             head += 1;
         }
 
-        if self.strict == false {
+        if !self.strict {
             stream.push(NO_STRICT.get_doc().to_string());
         } else {
             stream.push(STRICT.get_doc().to_string());
@@ -1011,14 +1011,14 @@ impl Parser {
                     stream.push("const".to_string());
                 }
                 _ => {
-                    if self.strict == false {
-                        if self.in_block_stmnt == true {
+                    if !self.strict {
+                        if self.in_block_stmnt {
                             stream.push("let mut".to_string());
                         } else {
                             stream.push("static mut".to_string());
                         }
                     } else {
-                        if self.in_block_stmnt == true {
+                        if self.in_block_stmnt {
                             stream.push("let".to_string());
                         } else {
                             stream.push("static".to_string());
@@ -1053,10 +1053,10 @@ impl Parser {
             // take care of assignment
             if i.is_assigned {
                 stream.push("=".to_string());
-                if i.is_ptr == true {
+                if i.is_ptr {
                     stream.push("&".to_string());
                 }
-                if self.strict == false && i.is_ptr == true {
+                if !self.strict && i.is_ptr {
                     stream.push("mut".to_string());
                 }
 
@@ -1070,7 +1070,7 @@ impl Parser {
     /* parse simple typedef definition of form
      * typedef typename newtype;
      */
-    fn parse_typdef(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_typdef(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         stream.push("type".to_string());
         stream.push(lexeme[2].get_token_value() + "=");
@@ -1089,7 +1089,7 @@ impl Parser {
      * parse c/c++ if statements into rust
      * equivalent statements
      */
-    fn parse_if(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_if(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
 
@@ -1133,7 +1133,7 @@ impl Parser {
      * parse c/c++ while statements into rust
      * equivalent statements
      */
-    fn parse_while(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_while(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         let mut no_cond = false;
@@ -1189,7 +1189,7 @@ impl Parser {
      * parse c/c++ do while statements into rust
      * equivalent statements
      */
-    fn parse_dowhile(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_dowhile(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut temp_stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
@@ -1240,7 +1240,7 @@ impl Parser {
         stream
     }
 
-    fn parse_switch(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_switch(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut head: usize = 2;
         let mut lookahead: usize = 2;
         let mut stream: Vec<String> = Vec::new();
@@ -1287,7 +1287,7 @@ impl Parser {
         stream
     }
 
-    fn parse_case(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_case(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         //head is at case
         let mut head: usize = 0;
@@ -1335,7 +1335,7 @@ impl Parser {
             }
             temp_lexeme.clear();
         }
-        if def == false {
+        if def {
             stream.push("_".to_string());
             stream.push("=>".to_string());
             stream.push("{".to_string());
@@ -1351,7 +1351,7 @@ impl Parser {
      *
      * Identify infinite loops and replace for with loop{}
      */
-    fn parse_for(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_for(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         let mut lookahead: usize;
@@ -1387,7 +1387,7 @@ impl Parser {
                 head += 1;
             }
 
-            if decl == true {
+            if decl {
                 stream.append(&mut self.parse_declaration(&temp_lexeme));
             } else {
                 stream.append(&mut self.parse_assignment(&temp_lexeme));
@@ -1472,7 +1472,7 @@ impl Parser {
      * compound assignments must be converted to declarations
      * as rust doesnt support compound assignment
      */
-    fn parse_assignment(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_assignment(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         // let mut lookahead = lexeme.len();
         let mut thead: usize = 2;
@@ -1555,7 +1555,7 @@ impl Parser {
     /* parse_expr:
      * parse c/c++ expression statements into rust equivalent code
      */
-    fn parse_expr(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_expr(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         // let mut lookahead = lexeme.len();
         let mut tstream: Vec<String> = Vec::new();
@@ -1626,7 +1626,7 @@ impl Parser {
         stream
     }
 
-    fn parse_array_declaration(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_array_declaration(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut typ: String = " ".to_string();
 
@@ -1634,7 +1634,7 @@ impl Parser {
         if let Some(t) = parse_type(lexeme[0].get_token_type(), Modifier::Default) {
             typ = t;
         }
-        if self.strict == true {
+        if self.strict {
             stream.push(STRICT.get_doc().to_string());
             stream.push("let".to_string());
         } else {
@@ -1685,7 +1685,7 @@ impl Parser {
     }
 
     // not tested
-    fn parse_struct(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_struct(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         stream.push(lexeme[head].get_token_value()); //push the keyword struct
@@ -1712,7 +1712,7 @@ impl Parser {
     }
 
     // not tested
-    fn parse_struct_inbody_decl(&mut self, lexeme: &Vec<Token>, name: &String) -> Vec<String> {
+    fn parse_struct_inbody_decl(&mut self, lexeme: &[Token], name: &str) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head = 0;
         //push the identifier
@@ -1720,7 +1720,7 @@ impl Parser {
         stream.push(":".to_string());
         let mut struct_memt = CStructMem {
             identifier: "NONE".to_string(),
-            name: name.clone(),
+            name: name.to_string(),
             member_type: TokenType::Others,
         };
 
@@ -1750,7 +1750,7 @@ impl Parser {
     }
 
     // not tested
-    fn parse_struct_decl(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_struct_decl(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
 
         stream.push(STRUCT_INIT.get_doc().to_string());
@@ -1778,7 +1778,7 @@ impl Parser {
     }
 
     //parse tagged union
-    fn parse_union(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_union(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         stream.push("enum".to_string()); //push the keyword union
@@ -1808,7 +1808,7 @@ impl Parser {
      * input : union tag_name var [;= ...]
      * output : let [mut] variant_name = Sometype_variant
      */
-    fn parse_union_decl(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_union_decl(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
 
@@ -1834,7 +1834,7 @@ impl Parser {
     /* parse union body into Some type body
      * return rust stream
      */
-    fn parse_union_inbody_decl(&mut self, lexeme: &Vec<Token>, name: &String) -> Vec<String> {
+    fn parse_union_inbody_decl(&mut self, lexeme: &[Token], name: &str) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head = 0;
         //push the identifier
@@ -1842,7 +1842,7 @@ impl Parser {
         stream.push("(".to_string());
         let mut struct_memt = CStructMem {
             identifier: "NONE".to_string(),
-            name: name.clone(),
+            name: name.to_string(),
             member_type: TokenType::Others,
         };
         let mut rust_type = "RUST_TYPE".to_string();
@@ -1874,7 +1874,7 @@ impl Parser {
     }
 
     // not tested
-    fn parse_class(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_class(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
         let mut head: usize = 0;
         let mut method_stream: Vec<String> = Vec::new();
@@ -1976,13 +1976,13 @@ impl Parser {
     }
 
     // not tested
-    fn parse_method_decl(&mut self, lexeme: &Vec<Token>, modifier: &String) -> Vec<String> {
+    fn parse_method_decl(&mut self, lexeme: &[Token], modifier: &str) -> Vec<String> {
         let mut temp_lexeme: Vec<Token> = Vec::new();
         let mut head: usize = 3;
         let mut lookahead: usize = head;
         let mut stream: Vec<String> = Vec::new();
         if modifier.len() > 1 {
-            stream.push(modifier.clone());
+            stream.push(modifier.to_string());
         }
         stream.push("fn".to_string());
         stream.push(lexeme[1].get_token_value());
@@ -2083,7 +2083,7 @@ impl Parser {
     }
 
     // not tested
-    fn parse_class_decl(&mut self, lexeme: &Vec<Token>) -> Vec<String> {
+    fn parse_class_decl(&mut self, lexeme: &[Token]) -> Vec<String> {
         let mut stream: Vec<String> = Vec::new();
 
         stream.push(STRUCT_INIT.get_doc().to_string());
